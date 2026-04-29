@@ -1,0 +1,49 @@
+***********************************************
+* VGM music package                           *
+* http://vgmrips.net/                         *
+***********************************************
+Game name:           Shining Crystal
+System:              MSX2+
+Music hardware:      MSX-Music (YM2413), AY8910
+
+Music author:        naruto
+Game developer:      naruto
+Game publisher:      GOLDEN SOFT
+Game release date:   1995-04-19
+
+Package created by:  denjhang
+Package version:     1.00
+
+Song list, in approximate game order:
+Song name                           Length:
+                                    Total  Loop
+01 Opening                          1:04   1:04
+02 Town                             1:17   1:17
+03 Field                            1:00   1:00
+04 Cave                             0:38   0:38
+05 Battle                           0:53   0:53
+06 Castle                           0:48   0:48
+07 Spring Water                     1:05   1:04
+08 Ruins                            1:09   1:09
+09 Reminiscence                     3:33   3:32
+10 Enemy Castle                     0:51   0:51
+11 Final Battle                     0:26   0:26
+12 Credits                          1:25   1:25
+
+Total Length                       14:10  28:19
+
+
+Notes:
+Another very good game music album,
+using only OPLL preset sounds,
+and adding PSG noise as a complement
+to OPLL drum sounds.
+
+Track names and order are derived from
+  https://naruto2413.bandcamp.com/album/shining-crystal-original-soundtrack-opll-version
+
+This pack was made using OpenMSX 0.17.
+
+
+Package history:
+1.00 2023-02-02 denjhang: initial release.

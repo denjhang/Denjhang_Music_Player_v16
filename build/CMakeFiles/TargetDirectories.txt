@@ -1,0 +1,6 @@
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles/imgui_lib.dir
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles/midifile_lib.dir
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles/denjhang_music_player.dir
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles/scope_core_lib.dir
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles/edit_cache.dir
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles/rebuild_cache.dir

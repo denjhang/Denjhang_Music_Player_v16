@@ -1,0 +1,2 @@
+/mingw64/bin/ar.exe qc libmidifile_lib.a CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o
+/mingw64/bin/ranlib.exe libmidifile_lib.a

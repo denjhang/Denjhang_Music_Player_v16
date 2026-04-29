@@ -1,0 +1,11 @@
+没听见声音，先用控制台输出音频设备再说
+
+你自动使用gdb，目前gdb要我输入什么，我不懂
+
+libvgmplayer是一个控制台vgm播放器，
+编译用make -C，
+牢记在bash中不要使用&或者&&，最好单步执行命令；
+如果有缺少的库使用pacman静默安装。
+本环境是Windows11，控制台是Bash。
+D:\working\vscode-projects\Reference_Project\vgm_libs\libvgm-master；
+已经放入simon.vgm在项目文件夹中用于测试。

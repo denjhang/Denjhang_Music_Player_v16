@@ -1,0 +1,39 @@
+file(REMOVE_RECURSE
+  "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe"
+  "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.pdb"
+  "CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj"
+  "CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o"
+  "CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o"
+  "CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/main.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/main.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o.d"
+  "CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o"
+  "CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o.d"
+  "libdenjhang_music_player.dll.a"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C CXX RC)
+  include(CMakeFiles/denjhang_music_player.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
