@@ -133,6 +133,7 @@ typedef struct {
     bool dc_offset_removal_enabled;
     double dc_bias;
     double dc_alpha; // 用于 DC 移除滤波器
+    float volume_scale; // 音量缩放 (0.0 - 2.0, default 0.5)
 
     // 示波器波形缓冲（4 通道环形缓冲）
     int16_t scope_buf[4][GT_SCOPE_BUF_SIZE];

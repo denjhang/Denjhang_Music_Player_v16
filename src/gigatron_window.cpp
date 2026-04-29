@@ -31,7 +31,7 @@ static const int GT_BUFFER_SIZE = GT_BUFFER_SAMPLES * 2 * sizeof(int16_t);
 static const int GT_FRAME_RATE_INT = 5998;
 
 // Channel colors (4 Gigatron channels)
-static const ImU32 kChColors[4] = {
+static ImU32 kChColors[4] = {
     IM_COL32(80, 220, 80, 255),   // Ch0: green
     IM_COL32(80, 140, 255, 255),  // Ch1: blue
     IM_COL32(255, 80, 80, 255),   // Ch2: red
@@ -101,7 +101,9 @@ static RATIO_CNTR s_musicEventRC;
 static bool s_rcRatioNeedsUpdate = false;
 
 static int s_audioBitDepth = 4;
-static bool s_dcOffsetRemoval = true;
+static bool s_dcOffsetRemoval = false;
+static float s_volumeScale = 0.5f;
+static bool s_skipInitialSilence = false;
 
 static bool s_showScope = false;
 static float s_scopeHeight = 200.0f;
@@ -149,7 +151,7 @@ static void TlAdd(EventTimeline* tl, unsigned long frame, uint16_t reg, uint8_t 
 static char* ReadFileContent(const char* filename);
 static ParsedMusicData ParseGbasCFile(const char* content, unsigned int maxSegs);
 static std::vector<std::string> GetMusicFilesInDir(const std::string& path);
-static void BuildEventTimeline(const ParsedMusicData* md, EventTimeline* tl);
+static void BuildEventTimeline(const ParsedMusicData* md, EventTimeline* tl, bool skipInitialSilence);
 static void AdvanceTimeline(GigatronState* st, EventTimeline* tl, unsigned long frame);
 static void PlaySelected();
 static void PlayFileByIndex(int idx);
@@ -440,7 +442,7 @@ static ParsedMusicData ParseGbasCFile(const char* file_content, unsigned int max
 }
 
 // ============ BuildEventTimeline ============
-static void BuildEventTimeline(const ParsedMusicData* md, EventTimeline* tl) {
+static void BuildEventTimeline(const ParsedMusicData* md, EventTimeline* tl, bool skipInitialSilence) {
     InitEventTimeline(tl);
     uint8_t channelMask = 0;
     unsigned long abs_frame = 0;
@@ -448,9 +450,6 @@ static void BuildEventTimeline(const ParsedMusicData* md, EventTimeline* tl) {
     unsigned int seg_idx = 0;
     unsigned int byte_off = 0;
 
-    // Lambda: get next byte from parsed data
-    // We need a C++11-compatible approach without lambda captures in C
-    // Use a simple inline helper pattern
     struct ByteCursor {
         const ParsedMusicData* md;
         unsigned int seg;
@@ -460,6 +459,26 @@ static void BuildEventTimeline(const ParsedMusicData* md, EventTimeline* tl) {
     cur.md = md;
     cur.seg = 0;
     cur.off = 0;
+
+    // Skip initial silence: find first segment with non-delay, non-zero commands
+    if (skipInitialSilence) {
+        unsigned int skipToSeg = 0;
+        for (unsigned int s = 0; s < md->actual_segment_count; s++) {
+            size_t start = md->segment_start_indices.data[s];
+            bool hasMusic = false;
+            for (unsigned int b = 0; b + start < md->all_music_bytes.size; b++) {
+                uint8_t c = md->all_music_bytes.data[start + b];
+                if (c == 0) break; // end of segment
+                if (c >= 0x80) { hasMusic = true; break; } // non-delay command = music
+            }
+            if (hasMusic) { skipToSeg = s; break; }
+        }
+        if (skipToSeg > 0) {
+            GtLog("[GT] Skipping %u initial silence segments\n", skipToSeg);
+            cur.seg = skipToSeg;
+            cur.off = 0;
+        }
+    }
 
     while (cur.seg < md->actual_segment_count) {
         uint8_t cmd;
@@ -620,11 +639,13 @@ static void LoadConfig() {
 
     // [Settings]
     s_audioBitDepth = GetPrivateProfileIntA("Settings", "AudioBitDepth", 4, s_configPath);
-    s_dcOffsetRemoval = GetPrivateProfileIntA("Settings", "DCOffsetRemoval", 1, s_configPath) != 0;
+    s_dcOffsetRemoval = GetPrivateProfileIntA("Settings", "DCOffsetRemoval", 0, s_configPath) != 0;
     s_playbackSpeed = (float)GetPrivateProfileIntA("Settings", "PlaybackSpeed", 10, s_configPath) / 10.0f;
     s_targetSegmentCount = (unsigned int)GetPrivateProfileIntA("Settings", "TargetSegments", 0, s_configPath);
     s_showScope = GetPrivateProfileIntA("Settings", "ShowScope", 0, s_configPath) != 0;
     s_scopeHeight = (float)GetPrivateProfileIntA("Settings", "ScopeHeight", 200, s_configPath);
+    s_volumeScale = (float)GetPrivateProfileIntA("Settings", "VolumeScale", 5, s_configPath) / 10.0f;
+    s_skipInitialSilence = GetPrivateProfileIntA("Settings", "SkipInitialSilence", 0, s_configPath) != 0;
 
     char buf[MAX_PATH] = "";
     GetPrivateProfileStringA("Settings", "MusicDir", "", buf, MAX_PATH, s_configPath);
@@ -670,6 +691,10 @@ static void SaveConfig() {
         s_showScope ? "1" : "0", s_configPath);
     WritePrivateProfileStringA("Settings", "ScopeHeight",
         std::to_string((int)s_scopeHeight).c_str(), s_configPath);
+    WritePrivateProfileStringA("Settings", "VolumeScale",
+        std::to_string((int)(s_volumeScale * 10)).c_str(), s_configPath);
+    WritePrivateProfileStringA("Settings", "SkipInitialSilence",
+        s_skipInitialSilence ? "1" : "0", s_configPath);
     WritePrivateProfileStringA("Settings", "MusicDir", s_musicDir, s_configPath);
 
     // Scope settings
@@ -872,7 +897,7 @@ static void PlayFileByIndex(int idx) {
     }
 
     // Build timeline
-    BuildEventTimeline(&s_parsedMusicData, &s_timeline);
+    BuildEventTimeline(&s_parsedMusicData, &s_timeline, s_skipInitialSilence);
 
     if (s_timeline.size == 0) {
         GtLog("[GT] Timeline has no events\n");
@@ -880,7 +905,7 @@ static void PlayFileByIndex(int idx) {
     }
 
     // Init audio
-    if (s_audioOutput->init(GT_SAMPLE_RATE) != 0) {
+    if (s_audioOutput->init(GT_SAMPLE_RATE) == 0) {
         GtLog("[GT] Audio init failed (%s)\n", s_audioOutput->name);
         return;
     }
@@ -891,7 +916,8 @@ static void PlayFileByIndex(int idx) {
     s_gtState.audio_bit_depth = (uint8_t)s_audioBitDepth;
     s_gtState.dc_offset_removal_enabled = s_dcOffsetRemoval;
     s_gtState.dc_bias = 0.0;
-    s_gtState.dc_alpha = 0.995;
+    s_gtState.dc_alpha = 0.99;
+    s_gtState.volume_scale = s_volumeScale;
     s_gtState.channelMask = 0;
 
     // Init RC ratio
@@ -936,11 +962,12 @@ static void SeekToFrame(unsigned long targetFrame) {
     s_gtState.audio_bit_depth = (uint8_t)s_audioBitDepth;
     s_gtState.dc_offset_removal_enabled = s_dcOffsetRemoval;
     s_gtState.dc_bias = 0.0;
-    s_gtState.dc_alpha = 0.995;
+    s_gtState.dc_alpha = 0.99;
+    s_gtState.volume_scale = s_volumeScale;
     s_gtState.channelMask = 0;
 
     // Re-init audio
-    if (s_audioOutput->init(GT_SAMPLE_RATE) != 0) {
+    if (s_audioOutput->init(GT_SAMPLE_RATE) == 0) {
         GtLog("[GT] Audio re-init failed after seek\n");
         return;
     }
@@ -1097,32 +1124,10 @@ static void RenderControls() {
         return;
     }
 
-    // Scope toggle
-    ImGui::PushStyleColor(ImGuiCol_Button,
-        s_showScope ? ImVec4(0.2f, 0.7f, 0.3f, 1.0f) : ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
-    if (ImGui::SmallButton("Scope")) {
-        s_showScope = !s_showScope;
-        SaveConfig();
-    }
-    ImGui::PopStyleColor();
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle oscilloscope / level meters");
-
-    ImGui::SameLine();
-    ImGui::PushStyleColor(ImGuiCol_Button,
-        s_showScopeSettingsWindow ? ImVec4(0.2f, 0.7f, 0.3f, 1.0f) : ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
-    if (ImGui::SmallButton("Scope Settings...")) {
-        s_showScopeSettingsWindow = !s_showScopeSettingsWindow;
-    }
-    ImGui::PopStyleColor();
-
-    ImGui::Separator();
-
     // File info
     if (!s_selectedFilePath.empty()) {
         ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "Gigatron Tracker");
         ImGui::TextDisabled("File:"); ImGui::SameLine();
-
-        // Extract just filename for display
         size_t lastSlash = s_selectedFilePath.find_last_of("\\/");
         std::string fname = (lastSlash != std::string::npos)
             ? s_selectedFilePath.substr(lastSlash + 1) : s_selectedFilePath;
@@ -1135,26 +1140,26 @@ static void RenderControls() {
             ImGui::TextDisabled("Bytes:"); ImGui::SameLine();
             ImGui::Text("%u", (unsigned)s_parsedMusicData.all_music_bytes.size);
 
-            // Duration estimate: frame_rate ~59.98 fps
             double durSec = (double)s_parsedMusicData.total_delay_frames / 59.98;
             int durMin = (int)durSec / 60;
             int durSecInt = (int)durSec % 60;
-            int durMs = (int)((durSec - (int)durSec) * 1000);
             ImGui::TextDisabled("Duration:"); ImGui::SameLine();
-            ImGui::Text("%02d:%02d.%03d", durMin, durSecInt, durMs);
+            ImGui::Text("%02d:%02d", durMin, durSecInt);
         }
     } else {
         ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "Gigatron Tracker");
         ImGui::TextDisabled("[No file selected]");
-        ImGui::TextDisabled("Supported: .gbas.c");
     }
 
     ImGui::Spacing();
     ImGui::Separator();
 
+    // ===== Playback Settings =====
+    ImGui::TextDisabled("-- Playback --");
+
     // Speed slider
-    ImGui::SetNextItemWidth(120.0f);
-    if (ImGui::SliderFloat("Speed", &s_playbackSpeed, 0.1f, 4.0f, "%.1fx")) {
+    ImGui::SetNextItemWidth(160.0f);
+    if (ImGui::SliderFloat("Speed##gtspeed", &s_playbackSpeed, 0.1f, 4.0f, "%.1fx")) {
         s_rcRatioNeedsUpdate = true;
         SaveConfig();
     }
@@ -1162,34 +1167,82 @@ static void RenderControls() {
     // Target segments
     ImGui::SetNextItemWidth(100.0f);
     int segInt = (int)s_targetSegmentCount;
-    if (ImGui::InputInt("Segments (0=all)", &segInt)) {
+    if (ImGui::InputInt("Segments (0=all)##gtseg", &segInt)) {
         s_targetSegmentCount = (segInt < 0) ? 0 : (unsigned int)segInt;
         SaveConfig();
+    }
+
+    // Skip initial silence
+    if (ImGui::Checkbox("Skip Initial Silence", &s_skipInitialSilence)) {
+        SaveConfig();
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Skip leading empty segments (delays only) when loading a file.");
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // ===== Audio Settings =====
+    ImGui::TextDisabled("-- Audio --");
+
+    // Volume slider
+    ImGui::SetNextItemWidth(160.0f);
+    if (ImGui::SliderFloat("Volume##gtvol", &s_volumeScale, 0.0f, 2.0f, "%.2f")) {
+        s_gtState.volume_scale = s_volumeScale;
+        SaveConfig();
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Output volume scale. 0.5 = default (matches original Tracker).\nHigher values may cause clipping.");
     }
 
     // Bit depth
     const char* bitDepthItems[] = { "4-bit", "8-bit" };
     int bitDepthIdx = (s_audioBitDepth == 8) ? 1 : 0;
     ImGui::SetNextItemWidth(100.0f);
-    if (ImGui::Combo("Bit Depth", &bitDepthIdx, bitDepthItems, 2)) {
+    if (ImGui::Combo("Bit Depth##gtbit", &bitDepthIdx, bitDepthItems, 2)) {
         s_audioBitDepth = (bitDepthIdx == 1) ? 8 : 4;
         s_gtState.audio_bit_depth = (uint8_t)s_audioBitDepth;
         SaveConfig();
     }
 
     // DC offset removal
-    if (ImGui::Checkbox("DC Offset Removal", &s_dcOffsetRemoval)) {
+    if (ImGui::Checkbox("DC Offset Removal##gtdc", &s_dcOffsetRemoval)) {
         s_gtState.dc_offset_removal_enabled = s_dcOffsetRemoval;
         SaveConfig();
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Enable DC offset removal filter (IIR high-pass).\nOriginal Tracker default: OFF.");
     }
 
     ImGui::Spacing();
     ImGui::Separator();
 
-    // Scope height slider
-    ImGui::SetNextItemWidth(120.0f);
-    if (ImGui::SliderFloat("Scope Height", &s_scopeHeight, 30.0f, 500.0f, "%.0fpx")) {
+    // ===== Scope Settings =====
+    ImGui::TextDisabled("-- Scope --");
+
+    ImGui::PushStyleColor(ImGuiCol_Button,
+        s_showScope ? ImVec4(0.2f, 0.7f, 0.3f, 1.0f) : ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    if (ImGui::SmallButton("Scope##gttoggle")) {
+        s_showScope = !s_showScope;
         SaveConfig();
+    }
+    ImGui::PopStyleColor();
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Toggle oscilloscope / level meters");
+
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_Button,
+        s_showScopeSettingsWindow ? ImVec4(0.2f, 0.7f, 0.3f, 1.0f) : ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    if (ImGui::SmallButton("Scope Settings...##gtbtn")) {
+        s_showScopeSettingsWindow = !s_showScopeSettingsWindow;
+    }
+    ImGui::PopStyleColor();
+
+    if (s_showScope) {
+        ImGui::SetNextItemWidth(160.0f);
+        if (ImGui::SliderFloat("Scope Height##gth", &s_scopeHeight, 30.0f, 500.0f, "%.0fpx")) {
+            SaveConfig();
+        }
     }
 }
 
@@ -1335,9 +1388,19 @@ static void RenderLevelMeterArea() {
         return;
     }
 
-    const char* chLabels[4] = {"Ch0", "Ch1", "Ch2", "Ch3"};
-    float barH = (availH - 4 * ImGui::GetTextLineHeightWithSpacing()) / 4.0f;
-    if (barH < 8.0f) barH = 8.0f;
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+
+    const float kChLabelH = 18.0f;
+    const float kBarGap = 6.0f;
+    const float kBarH = availH - kChLabelH - 4.0f;
+    if (kBarH < 10.0f) return;
+
+    float meterW = 28.0f;
+    float totalBarsW = 4 * meterW + 3 * kBarGap;
+    float startX = (availW - totalBarsW) * 0.5f;
+    if (startX < 2.0f) startX = 2.0f;
+
+    ImVec2 basePos = ImGui::GetCursorScreenPos();
 
     for (int ch = 0; ch < 4; ch++) {
         const GigatronChannel& gc = s_gtState.ch[ch];
@@ -1348,79 +1411,67 @@ static void RenderLevelMeterArea() {
             targetLevel = fabsf((float)gc.wavA) / 32.0f;
             if (targetLevel > 1.0f) targetLevel = 1.0f;
         }
-        // Smooth approach with fast attack, slow decay
         if (targetLevel > s_levelMeter[ch]) {
             s_levelMeter[ch] += (targetLevel - s_levelMeter[ch]) * 0.3f;
         } else {
             s_levelMeter[ch] *= 0.95f;
         }
-        // Peak hold
         if (s_levelMeter[ch] > s_levelPeak[ch]) {
             s_levelPeak[ch] = s_levelMeter[ch];
         } else {
-            s_levelPeak[ch] *= 0.999f;
+            s_levelPeak[ch] *= 0.998f;
         }
 
         float level = s_levelMeter[ch];
+        float mx = basePos.x + startX + ch * (meterW + kBarGap);
+        float barTop = basePos.y + kChLabelH;
 
-        // Channel label with color indicator
-        ImVec4 chCol = ImGui::ColorConvertU32ToFloat4(kChColors[ch]);
-        ImGui::TextColored(chCol, "%s", chLabels[ch]);
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(availW - 60);
-
-        // Draw gradient bar background
-        ImVec2 barPos = ImGui::GetCursorScreenPos();
-        float barWidth = availW - 60;
-        ImDrawList* dl = ImGui::GetWindowDrawList();
+        // Channel label above bar
+        dl->AddText(ImVec2(mx, basePos.y), kChColors[ch], kChNames[ch]);
 
         // Background
-        dl->AddRectFilled(barPos, ImVec2(barPos.x + barWidth, barPos.y + barH),
-            IM_COL32(30, 30, 30, 255));
+        dl->AddRectFilled(ImVec2(mx, barTop),
+            ImVec2(mx + meterW, barTop + kBarH),
+            IM_COL32(25, 25, 25, 255));
 
-        // Gradient fill based on level
-        float fillW = barWidth * level;
-        if (fillW > 0.5f) {
-            // Blue -> Green -> Yellow -> Red gradient
-            for (float x = 0; x < fillW; x += 1.0f) {
-                float t = x / barWidth;
-                int r, g, b;
-                if (t < 0.25f) {
-                    float f = t / 0.25f;
-                    r = 0; g = (int)(f * 100); b = (int)(200 - f * 100);
-                } else if (t < 0.5f) {
-                    float f = (t - 0.25f) / 0.25f;
-                    r = 0; g = 100 + (int)(f * 155); b = (int)(100 - f * 100);
-                } else if (t < 0.75f) {
-                    float f = (t - 0.5f) / 0.25f;
-                    r = (int)(f * 255); g = 255; b = 0;
-                } else {
-                    float f = (t - 0.75f) / 0.25f;
-                    r = 255; g = (int)(255 - f * 255); b = 0;
-                }
-                dl->AddLine(ImVec2(barPos.x + x, barPos.y),
-                            ImVec2(barPos.x + x, barPos.y + barH),
-                            IM_COL32(r, g, b, 255));
-            }
+        // Vertical level bar (bottom-up)
+        if (level > 0.0f) {
+            float barFillH = kBarH * level;
+            float fillTop = barTop + kBarH - barFillH;
+
+            bool keyOn = (gc.key > 0);
+            float dimF = keyOn ? (0.4f + level * 0.6f) : (0.25f + level * 0.2f);
+            int r = (int)(((kChColors[ch] >> IM_COL32_R_SHIFT) & 0xFF) * dimF);
+            int g = (int)(((kChColors[ch] >> IM_COL32_G_SHIFT) & 0xFF) * dimF);
+            int b = (int)(((kChColors[ch] >> IM_COL32_B_SHIFT) & 0xFF) * dimF);
+            if (r > 255) r = 255;
+            if (g > 255) g = 255;
+            if (b > 255) b = 255;
+
+            dl->AddRectFilled(ImVec2(mx + 1, fillTop),
+                ImVec2(mx + meterW - 1, fillTop + barFillH),
+                IM_COL32(r, g, b, 255));
         }
 
-        // Peak indicator
-        float peakX = barPos.x + barWidth * s_levelPeak[ch];
-        dl->AddLine(ImVec2(peakX, barPos.y),
-                    ImVec2(peakX, barPos.y + barH),
-                    IM_COL32(255, 255, 255, 200));
+        // Peak indicator (horizontal line)
+        if (s_levelPeak[ch] > 0.01f) {
+            float peakY = barTop + kBarH * (1.0f - s_levelPeak[ch]);
+            dl->AddLine(ImVec2(mx, peakY), ImVec2(mx + meterW, peakY),
+                IM_COL32(255, 255, 255, 180));
+        }
 
         // Border
-        dl->AddRect(barPos, ImVec2(barPos.x + barWidth, barPos.y + barH),
-            IM_COL32(80, 80, 80, 255));
+        dl->AddRect(ImVec2(mx, barTop), ImVec2(mx + meterW, barTop + kBarH),
+            IM_COL32(60, 60, 60, 255));
 
-        // dB text
+        // dB label below
         float db = (level > 0.001f) ? 20.0f * log10f(level) : -60.0f;
-        ImGui::SameLine();
-        ImGui::Text("%.0fdB", db);
-
-        ImGui::Dummy(ImVec2(barWidth, barH + 2));
+        char dbStr[16];
+        snprintf(dbStr, sizeof(dbStr), "%.0f", db);
+        dl->AddText(ImVec2(mx, barTop + kBarH + 1), IM_COL32(160, 160, 160, 255), dbStr);
     }
+
+    ImGui::Dummy(ImVec2(availW, availH));
 }
 
 // ============ RenderScopeArea ============
@@ -1523,66 +1574,81 @@ static void RenderScopeArea() {
 // ============ RenderStatusArea ============
 static void RenderStatusArea() {
     ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.8f, 1.0f), "Gigatron Channel State");
-    ImGui::Separator();
 
     static const char* kNoteNames[] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+    static const char* kWaveNames[] = {"Noise", "Triangle", "Pulse", "Sawtooth"};
 
-    for (int ch = 0; ch < 4; ch++) {
-        const GigatronChannel& gc = s_gtState.ch[ch];
-        ImVec4 chCol = ImGui::ColorConvertU32ToFloat4(kChColors[ch]);
+    // Per-channel register table
+    if (ImGui::BeginTable("##gtreginfo", 7, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit)) {
+        ImGui::TableSetupColumn("Ch",   ImGuiTableColumnFlags_WidthFixed, 32.f);
+        ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthFixed, 36.f);
+        ImGui::TableSetupColumn("Note", ImGuiTableColumnFlags_WidthFixed, 48.f);
+        ImGui::TableSetupColumn("OSC",  ImGuiTableColumnFlags_WidthFixed, 52.f);
+        ImGui::TableSetupColumn("KEY",  ImGuiTableColumnFlags_WidthFixed, 52.f);
+        ImGui::TableSetupColumn("WAVX", ImGuiTableColumnFlags_WidthFixed, 70.f);
+        ImGui::TableSetupColumn("WAVA", ImGuiTableColumnFlags_WidthFixed, 40.f);
+        ImGui::TableHeadersRow();
 
-        // Channel header
-        ImGui::TextColored(chCol, "%s", kChNames[ch]);
-        ImGui::SameLine();
+        for (int ch = 0; ch < 4; ch++) {
+            const GigatronChannel& gc = s_gtState.ch[ch];
+            ImVec4 chCol = ImGui::ColorConvertU32ToFloat4(kChColors[ch]);
+            bool isActive = (gc.key > 0);
 
-        bool isActive = (gc.key > 0);
+            // Status color: bright when active, dim when inactive
+            ImVec4 infoCol = isActive ? ImVec4(1, 1, 1, 1) : ImVec4(0.45f, 0.45f, 0.45f, 1);
 
-        // OSC (phase)
-        ImGui::TextDisabled("OSC=0x%04X", gc.osc);
-        ImGui::SameLine();
+            ImGui::TableNextRow();
 
-        // KEY (frequency step)
-        ImGui::TextDisabled("KEY=0x%04X", gc.key);
-        ImGui::SameLine();
+            // Channel name
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(chCol, "%s", kChNames[ch]);
 
-        // Note name from key
-        if (isActive) {
-            uint16_t fnum_div8 = gc.key;
-            int noteIdx = ReverseLookupFnum(fnum_div8);
-            if (noteIdx >= 0 && noteIdx < (int)FNUM_TABLE_SIZE) {
-                int octave = noteIdx / 12 + 1;
-                int noteInOctave = noteIdx % 12;
-                ImGui::TextColored(chCol, "%s%d", kNoteNames[noteInOctave], octave);
+            // Status
+            ImGui::TableSetColumnIndex(1);
+            if (isActive) {
+                ImGui::TextColored(chCol, "ON");
             } else {
-                ImGui::TextDisabled("?");
+                ImGui::TextDisabled("off");
             }
-        } else {
-            ImGui::TextDisabled("off");
+
+            // Note name
+            ImGui::TableSetColumnIndex(2);
+            if (isActive) {
+                uint16_t fnum_div8 = gc.key;
+                int noteIdx = ReverseLookupFnum(fnum_div8);
+                if (noteIdx >= 0 && noteIdx < (int)FNUM_TABLE_SIZE) {
+                    int octave = noteIdx / 12 + 1;
+                    int noteInOctave = noteIdx % 12;
+                    ImGui::TextColored(infoCol, "%s%d", kNoteNames[noteInOctave], octave);
+                } else {
+                    ImGui::TextColored(infoCol, "?");
+                }
+            } else {
+                ImGui::TextDisabled("--");
+            }
+
+            // OSC
+            ImGui::TableSetColumnIndex(3);
+            ImGui::TextColored(infoCol, "0x%04X", gc.osc);
+
+            // KEY
+            ImGui::TableSetColumnIndex(4);
+            ImGui::TextColored(infoCol, "0x%04X", gc.key);
+
+            // WAVX (show waveform name)
+            ImGui::TableSetColumnIndex(5);
+            int waveIdx = (int)gc.wavX & 3;
+            ImGui::TextColored(infoCol, "%s(%u)", kWaveNames[waveIdx], gc.wavX);
+
+            // WAVA
+            ImGui::TableSetColumnIndex(6);
+            ImGui::TextColored(infoCol, "%d", gc.wavA);
         }
-        ImGui::SameLine();
-
-        // WAVX (waveform select)
-        ImGui::TextDisabled("WAVX=%u", gc.wavX);
-        ImGui::SameLine();
-
-        // WAVA (amplitude)
-        ImGui::TextDisabled("WAVA=%d", gc.wavA);
-
-        // Status indicator
-        if (isActive) {
-            ImGui::SameLine();
-            ImGui::TextColored(chCol, "[ON]");
-        } else {
-            ImGui::SameLine();
-            ImGui::TextDisabled("[  ]");
-        }
-
-        ImGui::Spacing();
+        ImGui::EndTable();
     }
 
-    ImGui::Separator();
-
     // Channel mask
+    ImGui::Spacing();
     ImGui::TextDisabled("ChannelMask: 0x%02X", s_gtState.channelMask);
     for (int ch = 0; ch < 4; ch++) {
         ImGui::SameLine();
@@ -2183,41 +2249,149 @@ static void RenderLogPanel() {
 static void RenderScopeSettingsWindow() {
     if (!s_showScopeSettingsWindow) return;
 
-    ImGui::SetNextWindowSize(ImVec2(350, 280), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(520, 420), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("GT Scope Settings", &s_showScopeSettingsWindow)) {
         ImGui::End();
         return;
     }
 
-    ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "Per-Channel Scope Settings");
-    ImGui::Separator();
+    ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "Gigatron Scope Settings");
+    ImGui::SameLine();
+    ImGui::TextDisabled("(4 channels)");
 
-    for (int ch = 0; ch < 4; ch++) {
-        ImVec4 col = ImGui::ColorConvertU32ToFloat4(kChColors[ch]);
-        ImGui::TextColored(col, "%s", kChNames[ch]);
-        ImGui::SameLine();
+    ImGui::Spacing();
 
-        ImGui::SetNextItemWidth(80);
-        ImGui::DragFloat(("##sw" + std::to_string(ch)).c_str(), &s_scopeWidth[ch], 1.0f, 50.0f, 600.0f, "W:%.0f");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(70);
-        ImGui::DragFloat(("##sa" + std::to_string(ch)).c_str(), &s_scopeAmp[ch], 0.1f, 0.1f, 10.0f, "A:%.1f");
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(70);
-        ImGui::DragFloat(("##so" + std::to_string(ch)).c_str(), &s_scopeOffset[ch], 0.01f, -1.0f, 1.0f, "O:%.2f");
-        ImGui::SameLine();
-        ImGui::Checkbox(("AC##ac" + std::to_string(ch)).c_str(), &s_scopeAcMode[ch]);
+    // ===== Per-channel settings =====
+    if (ImGui::BeginTable("##gtscopesettings", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 110.f);
+        ImGui::TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        for (int ch = 0; ch < 4; ch++) {
+            ImVec4 col = ImGui::ColorConvertU32ToFloat4(kChColors[ch]);
+
+            // Width
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(col, "Ch%d Width", ch);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(200);
+            if (ImGui::SliderFloat(("##scopew" + std::to_string(ch)).c_str(),
+                    &s_scopeWidth[ch], 40.0f, 600.0f, "%.0f px")) {
+                SaveConfig();
+            }
+
+            // Amplitude
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(col, "Ch%d Amplitude", ch);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(200);
+            if (ImGui::SliderFloat(("##scopea" + std::to_string(ch)).c_str(),
+                    &s_scopeAmp[ch], 0.1f, 10.0f, "%.1f")) {
+                SaveConfig();
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Vertical amplitude multiplier. Higher = taller waveform.\nIncrease if waveform is too small to see.");
+            }
+
+            // Offset
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(col, "Ch%d Offset", ch);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::SetNextItemWidth(200);
+            if (ImGui::SliderFloat(("##scopeo" + std::to_string(ch)).c_str(),
+                    &s_scopeOffset[ch], -2.0f, 2.0f, "%.2f")) {
+                SaveConfig();
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Vertical offset. Positive = shift up, Negative = shift down.");
+            }
+
+            // AC Mode
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(col, "Ch%d AC Mode", ch);
+            ImGui::TableSetColumnIndex(1);
+            int acMode = s_scopeAcMode[ch] ? 1 : 0;
+            if (ImGui::Combo(("##scopeac" + std::to_string(ch)).c_str(),
+                    &acMode, "Off\0Center\0")) {
+                s_scopeAcMode[ch] = (acMode != 0);
+                SaveConfig();
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("AC coupling: remove DC component from waveform.\nOff = raw, Center = subtract mean.");
+            }
+
+            // Color
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextColored(col, "Ch%d Color", ch);
+            ImGui::TableSetColumnIndex(1);
+            float c[4] = {
+                ((kChColors[ch] >> IM_COL32_R_SHIFT) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> IM_COL32_G_SHIFT) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> IM_COL32_B_SHIFT) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> IM_COL32_A_SHIFT) & 0xFF) / 255.0f
+            };
+            if (ImGui::ColorEdit4(("##scopec" + std::to_string(ch)).c_str(), c,
+                    ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar)) {
+                kChColors[ch] = IM_COL32(
+                    (int)(c[0] * 255), (int)(c[1] * 255),
+                    (int)(c[2] * 255), (int)(c[3] * 255));
+            }
+        }
+
+        ImGui::EndTable();
     }
 
     ImGui::Spacing();
     ImGui::Separator();
-    if (ImGui::Button("Reset Defaults")) {
+
+    // Global scope settings
+    if (ImGui::BeginTable("##gtscopeglobal", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 110.f);
+        ImGui::TableSetupColumn("Control", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        // Scope height
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Scope Height");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(200);
+        if (ImGui::SliderFloat("##scopeh", &s_scopeHeight, 30.0f, 500.0f, "%.0f px")) {
+            SaveConfig();
+        }
+
+        // Scope background
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Show Scope");
+        ImGui::TableSetColumnIndex(1);
+        if (ImGui::Checkbox("Enable##gtshowscope", &s_showScope)) {
+            SaveConfig();
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::Spacing();
+
+    // Reset buttons
+    if (ImGui::Button("Reset All to Defaults##gtreset")) {
         for (int ch = 0; ch < 4; ch++) {
             s_scopeWidth[ch] = 220.0f;
             s_scopeAmp[ch] = 1.0f;
             s_scopeOffset[ch] = 0.0f;
             s_scopeAcMode[ch] = false;
         }
+        s_scopeHeight = 200.0f;
+        s_showScope = false;
+        // Reset colors
+        kChColors[0] = IM_COL32(80, 220, 80, 255);
+        kChColors[1] = IM_COL32(80, 140, 255, 255);
+        kChColors[2] = IM_COL32(255, 80, 80, 255);
+        kChColors[3] = IM_COL32(255, 180, 60, 255);
         SaveConfig();
     }
 
@@ -2236,7 +2410,8 @@ void Init() {
     s_gtState.audio_bit_depth = (uint8_t)s_audioBitDepth;
     s_gtState.dc_offset_removal_enabled = s_dcOffsetRemoval;
     s_gtState.dc_bias = 0.0;
-    s_gtState.dc_alpha = 0.995;
+    s_gtState.dc_alpha = 0.99;
+    s_gtState.volume_scale = s_volumeScale;
 
     // Init timeline
     InitEventTimeline(&s_timeline);

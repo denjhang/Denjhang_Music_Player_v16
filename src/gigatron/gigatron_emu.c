@@ -133,6 +133,7 @@ void gigatron_emu_init(GigatronState *state) {
     state->dc_offset_removal_enabled = false;
     state->dc_bias = 0.0;
     state->dc_alpha = 0.99; // 根据 Gigatron_Audio_Emulation.md
+    state->volume_scale = 0.5f; // 默认音量缩放，防止破音
 }
 
 // 写入 Gigatron 寄存器
@@ -235,19 +236,20 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
                 processed_sample = processed_sample - state->dc_bias;
             }
 
-            // 转换为 16 位有符号 PCM
-            // 原始缩放是 (value - 128) * 256，用于 8 位值。
-            // processed_sample 现在是一个 double，可能已移除直流。
-            // 我们需要将其缩放到 16 位有符号 PCM。
-            // 使用 128 作为中心点进行缩放。
-            state->samp = (int16_t)((processed_sample - 128.0) * 256.0);
+            // 转换为 16 位有符号 PCM，应用音量缩放和防破音
+            double pcm = (processed_sample - 128.0) * 256.0 * state->volume_scale;
+            // 防破音
+            if (pcm > 32767.0) pcm = 32767.0;
+            if (pcm < -32768.0) pcm = -32768.0;
+            state->samp = (int32_t)pcm;
 
             RC_VAL_SUB(&state->scanline_rc, 4); // 减少扫描线计数器
         }
 
-        // 将 8 位样本写入立体声缓冲区
-        output_buffer[p * 2] = (int16_t)state->samp;     // 左声道
-        output_buffer[p * 2 + 1] = (int16_t)state->samp; // 右声道
+        // 将样本写入立体声缓冲区
+        int16_t out = (int16_t)state->samp;
+        output_buffer[p * 2] = out;     // 左声道
+        output_buffer[p * 2 + 1] = out; // 右声道
 
         // 示波器波形捕获：每 4 个样本写入一次（降采样到 ~11025Hz）
         state->scope_skip_ctr++;
