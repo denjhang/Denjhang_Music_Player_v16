@@ -1340,14 +1340,10 @@ static void RenderPianoArea() {
                 int midiNote = noteIdx;
                 if (midiNote >= 0 && midiNote < 128) {
                     noteActive[midiNote] = true;
-                    // wavA: 64 = max volume (brightest), 0 = silent, 127 = silent (clipped)
-                    // Use absolute value, cap at 64 as the effective max
-                    float wavA_abs = fabsf((float)gc.wavA);
-                    float level;
-                    if (wavA_abs <= 64.0f)
-                        level = wavA_abs / 64.0f;
-                    else
-                        level = 0.0f; // >64 = over-DC-offset, effectively silent
+                    // wavA 64-127: 64 = max volume (brightest), 127 = silent
+                    float level = 1.0f - (float)(gc.wavA - 64) / 63.0f;
+                    if (level < 0.0f) level = 0.0f;
+                    if (level > 1.0f) level = 1.0f;
                     if (level < 0.15f) level = 0.15f; // minimum visibility for active notes
                     if (level > noteLevel[midiNote] || !noteActive[midiNote]) {
                         noteLevel[midiNote] = level;
@@ -1490,11 +1486,11 @@ static void RenderLevelMeterArea() {
         // Update level meter with decay
         float targetLevel = 0.0f;
         if (gc.key > 0) {
-            float wavA_abs = fabsf((float)gc.wavA);
-            if (wavA_abs <= 64.0f)
-                targetLevel = wavA_abs / 64.0f;
-            else
-                targetLevel = 0.0f;
+            // wavA 64-127: 64 = max volume, 127 = silent
+            float waLevel = 1.0f - (float)(gc.wavA - 64) / 63.0f;
+            if (waLevel < 0.0f) waLevel = 0.0f;
+            if (waLevel > 1.0f) waLevel = 1.0f;
+            targetLevel = waLevel;
         }
         if (targetLevel > s_levelMeter[ch]) {
             s_levelMeter[ch] += (targetLevel - s_levelMeter[ch]) * 0.3f;
