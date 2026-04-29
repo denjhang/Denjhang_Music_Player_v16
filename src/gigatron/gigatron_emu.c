@@ -261,31 +261,17 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
                 if (normalized < 0.0) normalized = 0.0;
                 if (normalized > 1.0) normalized = 1.0;
 
-                switch (state->audio_bit_depth) {
-                    case 4:
-                        processed_sample = normalized * 15.0;
-                        break;
-                    case 6:
-                        processed_sample = normalized * 63.0;
-                        break;
-                    case 8:
-                        processed_sample = normalized * 255.0;
-                        break;
-                    case 12:
-                        processed_sample = normalized * 4095.0;
-                        break;
-                    case 16:
-                    default:
-                        // 16-bit: 直接归一化到 int16 范围
-                        {
-                            double pcm = (normalized - 0.5) * 2.0 * 32767.0 * state->volume_scale;
-                            if (pcm > 32767.0) pcm = 32767.0;
-                            if (pcm < -32768.0) pcm = -32768.0;
-                            state->samp = (int32_t)pcm;
-                            RC_VAL_SUB(&state->scanline_rc, 4);
-                            continue; // 跳过后面的通用 PCM 转换
-                        }
+                // 自定义表统一走归一化 → int16 路径
+                double pcm = (normalized - 0.5) * 2.0 * 32767.0 * state->volume_scale;
+                if (state->dc_offset_removal_enabled) {
+                    state->dc_bias = (state->dc_alpha * state->dc_bias) + ((1.0 - state->dc_alpha) * pcm);
+                    pcm = pcm - state->dc_bias;
                 }
+                if (pcm > 32767.0) pcm = 32767.0;
+                if (pcm < -32768.0) pcm = -32768.0;
+                state->samp = (int32_t)pcm;
+                RC_VAL_SUB(&state->scanline_rc, 4);
+                continue; // 跳过原始路径的 PCM 转换
             } else {
                 // 原始路径
                 switch (state->audio_bit_depth) {
