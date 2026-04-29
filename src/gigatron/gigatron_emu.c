@@ -22,6 +22,28 @@ static void reset_sound_table(GigatronState *state) {
     }
 }
 
+// 重置自定义波形表（生成指定位深的默认波形）
+void gigatron_emu_reset_custom_wave_table(GigatronState *state, uint8_t bits) {
+    srand((unsigned int)time(NULL));
+    uint32_t r = (uint32_t)rand();
+    uint16_t maxVal = (bits == 6) ? 63 : (bits == 8) ? 255 : (bits == 12) ? 4095 : 65535;
+    for (int i = 0; i < 64; i++) {
+        // Noise
+        r += r * 56465321 + 456156321;
+        state->customWaveTable[i * 4 + 0] = (uint16_t)(r % (maxVal + 1));
+        // Triangle
+        if (i < 32)
+            state->customWaveTable[i * 4 + 1] = (uint16_t)(2 * i * maxVal / 63);
+        else
+            state->customWaveTable[i * 4 + 1] = (uint16_t)((63 - 2 * (i - 32)) * maxVal / 63);
+        // Pulse
+        state->customWaveTable[i * 4 + 2] = (uint16_t)(i < 32 ? 0 : maxVal);
+        // Sawtooth
+        state->customWaveTable[i * 4 + 3] = (uint16_t)(i * maxVal / 63);
+    }
+    state->waveTableBits = bits;
+}
+
 // 初始化 Gigatron 仿真器
 void gigatron_emu_init(GigatronState *state) {
     memset(state, 0, sizeof(GigatronState));
@@ -115,6 +137,8 @@ void gigatron_emu_init(GigatronState *state) {
     // `mul = 12499616`
     // `div = audioSampleRate * 100`
     state->audioSampleRate = 44100; // Default audio sample rate
+    state->useCustomWaveTable = false;
+    state->waveTableBits = 6;
     // MDSound bClock = 521.0 * 59.98 * 2 = 62499.08
     // To avoid floating point, scale by 100: 521 * 5998 * 2 = 6249908
     // RC_SET_RATIO(rc, mul, div) sets rc->inc = (mul << RC_SHIFT) / div
@@ -187,6 +211,10 @@ void gigatron_emu_write_register(GigatronState *state, uint16_t adr, uint8_t dat
 
 // 更新 Gigatron 仿真器并生成音频样本
 void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_samples) {
+    uint16_t maxVal = (state->waveTableBits == 6) ? 63 :
+                      (state->waveTableBits == 8) ? 255 :
+                      (state->waveTableBits == 12) ? 4095 : 65535;
+
     for (int p = 0; p < num_samples; p++) {
         RC_STEP(&state->scanline_rc);
 
@@ -200,73 +228,108 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
 
                     uint8_t i_idx = (uint8_t)((state->ch[n].osc >> 7) & 0xfc); // 获取 soundTable 索引
                     i_idx ^= state->ch[n].wavX; // 与 wavX 异或
-                    // 获取波形数据并加上幅度 (wavA 作为直流偏移量)
-                    // 根据 Audio.txt 文档，应用 Gigatron 特定的裁剪/掩码
-                    int32_t temp_val = state->soundTable[i_idx] + state->ch[n].wavA;
-                    uint8_t sample_val;
-                    if (temp_val & 0x80) { // 如果第 7 位设置 (值 >= 128)
-                        sample_val = 63;
-                    } else {
-                        sample_val = temp_val & 0x3F; // 掩码为低 6 位 (0-63)
-                    }
 
-                    state->samp += sample_val; // 累加所有通道的样本值
-                    // 添加日志
-                    // printf("Scanline: %.2f, Ch%d: osc=0x%08X, key=0x%04X, wavX=0x%02X, wavA=0x%02X, i_idx=0x%02X, sample_val=0x%02X\n",
-                    //        state->scanlineCounter, n, state->ch[n].osc, state->ch[n].key, state->ch[n].wavX, state->ch[n].wavA, i_idx, sample_val);
+                    if (state->useCustomWaveTable) {
+                        // 自定义高精度波表路径
+                        uint16_t wave_val = state->customWaveTable[i_idx];
+                        // wavA 作为偏移量，缩放到当前位深
+                        int32_t scaled_wavA = (int32_t)state->ch[n].wavA * maxVal / 63;
+                        int32_t temp_val = (int32_t)wave_val + scaled_wavA;
+                        if (temp_val < 0) temp_val = 0;
+                        if (temp_val > (int32_t)maxVal) temp_val = maxVal;
+                        state->samp += temp_val;
+                    } else {
+                        // 原始 6-bit 波表路径
+                        int32_t temp_val = state->soundTable[i_idx] + state->ch[n].wavA;
+                        uint8_t sample_val;
+                        if (temp_val & 0x80) {
+                            sample_val = 63;
+                        } else {
+                            sample_val = temp_val & 0x3F;
+                        }
+                        state->samp += sample_val;
+                    }
                 }
             }
-            // printf("Scanline: %.2f, Final samp=0x%02X\n", state->scanlineCounter, state->samp);
 
             double processed_sample;
-            switch (state->audio_bit_depth) {
-                case 4:
-                    // 最高 4 位 (原始 Gigatron 硬件行为)
-                    processed_sample = (double)(state->samp & 0xF0);
-                    break;
-                case 6:
-                    // 高 6 位
-                    processed_sample = (double)(state->samp & 0xFC);
-                    break;
-                case 8:
-                    // 完整 8 位
-                    {
-                        int32_t v = state->samp;
-                        if (v > 255) v = 255;
-                        if (v < 0) v = 0;
-                        processed_sample = (double)v;
-                    }
-                    break;
-                case 12:
-                    // 12-bit 量化: 累加值范围 ~0-252, 线性映射到 12-bit
-                    {
-                        int32_t v = state->samp;
-                        if (v > 255) v = 255;
-                        if (v < 0) v = 0;
-                        processed_sample = (double)(v * 4095 / 255);
-                    }
-                    break;
-                case 16:
-                default:
-                    // 16-bit: 直接用累加值 (跳过量化，原始 128 中心缩放)
-                    processed_sample = (double)state->samp + 3.0; // +3 = 原始初始值补偿
-                    break;
+
+            if (state->useCustomWaveTable) {
+                // 自定义表：累加值范围更大，归一化到 0.0-1.0
+                int32_t accMax = (int32_t)maxVal * 4 + 3; // 4通道 + 初始值3
+                double normalized = (double)state->samp / (double)accMax;
+                if (normalized < 0.0) normalized = 0.0;
+                if (normalized > 1.0) normalized = 1.0;
+
+                switch (state->audio_bit_depth) {
+                    case 4:
+                        processed_sample = normalized * 15.0;
+                        break;
+                    case 6:
+                        processed_sample = normalized * 63.0;
+                        break;
+                    case 8:
+                        processed_sample = normalized * 255.0;
+                        break;
+                    case 12:
+                        processed_sample = normalized * 4095.0;
+                        break;
+                    case 16:
+                    default:
+                        // 16-bit: 直接归一化到 int16 范围
+                        {
+                            double pcm = (normalized - 0.5) * 2.0 * 32767.0 * state->volume_scale;
+                            if (pcm > 32767.0) pcm = 32767.0;
+                            if (pcm < -32768.0) pcm = -32768.0;
+                            state->samp = (int32_t)pcm;
+                            RC_VAL_SUB(&state->scanline_rc, 4);
+                            continue; // 跳过后面的通用 PCM 转换
+                        }
+                }
+            } else {
+                // 原始路径
+                switch (state->audio_bit_depth) {
+                    case 4:
+                        processed_sample = (double)(state->samp & 0xF0);
+                        break;
+                    case 6:
+                        processed_sample = (double)(state->samp & 0xFC);
+                        break;
+                    case 8:
+                        {
+                            int32_t v = state->samp;
+                            if (v > 255) v = 255;
+                            if (v < 0) v = 0;
+                            processed_sample = (double)v;
+                        }
+                        break;
+                    case 12:
+                        {
+                            int32_t v = state->samp;
+                            if (v > 255) v = 255;
+                            if (v < 0) v = 0;
+                            processed_sample = (double)(v * 4095 / 255);
+                        }
+                        break;
+                    case 16:
+                    default:
+                        processed_sample = (double)state->samp + 3.0;
+                        break;
+                }
             }
 
             if (state->dc_offset_removal_enabled) {
-                // 直流偏移移除滤波器
                 state->dc_bias = (state->dc_alpha * state->dc_bias) + ((1.0 - state->dc_alpha) * processed_sample);
                 processed_sample = processed_sample - state->dc_bias;
             }
 
             // 转换为 16 位有符号 PCM，应用音量缩放和防破音
             double pcm = (processed_sample - 128.0) * 256.0 * state->volume_scale;
-            // 防破音
             if (pcm > 32767.0) pcm = 32767.0;
             if (pcm < -32768.0) pcm = -32768.0;
             state->samp = (int32_t)pcm;
 
-            RC_VAL_SUB(&state->scanline_rc, 4); // 减少扫描线计数器
+            RC_VAL_SUB(&state->scanline_rc, 4);
         }
 
         // 将样本写入立体声缓冲区
@@ -282,11 +345,16 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
             for (int n = 0; n < 4; n++) {
                 uint8_t i_idx = (uint8_t)((state->ch[n].osc >> 7) & 0xfc);
                 i_idx ^= state->ch[n].wavX;
-                int32_t tv = state->soundTable[i_idx] + state->ch[n].wavA;
-                uint8_t sv;
-                if (tv & 0x80) sv = 63;
-                else sv = tv & 0x3F;
-                state->scope_buf[n][pos] = (int16_t)((sv - 32) * 1024);
+                if (state->useCustomWaveTable) {
+                    uint16_t sv = state->customWaveTable[i_idx];
+                    state->scope_buf[n][pos] = (int16_t)(((int32_t)sv - (int32_t)(maxVal / 2)) * (32767 / (maxVal > 0 ? maxVal : 1)));
+                } else {
+                    int32_t tv = state->soundTable[i_idx] + state->ch[n].wavA;
+                    uint8_t sv;
+                    if (tv & 0x80) sv = 63;
+                    else sv = tv & 0x3F;
+                    state->scope_buf[n][pos] = (int16_t)((sv - 32) * 1024);
+                }
             }
             state->scope_pos = (pos + 1) % GT_SCOPE_BUF_SIZE;
         }
