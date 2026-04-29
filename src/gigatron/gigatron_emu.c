@@ -218,17 +218,40 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
             }
             // printf("Scanline: %.2f, Final samp=0x%02X\n", state->scanlineCounter, state->samp);
 
-            uint8_t raw_sample_val; // 这将是 4 位或 8 位的原始样本
-            if (state->audio_bit_depth == 8) {
-                // 如果是 8 位，使用完整的累加样本 (0-252)
-                // 钳位到 0-255，因为最终样本是 8 位无符号
-                raw_sample_val = (uint8_t)(state->samp > 255 ? 255 : (state->samp < 0 ? 0 : state->samp));
-            } else { // 默认 4 位
-                // 根据 Audio.txt 使用最高 4 位
-                raw_sample_val = (uint8_t)(state->samp & 0xF0);
+            double processed_sample;
+            switch (state->audio_bit_depth) {
+                case 4:
+                    // 最高 4 位 (原始 Gigatron 硬件行为)
+                    processed_sample = (double)(state->samp & 0xF0);
+                    break;
+                case 6:
+                    // 高 6 位
+                    processed_sample = (double)(state->samp & 0xFC);
+                    break;
+                case 8:
+                    // 完整 8 位
+                    {
+                        int32_t v = state->samp;
+                        if (v > 255) v = 255;
+                        if (v < 0) v = 0;
+                        processed_sample = (double)v;
+                    }
+                    break;
+                case 12:
+                    // 12-bit 量化: 累加值范围 ~0-252, 线性映射到 12-bit
+                    {
+                        int32_t v = state->samp;
+                        if (v > 255) v = 255;
+                        if (v < 0) v = 0;
+                        processed_sample = (double)(v * 4095 / 255);
+                    }
+                    break;
+                case 16:
+                default:
+                    // 16-bit: 直接用累加值 (跳过量化，原始 128 中心缩放)
+                    processed_sample = (double)state->samp + 3.0; // +3 = 原始初始值补偿
+                    break;
             }
-
-            double processed_sample = (double)raw_sample_val;
 
             if (state->dc_offset_removal_enabled) {
                 // 直流偏移移除滤波器

@@ -1212,14 +1212,27 @@ static void RenderControls() {
         ImGui::SetTooltip("Output volume scale. 0.5 = default (matches original Tracker).\nHigher values may cause clipping.");
     }
 
-    // Bit depth
-    const char* bitDepthItems[] = { "4-bit", "8-bit" };
-    int bitDepthIdx = (s_audioBitDepth == 8) ? 1 : 0;
-    ImGui::SetNextItemWidth(100.0f);
-    if (ImGui::Combo("Bit Depth##gtbit", &bitDepthIdx, bitDepthItems, 2)) {
-        s_audioBitDepth = (bitDepthIdx == 1) ? 8 : 4;
+    // Bit depth (radio buttons)
+    ImGui::TextDisabled("Bit Depth:");
+    ImGui::SameLine();
+    int bd = s_audioBitDepth;
+    if (ImGui::RadioButton("4-bit##bd4", bd == 4)) { bd = 4; }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("6-bit##bd6", bd == 6)) { bd = 6; }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("8-bit##bd8", bd == 8)) { bd = 8; }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("12-bit##bd12", bd == 12)) { bd = 12; }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("16-bit##bd16", bd == 16)) { bd = 16; }
+    if (bd != s_audioBitDepth) {
+        s_audioBitDepth = bd;
         s_gtState.audio_bit_depth = (uint8_t)s_audioBitDepth;
         SaveConfig();
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("DAC quantization: 4-bit = original Gigatron hardware.\n"
+            "Higher = more dynamic range, less harsh quantization noise.");
     }
 
     // DC offset removal

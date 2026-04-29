@@ -129,7 +129,7 @@ typedef struct {
     uint8_t channelMask; // 通道掩码，用于控制哪些通道参与声音生成
 
     // 新增的音频处理选项
-    uint8_t audio_bit_depth; // 4 或 8
+    uint8_t audio_bit_depth; // 4, 6, 8, 12, 16
     bool dc_offset_removal_enabled;
     double dc_bias;
     double dc_alpha; // 用于 DC 移除滤波器
