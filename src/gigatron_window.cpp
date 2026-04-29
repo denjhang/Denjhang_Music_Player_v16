@@ -1212,19 +1212,22 @@ static void RenderControls() {
         ImGui::SetTooltip("Output volume scale. 0.5 = default (matches original Tracker).\nHigher values may cause clipping.");
     }
 
-    // Bit depth (radio buttons)
+    // Bit depth (radio buttons, wrapped to fit narrow sidebar)
     ImGui::TextDisabled("Bit Depth:");
-    ImGui::SameLine();
     int bd = s_audioBitDepth;
-    if (ImGui::RadioButton("4-bit##bd4", bd == 4)) { bd = 4; }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("6-bit##bd6", bd == 6)) { bd = 6; }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("8-bit##bd8", bd == 8)) { bd = 8; }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("12-bit##bd12", bd == 12)) { bd = 12; }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("16-bit##bd16", bd == 16)) { bd = 16; }
+    float avail = ImGui::GetContentRegionAvail().x;
+    ImVec2 labelSize = ImGui::CalcTextSize("16-bit", NULL, true);
+    float itemW = labelSize.x + ImGui::GetStyle().FramePadding.x * 2 + ImGui::GetStyle().ItemSpacing.x;
+    int cols = (int)(avail / itemW);
+    if (cols < 1) cols = 1;
+    int row = 0;
+    for (int i = 0; i < 5; i++) {
+        int bits[] = {4, 6, 8, 12, 16};
+        if (i > 0 && i % cols != 0) ImGui::SameLine();
+        if (ImGui::RadioButton(("##bd" + std::to_string(bits[i])).c_str(), bd == bits[i])) { bd = bits[i]; }
+        ImGui::SameLine(0, 2);
+        ImGui::TextDisabled("%d-bit", bits[i]);
+    }
     if (bd != s_audioBitDepth) {
         s_audioBitDepth = bd;
         s_gtState.audio_bit_depth = (uint8_t)s_audioBitDepth;
