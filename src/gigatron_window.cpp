@@ -1263,8 +1263,8 @@ static void RenderPianoArea() {
             uint16_t fnum_div8 = gc.key;
             int noteIdx = ReverseLookupFnum(fnum_div8);
             if (noteIdx >= 0 && noteIdx < (int)FNUM_TABLE_SIZE) {
-                // noteIdx 0 = C1 (MIDI 24), 95 = C9 (MIDI 120 - out of range)
-                int midiNote = 24 + noteIdx;
+                // noteIdx 0 = C1 (MIDI 12), 95 = C8 (MIDI 107)
+                int midiNote = 12 + noteIdx;
                 if (midiNote >= 0 && midiNote < 128) {
                     noteActive[midiNote] = true;
                     float level = (gc.wavA != 0) ? fabsf((float)gc.wavA) / 32.0f : 0.3f;
@@ -1581,7 +1581,7 @@ static void RenderStatusArea() {
     static const char* kWaveNames[] = {"Noise", "Triangle", "Pulse", "Sawtooth"};
 
     // Per-channel register table
-    if (ImGui::BeginTable("##gtreginfo", 7, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit)) {
+    if (ImGui::BeginTable("##gtreginfo", 7, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable)) {
         ImGui::TableSetupColumn("Ch",   ImGuiTableColumnFlags_WidthFixed, 32.f);
         ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthFixed, 36.f);
         ImGui::TableSetupColumn("Note", ImGuiTableColumnFlags_WidthFixed, 48.f);
