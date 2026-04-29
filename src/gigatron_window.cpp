@@ -132,9 +132,17 @@ static bool s_historyCollapsed = false;
 // Scope per-channel settings
 static float s_scopeWidth[4]  = {220.0f, 220.0f, 220.0f, 220.0f};
 static float s_scopeAmp[4]   = {1.0f, 1.0f, 1.0f, 1.0f};
-static float s_scopeOffset[4]= {0.0f, 0.0f, 0.0f, 0.0f};
-static bool s_scopeAcMode[4] = {false, false, false, false};
+
+// Scope global settings (shared across all 4 channels)
+static int s_scopeSamples = 512;
+static int s_scopeSearchWindow = 256;
+static bool s_scopeEdgeAlign = true;
+static int s_scopeAcMode = 1;   // 0=off, 1=center, 2=bottom (shared)
 static bool s_showScopeSettingsWindow = false;
+
+// Scope correlation state (per-channel persistent offset + previous frame buffer)
+static int s_scopePersistOffset[4] = {0, 0, 0, 0};
+static int16_t s_scopePrevBuf[4][4096];
 
 // Level meter peak decay state
 static float s_levelMeter[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -660,11 +668,11 @@ static void LoadConfig() {
         s_scopeWidth[i] = (float)GetPrivateProfileIntA("ScopeSettings", key, 220, s_configPath);
         snprintf(key, sizeof(key), "ScopeAmp%d", i);
         s_scopeAmp[i] = (float)GetPrivateProfileIntA("ScopeSettings", key, 10, s_configPath) / 10.0f;
-        snprintf(key, sizeof(key), "ScopeOffset%d", i);
-        s_scopeOffset[i] = (float)GetPrivateProfileIntA("ScopeSettings", key, 0, s_configPath) / 100.0f;
-        snprintf(key, sizeof(key), "ScopeAcMode%d", i);
-        s_scopeAcMode[i] = GetPrivateProfileIntA("ScopeSettings", key, 0, s_configPath) != 0;
     }
+    s_scopeSamples = GetPrivateProfileIntA("ScopeSettings", "Samples", 512, s_configPath);
+    s_scopeSearchWindow = GetPrivateProfileIntA("ScopeSettings", "SearchWindow", 256, s_configPath);
+    s_scopeEdgeAlign = GetPrivateProfileIntA("ScopeSettings", "EdgeAlign", 1, s_configPath) != 0;
+    s_scopeAcMode = GetPrivateProfileIntA("ScopeSettings", "ACMode", 1, s_configPath);
 
     // [GtFolderHistory]
     s_folderHistory.clear();
@@ -708,13 +716,15 @@ static void SaveConfig() {
         snprintf(key, sizeof(key), "ScopeAmp%d", i);
         WritePrivateProfileStringA("ScopeSettings", key,
             std::to_string((int)(s_scopeAmp[i] * 10)).c_str(), s_configPath);
-        snprintf(key, sizeof(key), "ScopeOffset%d", i);
-        WritePrivateProfileStringA("ScopeSettings", key,
-            std::to_string((int)(s_scopeOffset[i] * 100)).c_str(), s_configPath);
-        snprintf(key, sizeof(key), "ScopeAcMode%d", i);
-        WritePrivateProfileStringA("ScopeSettings", key,
-            s_scopeAcMode[i] ? "1" : "0", s_configPath);
     }
+    WritePrivateProfileStringA("ScopeSettings", "Samples",
+        std::to_string(s_scopeSamples).c_str(), s_configPath);
+    WritePrivateProfileStringA("ScopeSettings", "SearchWindow",
+        std::to_string(s_scopeSearchWindow).c_str(), s_configPath);
+    WritePrivateProfileStringA("ScopeSettings", "EdgeAlign",
+        s_scopeEdgeAlign ? "1" : "0", s_configPath);
+    WritePrivateProfileStringA("ScopeSettings", "ACMode",
+        std::to_string(s_scopeAcMode).c_str(), s_configPath);
 
     // Folder history
     // Clear existing entries first
@@ -1491,15 +1501,14 @@ static void RenderScopeArea() {
     float totalWidth = 0;
     for (int ch = 0; ch < 4; ch++) totalWidth += s_scopeWidth[ch];
     float gap = 4.0f;
-    totalWidth += 3.0f * gap; // gaps between channels
+    totalWidth += 3.0f * gap;
     float scale = (availW > totalWidth) ? 1.0f : availW / totalWidth;
 
-    float chColorsF[4][3] = {
-        {0.3f, 0.85f, 0.3f},   // Ch0: green
-        {0.3f, 0.55f, 1.0f},   // Ch1: blue
-        {1.0f, 0.3f, 0.3f},    // Ch2: red
-        {1.0f, 0.7f, 0.2f}     // Ch3: orange
-    };
+    int samples = s_scopeSamples;
+    int searchWin = s_scopeSearchWindow;
+    bool edgeAlign = s_scopeEdgeAlign;
+    int acMode = s_scopeAcMode;
+    int scopePos = s_gtState.scope_pos;
 
     float xOffset = 0;
     for (int ch = 0; ch < 4; ch++) {
@@ -1513,58 +1522,164 @@ static void RenderScopeArea() {
 
         // Background
         ImVec2 chPos(basePos.x + xOffset, basePos.y + 14);
-        dl->AddRectFilled(chPos, ImVec2(chPos.x + w, chPos.y + h - 14),
+        float waveH = h - 14;
+        dl->AddRectFilled(chPos, ImVec2(chPos.x + w, chPos.y + waveH),
             IM_COL32(10, 10, 15, 255));
 
         // Center line
-        float centerY = chPos.y + (h - 14) * 0.5f;
+        float centerY = chPos.y + waveH * 0.5f;
         dl->AddLine(ImVec2(chPos.x, centerY), ImVec2(chPos.x + w, centerY),
             IM_COL32(40, 40, 50, 255));
 
-        // Draw waveform from scope buffer
-        int scopePos = s_gtState.scope_pos;
-        int samplesToDraw = (int)w;
-        if (samplesToDraw > GT_SCOPE_BUF_SIZE) samplesToDraw = GT_SCOPE_BUF_SIZE;
+        // ===== Cross-correlation trigger =====
+        int drawStart = scopePos - samples;
+        if (searchWin > 0 && samples > 4) {
+            int best_offset = s_scopePersistOffset[ch];
 
-        // Compute AC mode offset if enabled
-        float acOffset = 0.0f;
-        if (s_scopeAcMode[ch] && samplesToDraw > 0) {
-            double sum = 0.0;
-            for (int i = 0; i < samplesToDraw; i++) {
-                int idx = ((scopePos - samplesToDraw + i) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
-                sum += (double)s_gtState.scope_buf[ch][idx];
+            // Clamp samples for correlation
+            int maxSamples = GT_SCOPE_BUF_SIZE - 64;
+            if (maxSamples < 4) maxSamples = 4;
+            if (samples > maxSamples) samples = maxSamples;
+
+            // Validate persistent offset
+            if (best_offset < 0 || best_offset >= GT_SCOPE_BUF_SIZE) {
+                best_offset = scopePos - samples;
             }
-            acOffset = (float)(sum / samplesToDraw);
+
+            static const int CORR_STEP = 4;
+            long maxCorr = -1;
+
+            int searchLo = best_offset - searchWin / 2;
+            int searchHi = best_offset + searchWin / 2;
+
+            // Bidirectional search from center outward
+            int ofsRight = best_offset;
+            int ofsLeft = best_offset - CORR_STEP;
+            bool rightDone = false, leftDone = false;
+
+            for (;;) {
+                if (!rightDone && ofsRight <= searchHi) {
+                    long corr = 0;
+                    for (int i = 0; i < samples; i += CORR_STEP) {
+                        int idx = ((ofsRight + i) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
+                        corr += (long)s_gtState.scope_buf[ch][idx] * (long)s_scopePrevBuf[ch][i];
+                    }
+                    if (corr > maxCorr) { maxCorr = corr; best_offset = ofsRight; }
+                    ofsRight += CORR_STEP;
+                } else rightDone = true;
+
+                if (!leftDone && ofsLeft >= searchLo) {
+                    long corr = 0;
+                    for (int i = 0; i < samples; i += CORR_STEP) {
+                        int idx = ((ofsLeft + i) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
+                        corr += (long)s_gtState.scope_buf[ch][idx] * (long)s_scopePrevBuf[ch][i];
+                    }
+                    if (corr > maxCorr) { maxCorr = corr; best_offset = ofsLeft; }
+                    ofsLeft -= CORR_STEP;
+                } else leftDone = true;
+
+                if (rightDone && leftDone) break;
+            }
+
+            // Edge-align refinement: snap to nearest rising edge
+            if (edgeAlign) {
+                int refineLo = best_offset - 32;
+                int refineHi = best_offset + 32;
+                int bestEdge = best_offset;
+                int bestDist = 999;
+                for (int pos = refineLo; pos <= refineHi; pos++) {
+                    int idxCur = ((pos) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
+                    int idxPrev = ((pos - 1) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
+                    int cur = s_gtState.scope_buf[ch][idxCur];
+                    int prev = s_gtState.scope_buf[ch][idxPrev];
+                    if (prev < 0 && cur >= 0) {
+                        int dist = (pos >= best_offset) ? (pos - best_offset) : (best_offset - pos);
+                        if (dist < bestDist) { bestDist = dist; bestEdge = pos; }
+                    }
+                }
+                best_offset = bestEdge;
+            }
+
+            s_scopePersistOffset[ch] = best_offset;
+            drawStart = best_offset;
         }
 
-        float ampScale = s_scopeAmp[ch] * (h - 14) * 0.4f / 32768.0f;
-        float offScale = s_scopeOffset[ch] * (h - 14) * 0.5f;
+        // ===== Read waveform into linear buffer =====
+        int16_t drawBuf[4096];
+        int drawSamples = samples;
+        if (drawSamples > 4096) drawSamples = 4096;
+        for (int i = 0; i < drawSamples; i++) {
+            int idx = ((drawStart + i) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
+            drawBuf[i] = s_gtState.scope_buf[ch][idx];
+        }
 
+        // ===== AC coupling =====
+        int16_t acBuf[4096];
+        const int16_t* drawSrc = drawBuf;
+        if (acMode >= 1) {
+            bool unipolar = true;
+            int minVal = 32767, maxVal = -32768;
+            for (int i = 0; i < drawSamples; i++) {
+                int16_t v = drawBuf[i];
+                if (v < minVal) minVal = v;
+                if (v > maxVal) maxVal = v;
+                if (v < -2) { unipolar = false; break; }
+            }
+            if (unipolar && (maxVal - minVal) > 4) {
+                if (acMode == 1) {
+                    // Center: subtract DC offset
+                    int dc = (minVal + maxVal) / 2;
+                    for (int i = 0; i < drawSamples; i++) {
+                        int v = (int)drawBuf[i] - dc;
+                        if (v > 32767) v = 32767;
+                        if (v < -32768) v = -32768;
+                        acBuf[i] = (int16_t)v;
+                    }
+                } else {
+                    // Bottom: map min..max to full range
+                    int range = maxVal - minVal;
+                    if (range < 1) range = 1;
+                    for (int i = 0; i < drawSamples; i++) {
+                        int v = (int)(drawBuf[i] - minVal) * 65535 / range - 32768;
+                        if (v > 32767) v = 32767;
+                        if (v < -32768) v = -32768;
+                        acBuf[i] = (int16_t)v;
+                    }
+                }
+                drawSrc = acBuf;
+            }
+        }
+
+        // ===== Draw waveform =====
+        float ampScale = s_scopeAmp[ch] * waveH * 0.4f / 32768.0f;
         ImU32 waveColor = kChColors[ch];
-        for (int i = 1; i < samplesToDraw; i++) {
-            int idx0 = ((scopePos - samplesToDraw + i - 1) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
-            int idx1 = ((scopePos - samplesToDraw + i) % GT_SCOPE_BUF_SIZE + GT_SCOPE_BUF_SIZE) % GT_SCOPE_BUF_SIZE;
+        for (int i = 1; i < drawSamples; i++) {
+            float val0 = (float)drawSrc[i - 1] * ampScale;
+            float val1 = (float)drawSrc[i] * ampScale;
 
-            float val0 = (float)s_gtState.scope_buf[ch][idx0] - acOffset;
-            float val1 = (float)s_gtState.scope_buf[ch][idx1] - acOffset;
+            float x0 = chPos.x + (float)(i - 1) / (float)drawSamples * w;
+            float x1 = chPos.x + (float)i / (float)drawSamples * w;
+            float y0 = centerY - val0;
+            float y1 = centerY - val1;
 
-            float y0 = centerY - val0 * ampScale + offScale;
-            float y1 = centerY - val1 * ampScale + offScale;
-
-            // Clamp
+            // Clamp to channel rect
             if (y0 < chPos.y) y0 = chPos.y;
-            if (y0 > chPos.y + h - 14) y0 = chPos.y + h - 14;
+            if (y0 > chPos.y + waveH) y0 = chPos.y + waveH;
             if (y1 < chPos.y) y1 = chPos.y;
-            if (y1 > chPos.y + h - 14) y1 = chPos.y + h - 14;
+            if (y1 > chPos.y + waveH) y1 = chPos.y + waveH;
 
-            dl->AddLine(
-                ImVec2(chPos.x + (float)(i - 1), y0),
-                ImVec2(chPos.x + (float)i, y1),
-                waveColor);
+            dl->AddLine(ImVec2(x0, y0), ImVec2(x1, y1), waveColor);
+        }
+
+        // Store for next frame correlation
+        int storeSamples = drawSamples;
+        if (storeSamples > 4096) storeSamples = 4096;
+        for (int i = 0; i < storeSamples; i++) {
+            s_scopePrevBuf[ch][i] = drawSrc[i];
         }
 
         // Border
-        dl->AddRect(chPos, ImVec2(chPos.x + w, chPos.y + h - 14),
+        dl->AddRect(chPos, ImVec2(chPos.x + w, chPos.y + waveH),
             IM_COL32(60, 60, 70, 255));
 
         xOffset += w + gap;
@@ -2251,7 +2366,7 @@ static void RenderLogPanel() {
 static void RenderScopeSettingsWindow() {
     if (!s_showScopeSettingsWindow) return;
 
-    ImGui::SetNextWindowSize(ImVec2(520, 420), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(540, 520), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("GT Scope Settings", &s_showScopeSettingsWindow)) {
         ImGui::End();
         return;
@@ -2259,13 +2374,89 @@ static void RenderScopeSettingsWindow() {
 
     ImGui::TextColored(ImVec4(0.6f, 0.9f, 1.0f, 1.0f), "Gigatron Scope Settings");
     ImGui::SameLine();
-    ImGui::TextDisabled("(4 channels)");
+    ImGui::TextDisabled("(4 channels shared)");
 
     ImGui::Spacing();
 
+    // ===== Global trigger / waveform settings =====
+    if (ImGui::BeginTable("##gtscopetrigger", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 130.f);
+        ImGui::TableSetupColumn("Control", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        // Samples
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Samples");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(220);
+        int maxSamples = GT_SCOPE_BUF_SIZE - s_scopeSearchWindow - 64;
+        if (maxSamples < 16) maxSamples = 16;
+        if (s_scopeSamples > maxSamples) s_scopeSamples = maxSamples;
+        if (ImGui::SliderInt("##gtsamples", &s_scopeSamples, 16, maxSamples, "%d")) {
+            SaveConfig();
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Number of waveform samples to display.");
+
+        // Search Window
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Search Window");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(220);
+        if (ImGui::SliderInt("##gtsearchwin", &s_scopeSearchWindow, 0, GT_SCOPE_BUF_SIZE / 2, "%d")) {
+            SaveConfig();
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Cross-correlation search range. 0 = disable correlation (raw buffer).");
+
+        // Edge Align
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Edge Align");
+        ImGui::TableSetColumnIndex(1);
+        if (ImGui::Checkbox("Enable##gtedgealign", &s_scopeEdgeAlign)) {
+            SaveConfig();
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Snap to nearest rising edge after correlation.\nStabilizes waveform display.");
+
+        // AC Mode (shared, radio-style)
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("AC Coupling");
+        ImGui::TableSetColumnIndex(1);
+        if (ImGui::RadioButton("Off##ac0", s_scopeAcMode == 0)) { s_scopeAcMode = 0; SaveConfig(); }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Center##ac1", s_scopeAcMode == 1)) { s_scopeAcMode = 1; SaveConfig(); }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Bottom##ac2", s_scopeAcMode == 2)) { s_scopeAcMode = 2; SaveConfig(); }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("AC coupling mode (applied to all 4 channels):\n"
+                "Off = raw waveform\nCenter = subtract DC (unipolar only)\n"
+                "Bottom = map min..max to full range (unipolar only)");
+        }
+
+        // Scope Height
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Scope Height");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(220);
+        if (ImGui::SliderFloat("##scopeh", &s_scopeHeight, 30.0f, 500.0f, "%.0f px")) {
+            SaveConfig();
+        }
+
+        // Show Scope
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Show Scope");
+        ImGui::TableSetColumnIndex(1);
+        if (ImGui::Checkbox("Enable##gtshowscope", &s_showScope)) {
+            SaveConfig();
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
     // ===== Per-channel settings =====
     if (ImGui::BeginTable("##gtscopesettings", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 110.f);
+        ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 130.f);
         ImGui::TableSetupColumn("Controls", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
 
@@ -2277,7 +2468,7 @@ static void RenderScopeSettingsWindow() {
             ImGui::TableSetColumnIndex(0);
             ImGui::TextColored(col, "Ch%d Width", ch);
             ImGui::TableSetColumnIndex(1);
-            ImGui::SetNextItemWidth(200);
+            ImGui::SetNextItemWidth(220);
             if (ImGui::SliderFloat(("##scopew" + std::to_string(ch)).c_str(),
                     &s_scopeWidth[ch], 40.0f, 600.0f, "%.0f px")) {
                 SaveConfig();
@@ -2288,42 +2479,13 @@ static void RenderScopeSettingsWindow() {
             ImGui::TableSetColumnIndex(0);
             ImGui::TextColored(col, "Ch%d Amplitude", ch);
             ImGui::TableSetColumnIndex(1);
-            ImGui::SetNextItemWidth(200);
+            ImGui::SetNextItemWidth(220);
             if (ImGui::SliderFloat(("##scopea" + std::to_string(ch)).c_str(),
                     &s_scopeAmp[ch], 0.1f, 10.0f, "%.1f")) {
                 SaveConfig();
             }
             if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Vertical amplitude multiplier. Higher = taller waveform.\nIncrease if waveform is too small to see.");
-            }
-
-            // Offset
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(col, "Ch%d Offset", ch);
-            ImGui::TableSetColumnIndex(1);
-            ImGui::SetNextItemWidth(200);
-            if (ImGui::SliderFloat(("##scopeo" + std::to_string(ch)).c_str(),
-                    &s_scopeOffset[ch], -2.0f, 2.0f, "%.2f")) {
-                SaveConfig();
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Vertical offset. Positive = shift up, Negative = shift down.");
-            }
-
-            // AC Mode
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(col, "Ch%d AC Mode", ch);
-            ImGui::TableSetColumnIndex(1);
-            int acMode = s_scopeAcMode[ch] ? 1 : 0;
-            if (ImGui::Combo(("##scopeac" + std::to_string(ch)).c_str(),
-                    &acMode, "Off\0Center\0")) {
-                s_scopeAcMode[ch] = (acMode != 0);
-                SaveConfig();
-            }
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("AC coupling: remove DC component from waveform.\nOff = raw, Center = subtract mean.");
+                ImGui::SetTooltip("Vertical amplitude multiplier. Higher = taller waveform.");
             }
 
             // Color
@@ -2349,47 +2511,20 @@ static void RenderScopeSettingsWindow() {
     }
 
     ImGui::Spacing();
-    ImGui::Separator();
 
-    // Global scope settings
-    if (ImGui::BeginTable("##gtscopeglobal", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 110.f);
-        ImGui::TableSetupColumn("Control", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
-
-        // Scope height
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Scope Height");
-        ImGui::TableSetColumnIndex(1);
-        ImGui::SetNextItemWidth(200);
-        if (ImGui::SliderFloat("##scopeh", &s_scopeHeight, 30.0f, 500.0f, "%.0f px")) {
-            SaveConfig();
-        }
-
-        // Scope background
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Show Scope");
-        ImGui::TableSetColumnIndex(1);
-        if (ImGui::Checkbox("Enable##gtshowscope", &s_showScope)) {
-            SaveConfig();
-        }
-
-        ImGui::EndTable();
-    }
-
-    ImGui::Spacing();
-
-    // Reset buttons
+    // Reset
     if (ImGui::Button("Reset All to Defaults##gtreset")) {
         for (int ch = 0; ch < 4; ch++) {
             s_scopeWidth[ch] = 220.0f;
             s_scopeAmp[ch] = 1.0f;
-            s_scopeOffset[ch] = 0.0f;
-            s_scopeAcMode[ch] = false;
+            s_scopePersistOffset[ch] = 0;
         }
+        s_scopeSamples = 512;
+        s_scopeSearchWindow = 256;
+        s_scopeEdgeAlign = true;
+        s_scopeAcMode = 1;
         s_scopeHeight = 200.0f;
         s_showScope = false;
-        // Reset colors
         kChColors[0] = IM_COL32(80, 220, 80, 255);
         kChColors[1] = IM_COL32(80, 140, 255, 255);
         kChColors[2] = IM_COL32(255, 80, 80, 255);
