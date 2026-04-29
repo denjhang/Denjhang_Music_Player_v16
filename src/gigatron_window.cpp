@@ -614,18 +614,20 @@ static std::vector<std::string> GetMusicFilesInDir(const std::string& path) {
 
 // ============ Reverse FNUM Lookup ============
 // FNUM_TABLE has 96 entries (8 octaves x 12 notes). note_index 0 = C1.
+// gc.key stores fnum * 4 (due to adrFnumH writing key *= 4).
+// Timeline writes fnum = FNUM_TABLE[note] / 8, so gc.key = FNUM_TABLE[note] / 8 * 4 = FNUM_TABLE[note] / 2.
 // Returns note_index (0-95) or -1 if not found.
-static int ReverseLookupFnum(uint16_t fnum_div8) {
+static int ReverseLookupFnum(uint16_t key_val) {
     for (int i = 0; i < (int)FNUM_TABLE_SIZE; i++) {
-        if (FNUM_TABLE[i] == 0) continue; // last entry is 0
-        if ((FNUM_TABLE[i] / 8) == fnum_div8) return i;
+        if (FNUM_TABLE[i] == 0) continue;
+        if ((FNUM_TABLE[i] / 2) == key_val) return i;
     }
     // Fallback: find closest match
     int best = -1;
     int bestDiff = 0xFFFF;
     for (int i = 0; i < (int)FNUM_TABLE_SIZE; i++) {
         if (FNUM_TABLE[i] == 0) continue;
-        int diff = abs((int)(FNUM_TABLE[i] / 8) - (int)fnum_div8);
+        int diff = abs((int)(FNUM_TABLE[i] / 2) - (int)key_val);
         if (diff < bestDiff) { bestDiff = diff; best = i; }
     }
     return best;
