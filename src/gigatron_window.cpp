@@ -136,6 +136,7 @@ static float s_scopeAmp[4]   = {1.0f, 1.0f, 1.0f, 1.0f};
 // Scope global settings (shared across all 4 channels)
 static int s_scopeSamples = 512;
 static int s_scopeSearchWindow = 256;
+static int s_scopeOffset = 0;
 static bool s_scopeEdgeAlign = true;
 static int s_scopeAcMode = 1;   // 0=off, 1=center, 2=bottom (shared)
 static bool s_showScopeSettingsWindow = false;
@@ -671,6 +672,7 @@ static void LoadConfig() {
     }
     s_scopeSamples = GetPrivateProfileIntA("ScopeSettings", "Samples", 512, s_configPath);
     s_scopeSearchWindow = GetPrivateProfileIntA("ScopeSettings", "SearchWindow", 256, s_configPath);
+    s_scopeOffset = GetPrivateProfileIntA("ScopeSettings", "Offset", 0, s_configPath);
     s_scopeEdgeAlign = GetPrivateProfileIntA("ScopeSettings", "EdgeAlign", 1, s_configPath) != 0;
     s_scopeAcMode = GetPrivateProfileIntA("ScopeSettings", "ACMode", 1, s_configPath);
 
@@ -721,6 +723,8 @@ static void SaveConfig() {
         std::to_string(s_scopeSamples).c_str(), s_configPath);
     WritePrivateProfileStringA("ScopeSettings", "SearchWindow",
         std::to_string(s_scopeSearchWindow).c_str(), s_configPath);
+    WritePrivateProfileStringA("ScopeSettings", "Offset",
+        std::to_string(s_scopeOffset).c_str(), s_configPath);
     WritePrivateProfileStringA("ScopeSettings", "EdgeAlign",
         s_scopeEdgeAlign ? "1" : "0", s_configPath);
     WritePrivateProfileStringA("ScopeSettings", "ACMode",
@@ -1274,7 +1278,7 @@ static void RenderPianoArea() {
             int noteIdx = ReverseLookupFnum(fnum_div8);
             if (noteIdx >= 0 && noteIdx < (int)FNUM_TABLE_SIZE) {
                 // noteIdx 0 = C1 (MIDI 12), 95 = C8 (MIDI 107)
-                int midiNote = 12 + noteIdx;
+                int midiNote = noteIdx;
                 if (midiNote >= 0 && midiNote < 128) {
                     noteActive[midiNote] = true;
                     float level = (gc.wavA != 0) ? fabsf((float)gc.wavA) / 32.0f : 0.3f;
@@ -1601,7 +1605,7 @@ static void RenderScopeArea() {
             }
 
             s_scopePersistOffset[ch] = best_offset;
-            drawStart = best_offset;
+            drawStart = best_offset + s_scopeOffset;
         }
 
         // ===== Read waveform into linear buffer =====
@@ -2397,6 +2401,16 @@ static void RenderScopeSettingsWindow() {
         }
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Number of waveform samples to display.");
 
+        // Offset
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Offset");
+        ImGui::TableSetColumnIndex(1);
+        ImGui::SetNextItemWidth(220);
+        if (ImGui::SliderInt("##gtoffset", &s_scopeOffset, 0, GT_SCOPE_BUF_SIZE - 1, "%d")) {
+            SaveConfig();
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Manual buffer read offset. Shifts the waveform position\nafter correlation. Use to fine-tune the displayed phase.");
+
         // Search Window
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0); ImGui::TextDisabled("Search Window");
@@ -2521,6 +2535,7 @@ static void RenderScopeSettingsWindow() {
         }
         s_scopeSamples = 512;
         s_scopeSearchWindow = 256;
+        s_scopeOffset = 0;
         s_scopeEdgeAlign = true;
         s_scopeAcMode = 1;
         s_scopeHeight = 200.0f;
