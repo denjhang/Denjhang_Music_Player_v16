@@ -67,6 +67,9 @@ static UINT32 s_vgmLoopSamples = 0;
 static int s_vgmLoopCount = 0;
 static int s_vgmMaxLoops = 2;  // max internal loop count (0=infinite)
 static bool s_isT6W28 = false; // VGM uses T6W28 (NeoGeoPocket) noise chip
+static int s_t6w28Mode = 0;    // 0=passthrough, 1=force sf2
+static uint16_t s_t6w28NoiseCh2Period = 0; // T6W28 noise chip 的独立 ch2 频率
+static int s_t6w28LastLatchReg = -1;       // 0x30 最后 latch 的寄存器号
 
 // GD3 tags
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
@@ -577,6 +580,9 @@ static bool LoadVGMFile(const char* path) {
     s_vgmTotalSamples = 0; s_vgmCurrentSamples = 0;
     s_vgmTrackEnded = false;
     s_isT6W28 = false;
+    s_t6w28Mode = 0;
+    s_t6w28NoiseCh2Period = 0;
+    s_t6w28LastLatchReg = -1;
 
     FILE* f = sn_fopen(path, "rb");
     if (!f) { DcLog("[VGM] Cannot open: %s\n", path); return false; }
@@ -684,13 +690,68 @@ static int VGMProcessCommand(void) {
             if (!s_isT6W28) break;
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
-            if (s_connected) { sn76489_write(data); safe_flush(); }
+            // 始终提取 shadow state（不管模式）
+            if (data & 0x80) {
+                // Latch byte: 更新 noise 芯片内部 latch 状态
+                int reg = (data >> 4) & 7;
+                s_t6w28LastLatchReg = reg;
+                int ch = reg >> 1;
+                if (ch == 3) {
+                    if (data & 0x10) {
+                        s_vol[3] = data & 0x0F;
+                    } else {
+                        s_noiseType = (data >> 2) & 1;
+                        uint8_t sf = data & 0x03;
+                        if (sf == 3) s_noiseUseCh2 = true;
+                        else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
+                    }
+                } else if (ch == 2 && !(data & 0x10)) {
+                    // ch2 tone latch: 低 4 位
+                    s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x3F0) | (data & 0x0F);
+                }
+            } else {
+                // Data byte: 根据 noise 芯片最后 latch 的寄存器处理
+                if (s_t6w28LastLatchReg == 4) {
+                    // ch2 tone data: 高 6 位
+                    s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x00F) | ((data & 0x3F) << 4);
+                }
+                // 其他寄存器的 data byte 忽略（ch0/1 tone 和 volume 不需要追踪）
+            }
+            if (!s_connected) return 0;
+            if (s_t6w28Mode == 0) {
+                sn76489_write(data); safe_flush();
+            } else {
+                // Force SF2: 只转发 ch3 噪音，跳过 ch0-2 方波
+                if ((data & 0x80)) {
+                    int ch = (data >> 5) & 3;
+                    if (ch == 3) {
+                        if (s_noiseUseCh2) {
+                            // T6W28 ch2 噪音模式: 把独立 ch2 频率映射到 shift 分频
+                            uint8_t sf = 1; // default
+                            if (s_t6w28NoiseCh2Period > 0) {
+                                // SN76489 NoiseFreq = 16 << sf
+                                // T6W28 ch2 tone freq = clock/(2*period)
+                                // 等效: period ≈ 16 << sf → sf0=16, sf1=32, sf2=64
+                                // 中点分界: 24 和 48
+                                if (s_t6w28NoiseCh2Period < 24) sf = 0;      // 高频→sf0(16)
+                                else if (s_t6w28NoiseCh2Period < 48) sf = 1;  // 中频→sf1(32)
+                                else sf = 2;                                  // 低频→sf2(64)
+                            }
+                            s_noiseFreq = sf;
+                            uint8_t nctrl = 0xE0 | (s_noiseType << 2) | sf;
+                            sn76489_write(nctrl); safe_flush();
+                        } else {
+                            sn76489_write(data); safe_flush();
+                        }
+                    }
+                    // ch 0-2: 跳过
+                }
+            }
             return 0;
         }
         case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
-            // Update shadow state
             bool tone2Updated = false;
             bool noiseCtrlUpdated = false;
             bool tone2VolUpdated = false;
@@ -1346,6 +1407,14 @@ static void RenderSidebar(void) {
         if (ImGui::RadioButton("16-bit Sega (x1.0625)##lfsr16", lw == 16)) { s_dcsgLfsrWidth = 16; }
         if (ImGui::RadioButton("17-bit (x1.1333)##lfsr17", lw == 17)) { s_dcsgLfsrWidth = 17; }
         ImGui::Unindent();
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
+    // T6W28 mode
+    if (s_isT6W28) {
+        if (ImGui::RadioButton("T6W28 Passthrough##t6w28pt", s_t6w28Mode == 0)) s_t6w28Mode = 0;
+        if (ImGui::RadioButton("T6W28 Force SF2##t6w28sf2", s_t6w28Mode == 1)) s_t6w28Mode = 1;
     }
 
     ImGui::Spacing(); ImGui::Separator();
