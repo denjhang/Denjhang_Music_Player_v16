@@ -59,18 +59,16 @@ static FILE* s_vgmFile = nullptr;
 static char s_vgmPath[MAX_PATH] = "";
 static bool s_vgmLoaded = false;
 static bool s_vgmPlaying = false;
+static HANDLE s_vgmThread = nullptr;
+static volatile bool s_vgmThreadRunning = false;
 static bool s_vgmPaused = false;
-static bool s_vgmTrackEnded = false;  // true when track finished naturally
-static UINT32 s_vgmSamplesRemaining = 0;
+static bool s_vgmTrackEnded = false;
 static UINT32 s_vgmTotalSamples = 0;
 static UINT32 s_vgmCurrentSamples = 0;
 static UINT32 s_vgmDataOffset = 0;
 static UINT32 s_vgmLoopOffset = 0;
 static UINT32 s_vgmLoopSamples = 0;
 static int s_vgmLoopCount = 0;
-static LARGE_INTEGER s_vgmWaitStart;
-static LARGE_INTEGER s_vgmPauseStart;
-static double s_vgmPauseAccum = 0.0;
 
 // GD3 tags
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
@@ -227,7 +225,6 @@ static FILE* sn_fopen(const char* path, const char* mode) {
 static void sn76489_write(uint8_t data) {
     ::spfm_write_data(0, data);
     ::spfm_hw_wait(3);
-    ::spfm_flush();
 }
 
 static void sn76489_set_tone(uint8_t ch, uint16_t period) {
@@ -241,8 +238,16 @@ static void sn76489_set_vol(uint8_t ch, uint8_t vol) {
 }
 
 static void sn76489_mute_all(void) {
-    sn76489_write(0x9F); sn76489_write(0xBF);
-    sn76489_write(0xDF); sn76489_write(0xFF);
+    // Tone channels: activate at max vol, reset period to 0, then mute
+    for (uint8_t ch = 0; ch < 3; ch++) {
+        sn76489_write(sn76489_vol_latch(ch, 0x0F));   // vol = max (activate)
+        sn76489_set_tone(ch, 0);                       // period = 0
+    }
+    sn76489_write(0x9F); sn76489_write(0xBF); sn76489_write(0xDF);  // mute
+    // Noise channel: activate at max vol, set safe params, then mute
+    sn76489_write(0xF0);              // noise vol = max (activate channel)
+    sn76489_write(sn76489_noise_latch(0, 0));  // ntype=0, shift_freq=0
+    sn76489_write(0xFF);              // noise vol = 0 (mute)
 }
 
 static void sn76489_set_noise(uint8_t ntype, uint8_t shift_freq) {
@@ -296,11 +301,15 @@ static void ConnectHardware(void) {
 }
 
 static void DisconnectHardware(void) {
-    if (!s_connected) return;
     if (s_testRunning) s_testRunning = false;
     if (s_vgmPlaying) s_vgmPlaying = false;
-    InitHardware(); spfm_cleanup();
-    s_connected = false; s_manualDisconnect = true;
+    if (s_connected) {
+        InitHardware();
+        spfm_flush();
+        Sleep(50);
+        spfm_cleanup();
+        s_connected = false; s_manualDisconnect = true;
+    }
     YM2163::g_manualDisconnect = false;
     DcLog("[SN] Hardware disconnected\n");
 }
@@ -613,10 +622,6 @@ static bool LoadVGMFile(const char* path) {
     s_vgmCurrentSamples = 0;
     s_vgmLoopCount = 0;
     s_vgmPaused = false;
-    s_vgmPauseAccum = 0.0;
-    s_vgmSamplesRemaining = 0;
-
-    // Update playlist index
     s_currentPlayingFilePath = path;
     for (int i = 0; i < (int)s_playlist.size(); i++) {
         if (s_playlist[i] == std::string(path)) { s_playlistIndex = i; break; }
@@ -680,7 +685,7 @@ static int VGMProcessCommand(void) {
     switch (cmd) {
         case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
-            if (s_connected) sn76489_write(data);
+            if (s_connected) { sn76489_write(data); spfm_flush(); }
             s_vgmCmdCount++;
             if (data & 0x80) {
                 int ch = (data >> 5) & 3;
@@ -731,27 +736,75 @@ static int VGMProcessCommand(void) {
     return 0;
 }
 
+static DWORD WINAPI VGMPlaybackThread(LPVOID) {
+    LARGE_INTEGER freq, last;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&last);
+    double samplesPerTick = 44100.0 / freq.QuadPart;
+    double samplesToProcess = 0.0;
+
+    while (s_vgmThreadRunning && s_vgmPlaying) {
+        if (s_vgmPaused) { Sleep(10); QueryPerformanceCounter(&last); continue; }
+
+        LARGE_INTEGER now; QueryPerformanceCounter(&now);
+        samplesToProcess += (now.QuadPart - last.QuadPart) * samplesPerTick;
+        last = now;
+
+        int run = (int)samplesToProcess;
+        if (run > 0) {
+            int processed = 0;
+            while (processed < run && s_vgmThreadRunning && s_vgmPlaying && !s_vgmPaused) {
+                int s = VGMProcessCommand();
+                if (s < 0) {
+                    s_vgmTrackEnded = true;
+                    break;
+                }
+                if (s > 0) processed += s;
+            }
+            samplesToProcess -= processed;
+            s_vgmCurrentSamples += processed;
+            spfm_flush();
+        }
+        Sleep(1);
+    }
+    spfm_flush();
+    s_vgmThreadRunning = false;
+    return 0;
+}
+
 static void StartVGMPlayback(void) {
     if (!s_vgmLoaded) return;
     DcLog("[VGM] StartPlayback: loaded=%d connected=%d dataOff=0x%X\n", s_vgmLoaded, s_connected, s_vgmDataOffset);
     StopTest();
+    // Ensure any previous playback thread is fully stopped before starting a new one
+    s_vgmPlaying = false;
+    s_vgmThreadRunning = false;
+    if (s_vgmThread) {
+        WaitForSingleObject(s_vgmThread, 2000);
+        CloseHandle(s_vgmThread);
+        s_vgmThread = nullptr;
+    }
     if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
     if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
     fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
-    DcLog("[VGM] Seeked to 0x%X, ftell=%ld\n", s_vgmDataOffset, ftell(s_vgmFile));
     if (s_connected) InitHardware();
     s_vgmPlaying = true; s_vgmPaused = false; s_vgmTrackEnded = false;
     s_vgmCmdCount = 0;
-    s_vgmCurrentSamples = 0; s_vgmSamplesRemaining = 0;
-    s_vgmLoopCount = 0; s_vgmPauseAccum = 0.0;
-    QueryPerformanceFrequency(&s_perfFreq);
-    QueryPerformanceCounter(&s_vgmWaitStart);
+    s_vgmCurrentSamples = 0;
+    s_vgmLoopCount = 0;
+    s_vgmThreadRunning = true;
+    s_vgmThread = CreateThread(NULL, 0, VGMPlaybackThread, NULL, 0, NULL);
     DcLog("[VGM] Playing\n");
 }
 
 static void StopVGMPlayback(void) {
-    if (!s_vgmPlaying) return;
     s_vgmPlaying = false; s_vgmPaused = false;
+    s_vgmThreadRunning = false;
+    if (s_vgmThread) {
+        WaitForSingleObject(s_vgmThread, 2000);
+        CloseHandle(s_vgmThread);
+        s_vgmThread = nullptr;
+    }
     if (s_connected) InitHardware();
     DcLog("[VGM] Stopped at %.1fs\n", (double)s_vgmCurrentSamples / 44100.0);
 }
@@ -759,14 +812,6 @@ static void StopVGMPlayback(void) {
 static void PauseVGMPlayback(void) {
     if (!s_vgmPlaying) return;
     s_vgmPaused = !s_vgmPaused;
-    if (s_vgmPaused) {
-        QueryPerformanceCounter(&s_vgmPauseStart);
-    } else {
-        LARGE_INTEGER now; QueryPerformanceCounter(&now);
-        s_vgmPauseAccum += (double)(now.QuadPart - s_vgmPauseStart.QuadPart) / s_perfFreq.QuadPart;
-        QueryPerformanceCounter(&s_vgmWaitStart);
-        s_vgmSamplesRemaining = 0;
-    }
 }
 
 static void OpenVGMFileDialog(void) {
@@ -788,7 +833,6 @@ static void SeekVGMToStart(void) {
     if (!s_vgmFile) return;
     fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
     s_vgmCurrentSamples = 0; s_vgmLoopCount = 0;
-    s_vgmSamplesRemaining = 0; s_vgmPauseAccum = 0.0;
     s_vgmTrackEnded = false;
 }
 
@@ -910,6 +954,13 @@ void Init() {
 }
 
 void Shutdown() {
+    s_vgmPlaying = false;
+    s_vgmThreadRunning = false;
+    if (s_vgmThread) {
+        WaitForSingleObject(s_vgmThread, 2000);
+        CloseHandle(s_vgmThread);
+        s_vgmThread = nullptr;
+    }
     SaveConfig();
     DisconnectHardware();
 }
@@ -927,38 +978,6 @@ void Update() {
             for (int i = 0; i < 4; i++) s_voiceCh[i] = slot->slot_base + i;
         } else {
             for (int i = 0; i < 4; i++) s_voiceCh[i] = -1;
-        }
-    }
-
-    // VGM playback
-    static int s_dbgUpdateCount = 0;
-    if (s_vgmPlaying && s_dbgUpdateCount < 5) {
-        DcLog("[VGM-DBG] Update() playing=%d paused=%d samplesRemain=%u ftell=%ld\n",
-            s_vgmPlaying, s_vgmPaused, s_vgmSamplesRemaining,
-            s_vgmFile ? ftell(s_vgmFile) : -1);
-        s_dbgUpdateCount++;
-    }
-    if (!s_vgmPlaying) s_dbgUpdateCount = 0;  // reset when stopped
-    if (s_vgmPlaying && !s_vgmPaused) {
-        if (s_vgmSamplesRemaining > 0) {
-            LARGE_INTEGER now; QueryPerformanceCounter(&now);
-            double elapsed = (double)(now.QuadPart - s_vgmWaitStart.QuadPart) / s_perfFreq.QuadPart * 1000.0;
-            double waitMs = (double)s_vgmSamplesRemaining / 44100.0 * 1000.0;
-            if (elapsed >= waitMs) s_vgmSamplesRemaining = 0;
-        }
-        while (s_vgmPlaying && !s_vgmPaused && s_vgmSamplesRemaining == 0) {
-            int samples = VGMProcessCommand();
-            if (samples < 0) {
-                s_vgmTrackEnded = true;
-                StopVGMPlayback();
-                if (s_autoPlayNext && !s_playlist.empty()) PlayPlaylistNext();
-                break;
-            }
-            if (samples > 0) {
-                s_vgmSamplesRemaining = samples;
-                s_vgmCurrentSamples += samples;
-                QueryPerformanceCounter(&s_vgmWaitStart);
-            }
         }
     }
 
@@ -1481,8 +1500,10 @@ static void RenderPlayerBar(void) {
             if (ImGui::IsItemActive()) {
                 // Dragging: keep slider value, don't seek yet
             } else if (ImGui::IsItemDeactivatedAfterEdit()) {
-                // Mouse released: perform the actual seek
                 UINT32 targetSample = (UINT32)(seek_progress * s_vgmTotalSamples);
+                // Stop thread temporarily for seek
+                s_vgmThreadRunning = false; s_vgmPlaying = false;
+                if (s_vgmThread) { WaitForSingleObject(s_vgmThread, 2000); CloseHandle(s_vgmThread); s_vgmThread = nullptr; }
                 if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
                 if (s_vgmFile) {
                     fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
@@ -1491,16 +1512,17 @@ static void RenderPlayerBar(void) {
                         int cmdSamples = VGMProcessCommand();
                         if (cmdSamples < 0) break;
                         if (cmdSamples > 0) {
-                            if (skipSamples + cmdSamples > targetSample) {
-                                s_vgmSamplesRemaining = skipSamples + cmdSamples - targetSample;
-                                QueryPerformanceCounter(&s_vgmWaitStart);
-                                skipSamples = targetSample;
-                            } else {
-                                skipSamples += cmdSamples;
-                            }
+                            skipSamples += cmdSamples;
+                            if (skipSamples > targetSample) skipSamples = targetSample;
                         }
                     }
                     s_vgmCurrentSamples = targetSample;
+                    if (s_connected) spfm_flush();
+                    // Restart playback
+                    s_vgmPlaying = true;
+                    s_vgmPaused = false;
+                    s_vgmThreadRunning = true;
+                    s_vgmThread = CreateThread(NULL, 0, VGMPlaybackThread, NULL, 0, NULL);
                 }
             } else {
                 // Idle: sync slider to current playback position
