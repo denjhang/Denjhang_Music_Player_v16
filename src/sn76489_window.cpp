@@ -41,11 +41,6 @@ static const char* kChNames[4] = { "Tone0", "Tone1", "Tone2", "Noise" };
 // ============ Connection State ============
 static bool s_connected = false;
 static bool s_manualDisconnect = false;
-static int s_connectRetries = 0;
-static const int MAX_RETRIES = 10;
-static const int CHECK_INTERVAL_MS = 2000;
-static LARGE_INTEGER s_lastCheckTime;
-static LARGE_INTEGER s_perfFreq;
 
 // ============ Test State ============
 static bool s_testRunning = false;
@@ -53,6 +48,7 @@ static int s_testType = 0;
 static int s_testStep = 0;
 static double s_testStepMs = 0.0;
 static LARGE_INTEGER s_testStartTime;
+static LARGE_INTEGER s_perfFreq;
 
 // ============ VGM Playback State ============
 static FILE* s_vgmFile = nullptr;
@@ -70,6 +66,7 @@ static UINT32 s_vgmLoopOffset = 0;
 static UINT32 s_vgmLoopSamples = 0;
 static int s_vgmLoopCount = 0;
 static int s_vgmMaxLoops = 2;  // max internal loop count (0=infinite)
+static bool s_isT6W28 = false; // VGM uses T6W28 (NeoGeoPocket) noise chip
 
 // GD3 tags
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
@@ -298,21 +295,6 @@ static void ResetState(void) {
 }
 
 // ============ Connection ============
-static bool CheckHardwarePresent(void) {
-    DWORD numDevs = 0;
-    return (FT_CreateDeviceInfoList(&numDevs) == FT_OK && numDevs > 0);
-}
-
-static bool CheckHardwareReady(void) {
-    DWORD numDevs = 0;
-    if (FT_CreateDeviceInfoList(&numDevs) != FT_OK || numDevs == 0) return false;
-    FT_DEVICE_LIST_INFO_NODE devInfo;
-    if (FT_GetDeviceInfoDetail(0, &devInfo.Flags, &devInfo.Type,
-        &devInfo.ID, &devInfo.LocId, devInfo.SerialNumber,
-        devInfo.Description, &devInfo.ftHandle) != FT_OK) return false;
-    return !(devInfo.Flags & 0x01);
-}
-
 static void ConnectHardware(void) {
     if (s_connected) return;
     StopTest();
@@ -341,23 +323,6 @@ static void DisconnectHardware(void) {
     }
     YM2163::g_manualDisconnect = false;
     DcLog("[SN] Hardware disconnected\n");
-}
-
-static void CheckAutoConnect(void) {
-    if (s_manualDisconnect || s_connected) return;
-    LARGE_INTEGER now;
-    QueryPerformanceCounter(&now);
-    double elapsed = (double)(now.QuadPart - s_lastCheckTime.QuadPart) / s_perfFreq.QuadPart * 1000.0;
-    if (elapsed < CHECK_INTERVAL_MS) return;
-    s_lastCheckTime = now;
-    if (!CheckHardwarePresent()) { s_connectRetries = 0; return; }
-    if (!CheckHardwareReady()) {
-        s_connectRetries++;
-        if (s_connectRetries >= MAX_RETRIES) s_connectRetries = 0;
-        return;
-    }
-    ConnectHardware();
-    s_connectRetries = s_connected ? 0 : (s_connectRetries + 1);
 }
 
 // ============ Config Persistence ============
@@ -611,6 +576,7 @@ static bool LoadVGMFile(const char* path) {
     s_trackName.clear(); s_gameName.clear(); s_systemName.clear(); s_artistName.clear();
     s_vgmTotalSamples = 0; s_vgmCurrentSamples = 0;
     s_vgmTrackEnded = false;
+    s_isT6W28 = false;
 
     FILE* f = sn_fopen(path, "rb");
     if (!f) { DcLog("[VGM] Cannot open: %s\n", path); return false; }
@@ -621,6 +587,8 @@ static bool LoadVGMFile(const char* path) {
     fseek(f, 0x08, SEEK_SET);
     s_vgmVersion = ReadLE32(f);
     UINT32 snClock = ReadLE32(f);
+    s_isT6W28 = (snClock & 0x80000000) != 0;
+    snClock &= ~0x80000000;
     fseek(f, 0x14, SEEK_SET);
     UINT32 gd3RelOff = ReadLE32(f);
     UINT32 gd3Off = gd3RelOff ? (gd3RelOff + 0x14) : 0;  // relative offset from 0x14
@@ -637,8 +605,8 @@ static bool LoadVGMFile(const char* path) {
     }
     s_vgmDataOffset = dataOff;
 
-    DcLog("[VGM] hdr: ver=0x%X dataAbs=0x%X loopAbs=0x%X gd3Abs=0x%X\n",
-        s_vgmVersion, s_vgmDataOffset, s_vgmLoopOffset, gd3Off);
+    DcLog("[VGM] hdr: ver=0x%X dataAbs=0x%X loopAbs=0x%X gd3Abs=0x%X T6W28=%d\n",
+        s_vgmVersion, s_vgmDataOffset, s_vgmLoopOffset, gd3Off, s_isT6W28);
 
     ParseGD3Tags(f, gd3Off);
 
@@ -712,9 +680,32 @@ static int VGMProcessCommand(void) {
 
     // Special commands with unique behavior
     switch (cmd) {
+        case 0x30: { // 2nd SN76489 write (T6W28 noise chip)
+            if (!s_isT6W28) break;
+            UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
+            s_vgmCmdCount++;
+            // 只处理噪音通道 (ch=3)，tone 数据忽略
+            if (data & 0x80) {
+                int ch = (data >> 5) & 3;
+                if (ch == 3) {
+                    if (data & 0x10) {
+                        s_vol[3] = data & 0x0F;
+                    } else {
+                        s_noiseType = (data >> 2) & 1;
+                        uint8_t sf = data & 0x03;
+                        if (sf == 3) s_noiseUseCh2 = true;
+                        else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
+                    }
+                    if (s_connected) { sn76489_write(data); safe_flush(); }
+                }
+            }
+            return 0;
+        }
         case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
+            // T6W28: skip ch=3 noise writes (handled by 0x30)
+            if (s_isT6W28 && (data & 0xC0) == 0xE0) return 0;
             // Update shadow state
             bool tone2Updated = false;
             bool noiseCtrlUpdated = false;
@@ -991,7 +982,6 @@ static void StartTest(int type) {
 // ============ Public API ============
 void Init() {
     QueryPerformanceFrequency(&s_perfFreq);
-    QueryPerformanceCounter(&s_lastCheckTime);
     s_scope.Init();
     LoadConfig();
     if (s_currentPath[0] != '\0') {
@@ -1030,10 +1020,7 @@ void Update() {
             }
         }
     }
-    CheckAutoConnect();
     UpdateChannelLevels();
-
-    // Auto-play next track when current finishes (thread must have exited first)
     if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
         s_vgmTrackEnded = false;
         if (s_autoPlayNext && !s_playlist.empty()) PlayPlaylistNext();
@@ -2054,7 +2041,7 @@ static void RenderMain(void) {
 
 void Render() {
     ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-    ImGui::Begin("SN76489(DCSG)");
+    bool visible = ImGui::Begin("SN76489(DCSG)");
     ImGui::BeginChild("SN_LeftPane", ImVec2(300, 0), true);
     RenderSidebar();
     ImGui::EndChild();
