@@ -40,7 +40,7 @@ static const char* kChNames[4] = { "Tone0", "Tone1", "Tone2", "Noise" };
 
 // ============ Connection State ============
 static bool s_connected = false;
-static bool s_connected2 = false; // 2nd SN76489 (slot 1, T6W28 noise chip)
+static bool s_connected2 = true; // 2nd SN76489 (slot 1, T6W28 noise chip)
 static bool s_manualDisconnect = false;
 
 // ============ Test State ============
@@ -68,7 +68,7 @@ static UINT32 s_vgmLoopSamples = 0;
 static int s_vgmLoopCount = 0;
 static int s_vgmMaxLoops = 2;  // max internal loop count (0=infinite)
 static bool s_isT6W28 = false; // VGM uses T6W28 (NeoGeoPocket) noise chip
-static int s_t6w28Mode = 0;    // 0=passthrough, 1=force sf2
+static int s_t6w28Mode = 2;    // 0=passthrough, 1=force sf2, 2=dual chip (default)
 static uint16_t s_t6w28NoiseCh2Period = 0; // T6W28 noise chip 的独立 ch2 频率
 static int s_t6w28LastLatchReg = -1;       // 0x30 最后 latch 的寄存器号
 
@@ -76,13 +76,21 @@ static int s_t6w28LastLatchReg = -1;       // 0x30 最后 latch 的寄存器号
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
 static UINT32 s_vgmVersion = 0;
 
-// ============ Channel State ============
+// ============ Channel State (slot 0 / main) ============
 static uint8_t s_vol[4] = {15, 15, 15, 15};
 static uint8_t s_noiseType = 0;
 static uint8_t s_noiseFreq = 0;
 static bool s_noiseUseCh2 = false;
 static int s_dcsgLfsrWidth = 16; // 15=TI, 16=Sega VDP, 17=extended
 static uint16_t s_fullPeriod[3] = {0, 0, 0};
+
+// ============ Channel State (slot 1 / 2nd SN76489) ============
+static uint8_t s2_vol[4] = {15, 15, 15, 15};
+static uint8_t s2_noiseType = 0;
+static uint8_t s2_noiseFreq = 0;
+static bool s2_noiseUseCh2 = false;
+static uint16_t s2_fullPeriod[3] = {0, 0, 0};
+static int s2_lastToneLatchCh = -1;
 
 // ============ Piano State ============
 static const int SN_PIANO_LOW = 24;
@@ -263,11 +271,16 @@ static void sn76489_mute_all(void) {
 }
 
 static void sn76489_mute_all2(void) {
-    sn76489_write2(0x9F); sn76489_write2(0xBF); sn76489_write2(0xDF);
-    sn76489_write2(0xF0);
-    sn76489_write2(sn76489_noise_latch(0, 0));
+    // 先激活所有通道再静音（和 sn76489_mute_all 一样）
+    sn76489_write2(0x8F); // ch0 vol=max (activate)
+    sn76489_write2(0x9F); // ch0 vol=0 (mute)
+    sn76489_write2(0xAF); // ch1 vol=max (activate)
+    sn76489_write2(0xBF); // ch1 vol=0 (mute)
+    sn76489_write2(0xCF); // ch2 vol=max (activate)
+    sn76489_write2(0xDF); // ch2 vol=0 (mute)
+    sn76489_write2(0xF0); // ch3 noise vol=max (activate)
     sn76489_write2(sn76489_noise_latch(1, 0)); // white noise, shift=0
-    sn76489_write2(0xFF);
+    sn76489_write2(0xFF); // ch3 noise vol=0 (mute)
 }
 
 static void sn76489_set_noise(uint8_t ntype, uint8_t shift_freq) {
@@ -597,6 +610,10 @@ static bool LoadVGMFile(const char* path) {
     s_isT6W28 = false;
     s_t6w28NoiseCh2Period = 0;
     s_t6w28LastLatchReg = -1;
+    s2_vol[0] = s2_vol[1] = s2_vol[2] = s2_vol[3] = 15;
+    s2_noiseType = 0; s2_noiseFreq = 0; s2_noiseUseCh2 = false;
+    s2_fullPeriod[0] = s2_fullPeriod[1] = s2_fullPeriod[2] = 0;
+    s2_lastToneLatchCh = -1;
 
     FILE* f = sn_fopen(path, "rb");
     if (!f) { DcLog("[VGM] Cannot open: %s\n", path); return false; }
@@ -712,24 +729,37 @@ static int VGMProcessCommand(void) {
                 int ch = reg >> 1;
                 if (ch == 3) {
                     if (data & 0x10) {
-                        s_vol[3] = data & 0x0F;
+                        s2_vol[3] = data & 0x0F;
                     } else {
-                        s_noiseType = (data >> 2) & 1;
+                        s2_noiseType = (data >> 2) & 1;
                         uint8_t sf = data & 0x03;
-                        if (sf == 3) s_noiseUseCh2 = true;
-                        else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
+                        if (sf == 3) s2_noiseUseCh2 = true;
+                        else { s2_noiseUseCh2 = false; s2_noiseFreq = sf; }
                     }
-                } else if (ch == 2 && !(data & 0x10)) {
-                    // ch2 tone latch: 低 4 位
-                    s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x3F0) | (data & 0x0F);
+                } else if (ch == 2) {
+                    if (data & 0x10) {
+                        s2_vol[2] = data & 0x0F;
+                    } else {
+                        s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x3F0) | (data & 0x0F);
+                        s2_fullPeriod[2] = (s2_fullPeriod[2] & 0x3F0) | (data & 0x0F);
+                        s2_lastToneLatchCh = 2;
+                    }
+                } else if (ch < 2) {
+                    if (data & 0x10) {
+                        s2_vol[ch] = data & 0x0F;
+                    } else {
+                        s2_fullPeriod[ch] = (s2_fullPeriod[ch] & 0x3F0) | (data & 0x0F);
+                        s2_lastToneLatchCh = ch;
+                    }
                 }
             } else {
-                // Data byte: 根据 noise 芯片最后 latch 的寄存器处理
+                // Data byte
                 if (s_t6w28LastLatchReg == 4) {
-                    // ch2 tone data: 高 6 位
                     s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x00F) | ((data & 0x3F) << 4);
+                    s2_fullPeriod[2] = (s2_fullPeriod[2] & 0x00F) | ((data & 0x3F) << 4);
+                } else if (s2_lastToneLatchCh >= 0 && s2_lastToneLatchCh < 3) {
+                    s2_fullPeriod[s2_lastToneLatchCh] = (s2_fullPeriod[s2_lastToneLatchCh] & 0x00F) | ((data & 0x3F) << 4);
                 }
-                // 其他寄存器的 data byte 忽略（ch0/1 tone 和 volume 不需要追踪）
             }
             if (!s_connected) return 0;
             if (s_t6w28Mode == 0) {
@@ -749,7 +779,7 @@ static int VGMProcessCommand(void) {
                                 sn76489_write2(0x9F); safe_flush();
                             } else {
                                 // ch2 tone: 只在噪音用 ch2 模式时传
-                                if (s_noiseUseCh2) {
+                                if (s2_noiseUseCh2) {
                                     sn76489_write2(data); safe_flush();
                                 }
                             }
@@ -766,7 +796,7 @@ static int VGMProcessCommand(void) {
                 if ((data & 0x80)) {
                     int ch = (data >> 5) & 3;
                     if (ch == 3) {
-                        if (s_noiseUseCh2) {
+                        if (s2_noiseUseCh2) {
                             uint8_t sf = 1;
                             if (s_t6w28NoiseCh2Period > 0) {
                                 if (s_t6w28NoiseCh2Period < 24) sf = 0;
@@ -774,7 +804,7 @@ static int VGMProcessCommand(void) {
                                 else sf = 2;
                             }
                             s_noiseFreq = sf;
-                            uint8_t nctrl = 0xE0 | (s_noiseType << 2) | sf;
+                            uint8_t nctrl = 0xE0 | (s2_noiseType << 2) | sf;
                             sn76489_write(nctrl); safe_flush();
                         } else {
                             sn76489_write(data); safe_flush();
@@ -1809,6 +1839,62 @@ static void RenderRegisterTable(void) {
     }
 }
 
+static void RenderRegisterTable2(void) {
+    ImGui::Spacing();
+    ImGui::TextColored(ImVec4(0.7f, 1.0f, 0.7f, 1.0f), "2nd SN76489 Registers (slot 1)");
+    ImGui::Separator();
+
+    if (ImGui::BeginTable("##sntoneregs2", 4,
+            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Ch", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+        ImGui::TableSetupColumn("Note", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Period", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Volume", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+        for (int ch = 0; ch < 3; ch++) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("Tone%d", ch);
+            ImGui::TableSetColumnIndex(1);
+            if (s2_fullPeriod[ch] > 0) {
+                int note = period_to_midi_note(s2_fullPeriod[ch]);
+                static const char* kNoteNames[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+                if (note >= 0 && note < 128) ImGui::Text("%s%d", kNoteNames[note % 12], note / 12 - 1);
+                else ImGui::Text("-");
+            } else {
+                ImGui::Text("-");
+            }
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%u", s2_fullPeriod[ch]);
+            ImGui::TableSetColumnIndex(3); ImGui::Text("%u%s", s2_vol[ch], s2_vol[ch] == 15 ? " [MUTE]" : "");
+        }
+        ImGui::EndTable();
+    }
+
+    ImGui::Spacing();
+
+    if (ImGui::BeginTable("##snnoiseregs2", 2,
+            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Item", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Type");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%s", s2_noiseType == 0 ? "Periodic" : "White");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Source");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%s", s2_noiseUseCh2 ? "Tone2 frequency" : "Shift register");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Shift Freq");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%d", s2_noiseFreq);
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Volume");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%u%s", s2_vol[3], s2_vol[3] == 15 ? " [MUTE]" : "");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Register");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("0x%02X", sn76489_noise_latch(s2_noiseType, s2_noiseUseCh2 ? 3 : s2_noiseFreq));
+        ImGui::EndTable();
+    }
+}
+
 static void RenderFileBrowser(void) {
     // CollapsingHeader with filter on title bar (VGM-style)
     ImGui::SetNextItemAllowOverlap();
@@ -2132,6 +2218,7 @@ static void RenderMain(void) {
 
     ImGui::BeginChild("SN_StatusArea", ImVec2(statusAreaWidth - 10, topSectionHeight), false);
     RenderRegisterTable();
+    RenderRegisterTable2();
     ImGui::EndChild();
 
     // Bottom section: Player + FileBrowser | Log+History (matching VGM layout)
