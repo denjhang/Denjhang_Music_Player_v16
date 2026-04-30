@@ -152,9 +152,8 @@ static float s_levelPeak[4]  = {0.0f, 0.0f, 0.0f, 0.0f};
 // Wave editor state
 static bool s_showWaveEditorWindow = false;
 static bool s_useCustomWaveTable = false;
-static int s_waveTableBits = 6;
 static int s_waveEditType = 0; // 0=Noise, 1=Triangle, 2=Pulse, 3=Sawtooth
-static uint16_t s_waveEditBuf[64]; // working copy for drawing (64 points per wave type)
+static uint8_t s_waveEditBuf[64]; // working copy for drawing (64 points per wave type)
 static bool s_waveEditBufDirty = false;
 static bool s_waveDrawing = false;
 
@@ -688,9 +687,7 @@ static void LoadConfig() {
 
     // Wave editor settings
     s_useCustomWaveTable = GetPrivateProfileIntA("WaveEditor", "UseCustom", 0, s_configPath) != 0;
-    s_waveTableBits = GetPrivateProfileIntA("WaveEditor", "Bits", 6, s_configPath);
-    if (s_waveTableBits != 6 && s_waveTableBits != 8 && s_waveTableBits != 12 && s_waveTableBits != 16)
-        s_waveTableBits = 6;
+    // Note: wave data is loaded in Init() after emulator state is created
 
     // [GtFolderHistory]
     s_folderHistory.clear();
@@ -749,8 +746,15 @@ static void SaveConfig() {
     // Wave editor settings
     WritePrivateProfileStringA("WaveEditor", "UseCustom",
         s_useCustomWaveTable ? "1" : "0", s_configPath);
-    WritePrivateProfileStringA("WaveEditor", "Bits",
-        std::to_string(s_waveTableBits).c_str(), s_configPath);
+    // Save 256 uint8 values as comma-separated string (max ~1280 chars)
+    {
+        char waveStr[1536] = "";
+        int pos = 0;
+        for (int i = 0; i < 256; i++) {
+            pos += snprintf(waveStr + pos, sizeof(waveStr) - pos, "%s%u", i ? "," : "", s_gtState.customWaveTable[i]);
+        }
+        WritePrivateProfileStringA("WaveEditor", "WaveData", waveStr, s_configPath);
+    }
 
     // Folder history
     // Clear existing entries first
@@ -2616,26 +2620,12 @@ static void RenderScopeSettingsWindow() {
 }
 
 // ============ Wave Editor Window ============
-static void SaveWaveTableFile() {
-    char wtabPath[MAX_PATH];
-    GetExeDir(wtabPath, MAX_PATH);
-    snprintf(wtabPath + strlen(wtabPath), MAX_PATH - strlen(wtabPath), "\\gigatron_custom_wave.wtab");
-    FILE* f = fopen(wtabPath, "wb");
-    if (f) {
-        fwrite(&s_gtState.waveTableBits, 1, 1, f);
-        fwrite(s_gtState.customWaveTable, sizeof(uint16_t), 256, f);
-        fclose(f);
-        GtLog("[GT] Custom wave table saved (bits=%d)\n", s_gtState.waveTableBits);
-    }
-}
-
 static void CopyWaveFromEditor() {
-    // Copy working buffer back to customWaveTable at current wave type
     for (int i = 0; i < 64; i++) {
         s_gtState.customWaveTable[i * 4 + s_waveEditType] = s_waveEditBuf[i];
     }
     s_waveEditBufDirty = false;
-    SaveWaveTableFile();
+    SaveConfig();
 }
 
 static void CopyWaveToEditor() {
@@ -2649,7 +2639,7 @@ static void CopyWaveToEditor() {
 static void RenderWaveEditorWindow() {
     if (!s_showWaveEditorWindow) return;
 
-    ImGui::SetNextWindowSize(ImVec2(520, 580), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(520, 480), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Gigatron Wave Editor##gtwaveedit", &s_showWaveEditorWindow)) {
         ImGui::End();
         return;
@@ -2661,45 +2651,15 @@ static void RenderWaveEditorWindow() {
         SaveConfig();
     }
     if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("When enabled, the emulator uses the custom high-precision wave table\n"
-                          "instead of the original 6-bit soundTable.");
+        ImGui::SetTooltip("Use custom wave table instead of original soundTable.\n"
+                          "Fixed 6-bit (0-63), same precision as Gigatron hardware.");
     }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // ===== Wave table bit depth =====
-    ImGui::TextDisabled("Wave Table Bit Depth:");
-    int bits[] = {6, 8, 12, 16};
-    const char* bitsLabels[] = {"6-bit", "8-bit", "12-bit", "16-bit"};
-    for (int i = 0; i < 4; i++) {
-        if (i > 0) ImGui::SameLine();
-        if (ImGui::RadioButton(bitsLabels[i], s_waveTableBits == bits[i])) {
-            s_waveTableBits = bits[i];
-            s_gtState.waveTableBits = (uint8_t)bits[i];
-            gigatron_emu_reset_custom_wave_table(&s_gtState, (uint8_t)bits[i]);
-            CopyWaveToEditor();
-            SaveWaveTableFile();
-            SaveConfig();
-            GtLog("[GT] Wave table bit depth changed to %d-bit\n", bits[i]);
-        }
-    }
-    if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Higher bit depth = more waveform precision = better audio quality.\n"
-                          "16-bit gives near-CD quality waveform data.");
-    }
-
-    // Show current max value
-    uint16_t maxVal = (s_waveTableBits == 6) ? 63 : (s_waveTableBits == 8) ? 255 :
-                      (s_waveTableBits == 12) ? 4095 : 65535;
-    ImGui::SameLine();
-    ImGui::TextDisabled("(max: %u)", maxVal);
 
     ImGui::Spacing();
     ImGui::Separator();
 
     // ===== Wave type selection =====
-    ImGui::TextDisabled("Edit Wave Type:");
+    ImGui::TextDisabled("Edit Wave Type (6-bit, 0-63):");
     const char* waveNames[] = {"Noise", "Triangle", "Pulse", "Sawtooth"};
     for (int i = 0; i < 4; i++) {
         if (i > 0) ImGui::SameLine();
@@ -2738,14 +2698,13 @@ static void RenderWaveEditorWindow() {
                      IM_COL32(50, 50, 60, 255));
     }
 
-    // Draw waveform
+    // Draw waveform (6-bit: value/63.0 maps to canvas Y)
     for (int i = 0; i < 64; i++) {
         float x1 = canvasPos.x + (float)i / 63.0f * canvasSize.x;
         float x2 = canvasPos.x + (float)(i + 1) / 63.0f * canvasSize.x;
-        float y1 = canvasPos.y + (1.0f - (float)s_waveEditBuf[i] / (float)maxVal) * canvasSize.y;
-        float y2 = canvasPos.y + (1.0f - (float)s_waveEditBuf[(i + 1) % 64] / (float)maxVal) * canvasSize.y;
+        float y1 = canvasPos.y + (1.0f - (float)s_waveEditBuf[i] / 63.0f) * canvasSize.y;
+        float y2 = canvasPos.y + (1.0f - (float)s_waveEditBuf[(i + 1) % 64] / 63.0f) * canvasSize.y;
         dl->AddLine(ImVec2(x1, y1), ImVec2(x2, y2), IM_COL32(0, 200, 255, 255), 2.0f);
-        // Dot at each point
         dl->AddCircleFilled(ImVec2(x1, y1), 3.0f, IM_COL32(255, 220, 80, 255));
     }
 
@@ -2754,10 +2713,7 @@ static void RenderWaveEditorWindow() {
     bool hovered = ImGui::IsItemHovered();
     if (hovered) {
         ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-
-        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            s_waveDrawing = true;
-        }
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) s_waveDrawing = true;
         if (s_waveDrawing && ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
             ImVec2 mousePos = ImGui::GetIO().MousePos;
             float relX = (mousePos.x - canvasPos.x) / canvasSize.x;
@@ -2766,8 +2722,8 @@ static void RenderWaveEditorWindow() {
                 int idx = (int)(relX * 63.0f + 0.5f);
                 if (idx < 0) idx = 0;
                 if (idx > 63) idx = 63;
-                uint16_t val = (uint16_t)((1.0f - relY) * maxVal + 0.5f);
-                if (val > maxVal) val = maxVal;
+                uint8_t val = (uint8_t)((1.0f - relY) * 63.0f + 0.5f);
+                if (val > 63) val = 63;
                 s_waveEditBuf[idx] = val;
                 s_waveEditBufDirty = true;
             }
@@ -2786,20 +2742,13 @@ static void RenderWaveEditorWindow() {
 
     ImGui::Spacing();
 
-    // ===== Value display =====
-    ImGui::TextDisabled("Current wave: %s | Bits: %d | Drag mouse to draw",
-                        waveNames[s_waveEditType], s_waveTableBits);
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
     // ===== Preset buttons =====
     ImGui::TextDisabled("Presets:");
     float btnW = 110.0f;
     if (ImGui::Button("Reset Default##gtpreset1", ImVec2(btnW, 0))) {
-        gigatron_emu_reset_custom_wave_table(&s_gtState, (uint8_t)s_waveTableBits);
+        gigatron_emu_reset_custom_wave_table(&s_gtState);
         CopyWaveToEditor();
-        SaveWaveTableFile();
+        SaveConfig();
     }
     ImGui::SameLine();
     if (ImGui::Button("Flat (Zero)##gtpreset2", ImVec2(btnW, 0))) {
@@ -2808,44 +2757,44 @@ static void RenderWaveEditorWindow() {
     }
     ImGui::SameLine();
     if (ImGui::Button("Full Level##gtpreset3", ImVec2(btnW, 0))) {
-        for (int i = 0; i < 64; i++) s_waveEditBuf[i] = maxVal;
+        for (int i = 0; i < 64; i++) s_waveEditBuf[i] = 63;
         CopyWaveFromEditor();
     }
     if (ImGui::Button("Sine Wave##gtpreset4", ImVec2(btnW, 0))) {
         for (int i = 0; i < 64; i++)
-            s_waveEditBuf[i] = (uint16_t)((sin((double)i / 64.0 * 2.0 * 3.14159265) * 0.5 + 0.5) * maxVal);
+            s_waveEditBuf[i] = (uint8_t)((sin((double)i / 64.0 * 2.0 * 3.14159265) * 0.5 + 0.5) * 63.0 + 0.5);
         CopyWaveFromEditor();
     }
     ImGui::SameLine();
     if (ImGui::Button("Square 50%##gtpreset5", ImVec2(btnW, 0))) {
         for (int i = 0; i < 64; i++)
-            s_waveEditBuf[i] = (i < 32) ? 0 : maxVal;
+            s_waveEditBuf[i] = (i < 32) ? 0 : 63;
         CopyWaveFromEditor();
     }
     ImGui::SameLine();
     if (ImGui::Button("Sawtooth##gtpreset6", ImVec2(btnW, 0))) {
         for (int i = 0; i < 64; i++)
-            s_waveEditBuf[i] = (uint16_t)((float)i / 63.0f * maxVal);
+            s_waveEditBuf[i] = (uint8_t)((double)i / 63.0 * 63.0 + 0.5);
         CopyWaveFromEditor();
     }
     if (ImGui::Button("Random##gtpreset7", ImVec2(btnW, 0))) {
         srand((unsigned int)GetTickCount());
         for (int i = 0; i < 64; i++)
-            s_waveEditBuf[i] = (uint16_t)(rand() % (maxVal + 1));
+            s_waveEditBuf[i] = (uint8_t)(rand() % 64);
         CopyWaveFromEditor();
     }
     ImGui::SameLine();
     if (ImGui::Button("Triangle##gtpreset8", ImVec2(btnW, 0))) {
         for (int i = 0; i < 32; i++)
-            s_waveEditBuf[i] = (uint16_t)((float)i / 31.0f * maxVal);
+            s_waveEditBuf[i] = (uint8_t)((double)i / 31.0 * 63.0 + 0.5);
         for (int i = 32; i < 64; i++)
-            s_waveEditBuf[i] = (uint16_t)((float)(63 - i) / 31.0f * maxVal);
+            s_waveEditBuf[i] = (uint8_t)((double)(63 - i) / 31.0 * 63.0 + 0.5);
         CopyWaveFromEditor();
     }
     ImGui::SameLine();
     if (ImGui::Button("Inverse Saw##gtpreset9", ImVec2(btnW, 0))) {
         for (int i = 0; i < 64; i++)
-            s_waveEditBuf[i] = (uint16_t)((1.0f - (float)i / 63.0f) * maxVal);
+            s_waveEditBuf[i] = (uint8_t)((1.0 - (double)i / 63.0) * 63.0 + 0.5);
         CopyWaveFromEditor();
     }
 
@@ -2857,11 +2806,10 @@ static void RenderWaveEditorWindow() {
             for (int i = 0; i < 64; i++)
                 s_gtState.customWaveTable[i * 4 + t] = s_waveEditBuf[i];
         }
-        SaveWaveTableFile();
-        GtLog("[GT] Current wave applied to all 4 types\n");
+        SaveConfig();
     }
     if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Copy the current wave shape to all 4 wave types (Noise/Tri/Pulse/Saw).");
+        ImGui::SetTooltip("Copy current wave shape to all 4 types.");
     }
 
     ImGui::End();
@@ -2882,24 +2830,28 @@ void Init() {
     s_gtState.dc_alpha = 0.99;
     s_gtState.volume_scale = s_volumeScale;
 
-    // Wave editor: load custom wave table from file or generate default
+    // Wave editor: load custom wave table from INI or copy from soundTable
     s_gtState.useCustomWaveTable = s_useCustomWaveTable;
-    s_gtState.waveTableBits = (uint8_t)s_waveTableBits;
-    char wtabPath[MAX_PATH];
-    GetExeDir(wtabPath, MAX_PATH);
-    snprintf(wtabPath + strlen(wtabPath), MAX_PATH - strlen(wtabPath), "\\gigatron_custom_wave.wtab");
-    FILE* f = fopen(wtabPath, "rb");
-    if (f) {
-        uint8_t fileBits;
-        if (fread(&fileBits, 1, 1, f) == 1 && (fileBits == 6 || fileBits == 8 || fileBits == 12 || fileBits == 16)) {
-            s_waveTableBits = fileBits;
-            s_gtState.waveTableBits = fileBits;
-            fread(s_gtState.customWaveTable, sizeof(uint16_t), 256, f);
+    {
+        char waveStr[1536] = "";
+        GetPrivateProfileStringA("WaveEditor", "WaveData", "", waveStr, sizeof(waveStr), s_configPath);
+        if (waveStr[0] != '\0') {
+            // Parse comma-separated values
+            int idx = 0;
+            char* tok = strtok(waveStr, ",");
+            while (tok && idx < 256) {
+                s_gtState.customWaveTable[idx++] = (uint8_t)atoi(tok);
+                tok = strtok(NULL, ",");
+            }
+            if (idx < 256) {
+                // Incomplete data, fill rest from soundTable
+                for (int i = idx; i < 256; i++)
+                    s_gtState.customWaveTable[i] = s_gtState.soundTable[i];
+            }
+            GtLog("[GT] Custom wave table loaded from INI (%d values)\n", idx);
+        } else {
+            gigatron_emu_reset_custom_wave_table(&s_gtState);
         }
-        fclose(f);
-        GtLog("[GT] Custom wave table loaded from file (bits=%d)\n", s_waveTableBits);
-    } else {
-        gigatron_emu_reset_custom_wave_table(&s_gtState, (uint8_t)s_waveTableBits);
     }
     // Initialize working buffer to current wave type
     for (int i = 0; i < 64; i++)

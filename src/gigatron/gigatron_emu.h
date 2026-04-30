@@ -123,9 +123,8 @@ typedef struct {
 typedef struct {
     GigatronChannel ch[4]; // 4个通道
     uint8_t soundTable[256]; // 原始 6-bit 波形数据表
-    uint16_t customWaveTable[256]; // 高精度自定义波形表
+    uint8_t customWaveTable[256]; // 自定义波形表 (6-bit, 0-63)
     bool useCustomWaveTable; // 使用自定义波形表开关
-    uint8_t waveTableBits; // 波表位深 (6/8/12/16)
     int32_t samp; // 当前累积的样本 (使用 int32_t 防止溢出)
     RATIO_CNTR scanline_rc; // 用于跟踪扫描线进度的比率计数器
     uint32_t audioSampleRate; // 音频输出采样率
@@ -147,9 +146,8 @@ typedef struct {
 // 初始化 Gigatron 仿真器
 void gigatron_emu_init(GigatronState *state);
 
-// 重置自定义波形表（生成指定位深的默认波形）
-// bits: 6, 8, 12, 16
-void gigatron_emu_reset_custom_wave_table(GigatronState *state, uint8_t bits);
+// 重置自定义波形表（从原始 soundTable 复制默认数据）
+void gigatron_emu_reset_custom_wave_table(GigatronState *state);
 
 // 写入 Gigatron 寄存器
 // adr: 寄存器地址 (包含通道信息)
