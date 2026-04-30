@@ -4,6 +4,7 @@
 #include "chip_control.h"
 #include "config_manager.h"
 #include "midi_player.h"
+#include "sn76489_window.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -274,6 +275,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             Config::SaveSlotConfigToINI();
             if (MidiPlayer::g_enableGlobalMediaKeys)
                 MidiPlayer::UnregisterGlobalMediaKeys();
+            SN76489Window::Shutdown();
             YM2163::DisconnectHardware();
             PostQuitMessage(0);
             return 0;

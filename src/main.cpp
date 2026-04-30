@@ -257,10 +257,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         Sleep(16);
     }
 
-    // Cleanup
+    // Cleanup (hardware disconnect already done in WM_DESTROY)
     VgmWindow::Shutdown();
     GigatronWindow::Shutdown();
-    SN76489Window::Shutdown();
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

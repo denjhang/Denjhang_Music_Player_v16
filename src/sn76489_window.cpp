@@ -69,6 +69,7 @@ static UINT32 s_vgmDataOffset = 0;
 static UINT32 s_vgmLoopOffset = 0;
 static UINT32 s_vgmLoopSamples = 0;
 static int s_vgmLoopCount = 0;
+static int s_vgmMaxLoops = 2;  // max internal loop count (0=infinite)
 
 // GD3 tags
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
@@ -79,6 +80,7 @@ static uint8_t s_vol[4] = {15, 15, 15, 15};
 static uint8_t s_noiseType = 0;
 static uint8_t s_noiseFreq = 0;
 static bool s_noiseUseCh2 = false;
+static int s_dcsgLfsrWidth = 16; // 15=TI, 16=Sega VDP, 17=extended
 static uint16_t s_fullPeriod[3] = {0, 0, 0};
 
 // ============ Piano State ============
@@ -254,6 +256,29 @@ static void sn76489_set_noise(uint8_t ntype, uint8_t shift_freq) {
     sn76489_write(sn76489_noise_latch(ntype, shift_freq));
 }
 
+// Periodic noise Ch2 frequency fix (MegaGRRL method)
+// When Periodic noise uses Ch2 freq on a Sega VDP DCSG (16-bit LFSR),
+// the freq must be scaled to match the different LFSR width.
+// Returns true if fix was applied and hardware was written.
+static bool ApplyPeriodicNoiseFix(void) {
+    if (s_dcsgLfsrWidth == 15) return false; // TI = no fix needed
+    if (s_noiseType != 0) return false;       // not periodic
+    if (!s_noiseUseCh2) return false;         // not using Ch2 freq
+    if (s_vol[2] != 15) return false;         // Ch2 not muted (optional strictness)
+
+    uint32_t freq = s_fullPeriod[2];
+    if (freq == 0) freq = 1;
+    if (s_dcsgLfsrWidth == 16) {
+        freq = freq * 10625 / 10000;  // +6.25%
+    } else if (s_dcsgLfsrWidth == 17) {
+        freq = freq * 11333 / 10000;  // +13.33%
+    }
+    if (freq > 1023) freq = 1023;
+    sn76489_set_tone(2, (uint16_t)freq);
+    spfm_flush();
+    return true;
+}
+
 static void InitHardware(void) {
     sn76489_mute_all();
     sn76489_set_noise(0, 0);
@@ -264,7 +289,7 @@ static void InitHardware(void) {
 static void ResetState(void) {
     s_testRunning = false; s_testType = 0; s_testStep = 0; s_testStepMs = 0.0;
     s_vol[0] = s_vol[1] = s_vol[2] = s_vol[3] = 15;
-    s_noiseType = 0; s_noiseFreq = 0; s_noiseUseCh2 = false;
+    s_noiseType = 0; s_noiseFreq = 0; s_noiseUseCh2 = false; s_dcsgLfsrWidth = 16;
     s_fullPeriod[0] = s_fullPeriod[1] = s_fullPeriod[2] = 0;
 }
 
@@ -685,17 +710,37 @@ static int VGMProcessCommand(void) {
     switch (cmd) {
         case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
-            if (s_connected) { sn76489_write(data); spfm_flush(); }
             s_vgmCmdCount++;
+            // Update shadow state
+            bool tone2Updated = false;
+            bool noiseCtrlUpdated = false;
+            bool tone2VolUpdated = false;
             if (data & 0x80) {
                 int ch = (data >> 5) & 3;
                 if (data & 0x10) {
-                    if (ch < 4) s_vol[ch] = data & 0x0F;
+                    if (ch < 4) { s_vol[ch] = data & 0x0F; if (ch == 2) tone2VolUpdated = true; }
+                } else if (ch == 3) {
+                    s_noiseType = (data >> 2) & 1;
+                    uint8_t sf = data & 0x03;
+                    if (sf == 3) { s_noiseUseCh2 = true; }
+                    else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
+                    noiseCtrlUpdated = true;
                 } else {
-                    if (ch < 3) { s_fullPeriod[ch] = (s_fullPeriod[ch] & 0x3F0) | (data & 0x0F); s_lastToneLatchCh = ch; }
+                    if (ch < 3) { s_fullPeriod[ch] = (s_fullPeriod[ch] & 0x3F0) | (data & 0x0F); s_lastToneLatchCh = ch; if (ch == 2) tone2Updated = true; }
                 }
             } else {
-                if (s_lastToneLatchCh < 3) s_fullPeriod[s_lastToneLatchCh] = (s_fullPeriod[s_lastToneLatchCh] & 0x0F) | ((data & 0x3F) << 4);
+                if (s_lastToneLatchCh < 3) { s_fullPeriod[s_lastToneLatchCh] = (s_fullPeriod[s_lastToneLatchCh] & 0x0F) | ((data & 0x3F) << 4); if (s_lastToneLatchCh == 2) tone2Updated = true; }
+            }
+            // Hardware write
+            if (s_connected) {
+                if (tone2Updated && ApplyPeriodicNoiseFix()) {
+                    // Fix already wrote corrected Tone2 freq, skip original write
+                } else {
+                    sn76489_write(data);
+                    spfm_flush();
+                    // After noise ctrl or tone2 vol update, re-apply fix
+                    if ((noiseCtrlUpdated || tone2VolUpdated) && ApplyPeriodicNoiseFix()) {}
+                }
             }
             return 0;
         }
@@ -711,7 +756,7 @@ static int VGMProcessCommand(void) {
         case 0x7C: case 0x7D: case 0x7E: case 0x7F: // Short wait (libvgm: Cmd_DelaySamplesN1)
             return (cmd & 0x0F) + 1;
         case 0x66: { // End of data (libvgm: Cmd_EndOfData)
-            if (s_vgmLoopOffset > 0) {
+            if (s_vgmLoopOffset > 0 && (s_vgmMaxLoops == 0 || s_vgmLoopCount < s_vgmMaxLoops)) {
                 fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
                 s_vgmLoopCount++;
                 return 0;
@@ -968,6 +1013,12 @@ void Shutdown() {
 void Update() {
     CheckAutoConnect();
     UpdateChannelLevels();
+
+    // Auto-play next track when current finishes (thread must have exited first)
+    if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
+        s_vgmTrackEnded = false;
+        if (s_autoPlayNext && !s_playlist.empty()) PlayPlaylistNext();
+    }
 
     // Update scope voice channel offsets (check periodically)
     static int scopeCheckCounter = 0;
@@ -1292,6 +1343,23 @@ static void RenderSidebar(void) {
 
     ImGui::Spacing(); ImGui::Separator();
 
+    // Periodic noise Ch2 frequency fix (MegaGRRL method)
+    bool fixEnabled = s_dcsgLfsrWidth != 15;
+    if (ImGui::Checkbox("Periodic Noise Fix##pnfix", &fixEnabled)) {
+        s_dcsgLfsrWidth = fixEnabled ? 16 : 15;
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Scale Tone2 freq for LFSR width difference\nwhen Periodic+Ch2 noise is active");
+    if (fixEnabled) {
+        ImGui::Indent();
+        int lw = s_dcsgLfsrWidth;
+        if (ImGui::RadioButton("15-bit TI (no fix)##lfsr15", lw == 15)) { s_dcsgLfsrWidth = 15; }
+        if (ImGui::RadioButton("16-bit Sega (x1.0625)##lfsr16", lw == 16)) { s_dcsgLfsrWidth = 16; }
+        if (ImGui::RadioButton("17-bit (x1.1333)##lfsr17", lw == 17)) { s_dcsgLfsrWidth = 17; }
+        ImGui::Unindent();
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
     // Test popup button
     if (s_testRunning) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
@@ -1299,6 +1367,18 @@ static void RenderSidebar(void) {
         ImGui::PopStyleColor();
     } else {
         if (ImGui::Button("Debug Test##sntestbtn", ImVec2(-1, 0))) s_showTestPopup = true;
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
+    // Loop settings
+    ImGui::TextDisabled("VGM Loop Count");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Max internal loop repetitions\n0 = infinite loop");
+    ImGui::SameLine();
+    int maxL = s_vgmMaxLoops;
+    if (ImGui::InputInt("##maxloops", &maxL, 1, 5)) {
+        if (maxL < 0) maxL = 0;
+        s_vgmMaxLoops = maxL;
     }
 
     ImGui::Spacing(); ImGui::Separator();
@@ -1327,7 +1407,7 @@ static void RenderSidebar(void) {
             if (s_vgmLoopSamples > 0) {
                 ImGui::TextDisabled("Loop: Yes");
                 ImGui::SameLine();
-                ImGui::TextDisabled("(%d loops)", s_vgmLoopCount);
+                ImGui::TextDisabled("(%d / %s)", s_vgmLoopCount, s_vgmMaxLoops == 0 ? "inf" : std::to_string(s_vgmMaxLoops).c_str());
             } else {
                 ImGui::TextDisabled("Loop: No");
             }
@@ -1559,34 +1639,55 @@ static void RenderRegisterTable(void) {
     ImGui::TextColored(ImVec4(0.7f, 0.8f, 1.0f, 1.0f), "SN76489 Registers");
     ImGui::Separator();
 
-    if (ImGui::BeginTable("##sn76489regs", 4,
-            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("Ch", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-        ImGui::TableSetupColumn("Info", ImGuiTableColumnFlags_WidthStretch);
+    // Tone channels: one row per channel
+    if (ImGui::BeginTable("##sntoneregs", 4,
+            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Ch", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+        ImGui::TableSetupColumn("Note", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Period", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Volume", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
         for (int ch = 0; ch < 3; ch++) {
             ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0); ImGui::Text("%d", ch);
-            ImGui::TableSetColumnIndex(1); ImGui::Text("Tone%d", ch);
-            ImGui::TableSetColumnIndex(2); ImGui::Text("0x%03X (%u)", s_fullPeriod[ch], s_fullPeriod[ch]);
-            ImGui::TableSetColumnIndex(3);
-            double freq = (s_fullPeriod[ch] > 0) ? SN76489_CLOCK_NTSC / (32.0 * s_fullPeriod[ch]) : 0.0;
-            ImGui::Text("%.1f Hz", freq);
+            ImGui::TableSetColumnIndex(0); ImGui::Text("Tone%d", ch);
+            ImGui::TableSetColumnIndex(1);
+            if (s_fullPeriod[ch] > 0) {
+                int note = period_to_midi_note(s_fullPeriod[ch]);
+                static const char* kNoteNames[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+                if (note >= 0 && note < 128) ImGui::Text("%s%d", kNoteNames[note % 12], note / 12 - 1);
+                else ImGui::Text("-");
+            } else {
+                ImGui::Text("-");
+            }
+            ImGui::TableSetColumnIndex(2); ImGui::Text("%u", s_fullPeriod[ch]);
+            ImGui::TableSetColumnIndex(3); ImGui::Text("%u%s", s_vol[ch], s_vol[ch] == 15 ? " [MUTE]" : "");
         }
-        for (int ch = 0; ch < 4; ch++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0); ImGui::Text("%d", ch);
-            ImGui::TableSetColumnIndex(1); ImGui::Text("%s Vol", kChNames[ch]);
-            ImGui::TableSetColumnIndex(2); ImGui::Text("%u (0x%X)", s_vol[ch], s_vol[ch]);
-            ImGui::TableSetColumnIndex(3); ImGui::Text("%s", s_vol[ch] == 15 ? "[MUTE]" : "");
-        }
+        ImGui::EndTable();
+    }
+
+    ImGui::Spacing();
+
+    // Noise channel: separate detailed table
+    if (ImGui::BeginTable("##snnoiseregs", 2,
+            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Item", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
         ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0); ImGui::Text("3");
-        ImGui::TableSetColumnIndex(1); ImGui::Text("Noise");
-        ImGui::TableSetColumnIndex(2); ImGui::Text("0x%02X", sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
-        ImGui::TableSetColumnIndex(3); ImGui::Text("%s %s", s_noiseType == 0 ? "Periodic" : "White", s_noiseUseCh2 ? "(Ch2)" : "");
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Type");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%s", s_noiseType == 0 ? "Periodic" : "White");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Source");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%s", s_noiseUseCh2 ? "Tone2 frequency" : "Shift register");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Shift Freq");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%d", s_noiseFreq);
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Volume");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("%u%s", s_vol[3], s_vol[3] == 15 ? " [MUTE]" : "");
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0); ImGui::Text("Register");
+        ImGui::TableSetColumnIndex(1); ImGui::Text("0x%02X", sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
         ImGui::EndTable();
     }
 }
