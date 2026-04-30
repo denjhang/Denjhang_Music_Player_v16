@@ -3,6 +3,7 @@
 //   Tab: YM2163 (DSG) - YM2163Window module
 //   Tab: YMF262 (OPL3) - OPL3Window module
 //   Tab: libvgm simulation player - VgmWindow module
+//   Tab: SN76489 (DCSG) - SN76489Window module (FTDI/SPFM hardware)
 
 #include <windows.h>
 #include <d3d11.h>
@@ -17,6 +18,7 @@
 #include "chip_window_ym2163.h"
 #include "opl3_window.h"
 #include "gigatron_window.h"
+#include "sn76489_window.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
@@ -143,6 +145,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     YM2163::ConnectHardware();
     GigatronWindow::Init();
+    SN76489Window::Init();
     if (MidiPlayer::g_enableGlobalMediaKeys)
         MidiPlayer::RegisterGlobalMediaKeys();
 
@@ -177,6 +180,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         YM2163Window::Update();
         OPL3Window::Update();
         GigatronWindow::Update();
+        SN76489Window::Update();
         // VgmWindow handles its own updates internally (via RenderInline)
         // But we still need to run MIDI playback updates
         MidiPlayer::UpdateMIDIPlayback();
@@ -218,6 +222,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             ImGui::DockBuilderDockWindow("YMF262(OPL3)", dockSpaceID);
             ImGui::DockBuilderDockWindow("libvgm", dockSpaceID);
             ImGui::DockBuilderDockWindow("Gigatron", dockSpaceID);
+            ImGui::DockBuilderDockWindow("SN76489(DCSG)", dockSpaceID);
             ImGui::DockBuilderFinish(dockSpaceID);
         }
 
@@ -228,6 +233,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         OPL3Window::Render();
         VgmWindow::RenderTab();
         GigatronWindow::Render();
+        SN76489Window::Render();
 
         // Update keyboard capture state from active window
         MidiPlayer::g_isInputActive = YM2163Window::WantsKeyboardCapture();
@@ -254,6 +260,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Cleanup
     VgmWindow::Shutdown();
     GigatronWindow::Shutdown();
+    SN76489Window::Shutdown();
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

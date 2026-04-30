@@ -117,4 +117,8 @@ bool WantsKeyboardCapture() {
     return ImGui::IsAnyItemActive();
 }
 
+bool IsVisible() {
+    return s_wasVisible;
+}
+
 }  // namespace YM2163Window

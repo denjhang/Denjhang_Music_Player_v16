@@ -11,5 +11,6 @@ void Shutdown();
 void Update();
 void Render();  // Manages own ImGui::Begin/End, title: "YM2163(DSG)"
 bool WantsKeyboardCapture();
+bool IsVisible();
 
 }  // namespace YM2163Window

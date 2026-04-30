@@ -2,6 +2,7 @@
 // Handles FTDI communication, YM2163 chip initialization, note control, and drum control
 
 #include "chip_control.h"
+#include "chip_window_ym2163.h"
 #include "gui_renderer.h"  // For piano key state
 #include <stdio.h>
 #include <stdarg.h>
@@ -198,6 +199,7 @@ void DisconnectHardware() {
 void CheckHardwareAutoConnect() {
     if (g_manualDisconnect) return;
     if (g_hardwareConnected) return;
+    if (!YM2163Window::IsVisible()) return;
 
     auto now = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - g_lastHardwareCheck);
