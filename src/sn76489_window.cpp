@@ -262,7 +262,7 @@ static void sn76489_set_noise(uint8_t ntype, uint8_t shift_freq) {
 // the freq must be scaled to match the different LFSR width.
 // Returns true if fix was applied and hardware was written.
 static bool ApplyPeriodicNoiseFix(void) {
-    if (s_dcsgLfsrWidth == 15) return false; // TI = no fix needed
+    if (s_dcsgLfsrWidth == 15) return false;  // TI = no fix needed
     if (s_noiseType != 0) return false;       // not periodic
     if (!s_noiseUseCh2) return false;         // not using Ch2 freq
     if (s_vol[2] != 15) return false;         // Ch2 not muted (optional strictness)
@@ -684,28 +684,12 @@ static int VGMProcessCommand(void) {
             if (!s_isT6W28) break;
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
-            // 只处理噪音通道 (ch=3)，tone 数据忽略
-            if (data & 0x80) {
-                int ch = (data >> 5) & 3;
-                if (ch == 3) {
-                    if (data & 0x10) {
-                        s_vol[3] = data & 0x0F;
-                    } else {
-                        s_noiseType = (data >> 2) & 1;
-                        uint8_t sf = data & 0x03;
-                        if (sf == 3) s_noiseUseCh2 = true;
-                        else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
-                    }
-                    if (s_connected) { sn76489_write(data); safe_flush(); }
-                }
-            }
+            if (s_connected) { sn76489_write(data); safe_flush(); }
             return 0;
         }
         case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
             UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
-            // T6W28: skip ch=3 noise writes (handled by 0x30)
-            if (s_isT6W28 && (data & 0xC0) == 0xE0) return 0;
             // Update shadow state
             bool tone2Updated = false;
             bool noiseCtrlUpdated = false;
