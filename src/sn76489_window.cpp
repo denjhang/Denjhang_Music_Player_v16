@@ -736,11 +736,25 @@ static int VGMProcessCommand(void) {
                 // Passthrough: 全部转发到 slot0
                 sn76489_write(data); safe_flush();
             } else if (s_t6w28Mode == 2) {
-                // Dual Chip: slot1 直通 0x30 但屏蔽 ch0-2 方波
+                // Dual Chip: slot1 按需转发 0x30
                 if (s_connected2) {
                     if ((data & 0x80)) {
                         int ch = (data >> 5) & 3;
-                        if (ch != 0 && ch != 1 && ch != 2) {
+                        bool isVol = (data & 0x10) != 0;
+                        if (ch == 0 || ch == 1) {
+                            // ch0/1 方波: 始终屏蔽
+                        } else if (ch == 2) {
+                            if (isVol) {
+                                // ch2 音量: 静音 (写 0xF)
+                                sn76489_write2(0x9F); safe_flush();
+                            } else {
+                                // ch2 tone: 只在噪音用 ch2 模式时传
+                                if (s_noiseUseCh2) {
+                                    sn76489_write2(data); safe_flush();
+                                }
+                            }
+                        } else {
+                            // ch3 噪音: 始终传
                             sn76489_write2(data); safe_flush();
                         }
                     } else {
