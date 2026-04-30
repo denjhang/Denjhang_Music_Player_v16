@@ -40,6 +40,7 @@ static const char* kChNames[4] = { "Tone0", "Tone1", "Tone2", "Noise" };
 
 // ============ Connection State ============
 static bool s_connected = false;
+static bool s_connected2 = false; // 2nd SN76489 (slot 1, T6W28 noise chip)
 static bool s_manualDisconnect = false;
 
 // ============ Test State ============
@@ -229,6 +230,11 @@ static void sn76489_write(uint8_t data) {
     ::spfm_hw_wait(3);
 }
 
+static void sn76489_write2(uint8_t data) {
+    ::spfm_write_data(1, data);
+    ::spfm_hw_wait(3);
+}
+
 static void safe_flush(void) {
     ::spfm_flush();
 }
@@ -254,6 +260,13 @@ static void sn76489_mute_all(void) {
     sn76489_write(0xF0);              // noise vol = max (activate channel)
     sn76489_write(sn76489_noise_latch(0, 0));  // ntype=0, shift_freq=0
     sn76489_write(0xFF);              // noise vol = 0 (mute)
+}
+
+static void sn76489_mute_all2(void) {
+    sn76489_write2(0x9F); sn76489_write2(0xBF); sn76489_write2(0xDF);
+    sn76489_write2(0xF0);
+    sn76489_write2(sn76489_noise_latch(0, 0));
+    sn76489_write2(0xFF);
 }
 
 static void sn76489_set_noise(uint8_t ntype, uint8_t shift_freq) {
@@ -287,6 +300,7 @@ static void InitHardware(void) {
     sn76489_mute_all();
     sn76489_set_noise(0, 0);
     sn76489_set_tone(0, 0); sn76489_set_tone(1, 0); sn76489_set_tone(2, 0);
+    if (s_connected2) sn76489_mute_all2();
     safe_flush();
 }
 
@@ -322,7 +336,7 @@ static void DisconnectHardware(void) {
         safe_flush();
         Sleep(50);
         spfm_cleanup();
-        s_connected = false; s_manualDisconnect = true;
+        s_connected = false; s_connected2 = false; s_manualDisconnect = true;
     }
     YM2163::g_manualDisconnect = false;
     DcLog("[SN] Hardware disconnected\n");
@@ -719,23 +733,24 @@ static int VGMProcessCommand(void) {
             }
             if (!s_connected) return 0;
             if (s_t6w28Mode == 0) {
+                // Passthrough: 全部转发到 slot0
                 sn76489_write(data); safe_flush();
+            } else if (s_t6w28Mode == 2) {
+                // Dual Chip: 0x30 转发到 slot1 (2nd SN76489 noise chip)
+                if (s_connected2) {
+                    sn76489_write2(data); safe_flush();
+                }
             } else {
-                // Force SF2: 只转发 ch3 噪音，跳过 ch0-2 方波
+                // Force SF2 (mode 1): 只转发 ch3 噪音到 slot0，跳过 ch0-2 方波
                 if ((data & 0x80)) {
                     int ch = (data >> 5) & 3;
                     if (ch == 3) {
                         if (s_noiseUseCh2) {
-                            // T6W28 ch2 噪音模式: 把独立 ch2 频率映射到 shift 分频
-                            uint8_t sf = 1; // default
+                            uint8_t sf = 1;
                             if (s_t6w28NoiseCh2Period > 0) {
-                                // SN76489 NoiseFreq = 16 << sf
-                                // T6W28 ch2 tone freq = clock/(2*period)
-                                // 等效: period ≈ 16 << sf → sf0=16, sf1=32, sf2=64
-                                // 中点分界: 24 和 48
-                                if (s_t6w28NoiseCh2Period < 24) sf = 0;      // 高频→sf0(16)
-                                else if (s_t6w28NoiseCh2Period < 48) sf = 1;  // 中频→sf1(32)
-                                else sf = 2;                                  // 低频→sf2(64)
+                                if (s_t6w28NoiseCh2Period < 24) sf = 0;
+                                else if (s_t6w28NoiseCh2Period < 48) sf = 1;
+                                else sf = 2;
                             }
                             s_noiseFreq = sf;
                             uint8_t nctrl = 0xE0 | (s_noiseType << 2) | sf;
@@ -744,7 +759,6 @@ static int VGMProcessCommand(void) {
                             sn76489_write(data); safe_flush();
                         }
                     }
-                    // ch 0-2: 跳过
                 }
             }
             return 0;
@@ -1411,10 +1425,25 @@ static void RenderSidebar(void) {
 
     ImGui::Spacing(); ImGui::Separator();
 
+    // 2nd SN76489 (slot 1)
+    if (s_connected) {
+        if (ImGui::Checkbox("2nd SN76489 (slot 1)##sn2nd", &s_connected2)) {
+            if (s_connected2) sn76489_mute_all2();
+            safe_flush();
+        }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Enable 2nd SN76489 chip on slot 1\nfor T6W28 Dual Chip mode");
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
     // T6W28 mode
     if (s_isT6W28) {
         if (ImGui::RadioButton("T6W28 Passthrough##t6w28pt", s_t6w28Mode == 0)) s_t6w28Mode = 0;
         if (ImGui::RadioButton("T6W28 Force SF2##t6w28sf2", s_t6w28Mode == 1)) s_t6w28Mode = 1;
+        if (ImGui::RadioButton("T6W28 Dual Chip##t6w28dc", s_t6w28Mode == 2)) s_t6w28Mode = 2;
+        if (s_t6w28Mode == 2 && !s_connected2) {
+            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.3f, 1.0f), "Enable 2nd SN76489 above!");
+        }
     }
 
     ImGui::Spacing(); ImGui::Separator();
