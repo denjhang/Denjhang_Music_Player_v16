@@ -229,6 +229,10 @@ static void sn76489_write(uint8_t data) {
     ::spfm_hw_wait(3);
 }
 
+static void safe_flush(void) {
+    ::spfm_flush();
+}
+
 static void sn76489_set_tone(uint8_t ch, uint16_t period) {
     sn76489_write(sn76489_tone_latch(ch, (uint8_t)(period & 0x0F)));
     sn76489_write(sn76489_tone_data((uint8_t)(period >> 4)));
@@ -275,7 +279,7 @@ static bool ApplyPeriodicNoiseFix(void) {
     }
     if (freq > 1023) freq = 1023;
     sn76489_set_tone(2, (uint16_t)freq);
-    spfm_flush();
+    safe_flush();
     return true;
 }
 
@@ -283,7 +287,7 @@ static void InitHardware(void) {
     sn76489_mute_all();
     sn76489_set_noise(0, 0);
     sn76489_set_tone(0, 0); sn76489_set_tone(1, 0); sn76489_set_tone(2, 0);
-    spfm_flush();
+    safe_flush();
 }
 
 static void ResetState(void) {
@@ -330,7 +334,7 @@ static void DisconnectHardware(void) {
     if (s_vgmPlaying) s_vgmPlaying = false;
     if (s_connected) {
         InitHardware();
-        spfm_flush();
+        safe_flush();
         Sleep(50);
         spfm_cleanup();
         s_connected = false; s_manualDisconnect = true;
@@ -737,7 +741,7 @@ static int VGMProcessCommand(void) {
                     // Fix already wrote corrected Tone2 freq, skip original write
                 } else {
                     sn76489_write(data);
-                    spfm_flush();
+                    safe_flush();
                     // After noise ctrl or tone2 vol update, re-apply fix
                     if ((noiseCtrlUpdated || tone2VolUpdated) && ApplyPeriodicNoiseFix()) {}
                 }
@@ -808,11 +812,11 @@ static DWORD WINAPI VGMPlaybackThread(LPVOID) {
             }
             samplesToProcess -= processed;
             s_vgmCurrentSamples += processed;
-            spfm_flush();
+            safe_flush();
         }
         Sleep(1);
     }
-    spfm_flush();
+    safe_flush();
     s_vgmThreadRunning = false;
     return 0;
 }
@@ -961,7 +965,7 @@ static void TestStep(void) {
         }
         default: s_testRunning = false; return;
     }
-    spfm_flush(); s_testStep++;
+    safe_flush(); s_testStep++;
 }
 
 static void StopTest(void) {
@@ -978,9 +982,9 @@ static void StartTest(int type) {
     QueryPerformanceCounter(&s_testStartTime);
     s_testRunning = true;
     switch (type) {
-        case 0: sn76489_set_vol(0, 0); spfm_flush(); break;
-        case 1: sn76489_set_vol(1, 0); spfm_flush(); break;
-        case 4: sn76489_set_noise(0, 0); sn76489_set_vol(3, 0); spfm_flush(); break;
+        case 0: sn76489_set_vol(0, 0); safe_flush(); break;
+        case 1: sn76489_set_vol(1, 0); safe_flush(); break;
+        case 4: sn76489_set_noise(0, 0); sn76489_set_vol(3, 0); safe_flush(); break;
     }
 }
 
@@ -1011,6 +1015,21 @@ void Shutdown() {
 }
 
 void Update() {
+    // Detect device removal when connected
+    if (s_connected) {
+        static int disconnectCheckCounter = 0;
+        if (++disconnectCheckCounter >= 120) { // every ~2 seconds
+            disconnectCheckCounter = 0;
+            DWORD numDevs = 0;
+            if (FT_CreateDeviceInfoList(&numDevs) != FT_OK || numDevs == 0) {
+                DcLog("[SN] Device removed, disconnecting\n");
+                s_vgmPlaying = false; s_vgmPaused = false;
+                s_connected = false; s_manualDisconnect = false;
+                ::spfm_cleanup();
+                YM2163::g_manualDisconnect = false;
+            }
+        }
+    }
     CheckAutoConnect();
     UpdateChannelLevels();
 
@@ -1277,13 +1296,13 @@ static void RenderTestPopup(void) {
             int volVal = s_vol[ch];
             if (ImGui::SliderInt("##vol", &volVal, 0, 15)) {
                 s_vol[ch] = (uint8_t)volVal;
-                if (s_connected) { sn76489_set_vol((uint8_t)ch, s_vol[ch]); spfm_flush(); }
+                if (s_connected) { sn76489_set_vol((uint8_t)ch, s_vol[ch]); safe_flush(); }
             }
             ImGui::SameLine(); ImGui::SetNextItemWidth(120.0f);
             int periodVal = (int)s_fullPeriod[ch];
             if (ImGui::SliderInt("##period", &periodVal, 0, 1023)) {
                 s_fullPeriod[ch] = (uint16_t)periodVal;
-                if (s_connected) { sn76489_set_tone((uint8_t)ch, s_fullPeriod[ch]); spfm_flush(); }
+                if (s_connected) { sn76489_set_tone((uint8_t)ch, s_fullPeriod[ch]); safe_flush(); }
             }
             ImGui::PopID();
         }
@@ -1298,22 +1317,22 @@ static void RenderTestPopup(void) {
         int nVolVal = s_vol[3];
         if (ImGui::SliderInt("##nvol", &nVolVal, 0, 15)) {
             s_vol[3] = (uint8_t)nVolVal;
-            if (s_connected) { sn76489_set_vol(3, s_vol[3]); spfm_flush(); }
+            if (s_connected) { sn76489_set_vol(3, s_vol[3]); safe_flush(); }
         }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Periodic##snp", s_noiseType == 0)) { s_noiseType = 0; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
+        if (ImGui::RadioButton("Periodic##snp", s_noiseType == 0)) { s_noiseType = 0; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); safe_flush(); } }
         ImGui::SameLine();
-        if (ImGui::RadioButton("White##snw", s_noiseType == 1)) { s_noiseType = 1; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
+        if (ImGui::RadioButton("White##snw", s_noiseType == 1)) { s_noiseType = 1; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); safe_flush(); } }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Ch2##snfch2", s_noiseUseCh2)) { s_noiseUseCh2 = true; if (s_connected) { sn76489_set_noise(s_noiseType, 3); spfm_flush(); } }
+        if (ImGui::RadioButton("Ch2##snfch2", s_noiseUseCh2)) { s_noiseUseCh2 = true; if (s_connected) { sn76489_set_noise(s_noiseType, 3); safe_flush(); } }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Shift##snfsh", !s_noiseUseCh2)) { s_noiseUseCh2 = false; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
+        if (ImGui::RadioButton("Shift##snfsh", !s_noiseUseCh2)) { s_noiseUseCh2 = false; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); safe_flush(); } }
         if (!s_noiseUseCh2) {
             ImGui::SameLine(); ImGui::SetNextItemWidth(60.0f);
             int nFreqVal = s_noiseFreq;
             if (ImGui::SliderInt("##nfreq", &nFreqVal, 0, 3)) {
                 s_noiseFreq = (uint8_t)nFreqVal;
-                if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); }
+                if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); safe_flush(); }
             }
         }
         ImGui::PopID();
@@ -1597,7 +1616,7 @@ static void RenderPlayerBar(void) {
                         }
                     }
                     s_vgmCurrentSamples = targetSample;
-                    if (s_connected) spfm_flush();
+                    if (s_connected) safe_flush();
                     // Restart playback
                     s_vgmPlaying = true;
                     s_vgmPaused = false;
