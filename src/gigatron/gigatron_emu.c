@@ -231,13 +231,14 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
 
                     if (state->useCustomWaveTable) {
                         // 自定义高精度波表路径
+                        // 模拟原始 6-bit 行为: (soundTable[i] + wavA) & 0x3F
+                        // 即 (wave_val + wavA) mod (maxVal+1)，取低 N 位
                         uint16_t wave_val = state->customWaveTable[i_idx];
-                        // wavA 作为偏移量，缩放到当前位深
-                        int32_t scaled_wavA = (int32_t)state->ch[n].wavA * maxVal / 63;
-                        int32_t temp_val = (int32_t)wave_val + scaled_wavA;
-                        if (temp_val < 0) temp_val = 0;
-                        if (temp_val > (int32_t)maxVal) temp_val = maxVal;
-                        state->samp += temp_val;
+                        int32_t total = (int32_t)wave_val + (int32_t)state->ch[n].wavA;
+                        int32_t range = (int32_t)maxVal + 1;
+                        int32_t sample = total % range;
+                        if (sample < 0) sample += range;
+                        state->samp += sample;
                     } else {
                         // 原始 6-bit 波表路径
                         int32_t temp_val = state->soundTable[i_idx] + state->ch[n].wavA;
@@ -332,7 +333,11 @@ void gigatron_emu_update(GigatronState *state, int16_t *output_buffer, int num_s
                 uint8_t i_idx = (uint8_t)((state->ch[n].osc >> 7) & 0xfc);
                 i_idx ^= state->ch[n].wavX;
                 if (state->useCustomWaveTable) {
-                    uint16_t sv = state->customWaveTable[i_idx];
+                    uint16_t wave_val = state->customWaveTable[i_idx];
+                    int32_t total = (int32_t)wave_val + (int32_t)state->ch[n].wavA;
+                    int32_t range = (int32_t)maxVal + 1;
+                    int32_t sv = total % range;
+                    if (sv < 0) sv += range;
                     state->scope_buf[n][pos] = (int16_t)(((int32_t)sv - (int32_t)(maxVal / 2)) * (32767 / (maxVal > 0 ? maxVal : 1)));
                 } else {
                     int32_t tv = state->soundTable[i_idx] + state->ch[n].wavA;
