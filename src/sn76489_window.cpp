@@ -8,6 +8,8 @@
 #include "chip_control.h"
 #include "chip_window_ym2163.h"
 #include "midi_player.h"
+#include "modizer_viz.h"
+#include "libvgm-modizer/emu/cores/ModizerVoicesData.h"
 #include "imgui/imgui.h"
 
 #include <windows.h>
@@ -81,6 +83,27 @@ static uint8_t s_noiseFreq = 0;
 static bool s_noiseUseCh2 = false;
 static uint16_t s_fullPeriod[3] = {0, 0, 0};
 
+// ============ Piano State ============
+static const int SN_PIANO_LOW = 24;
+static const int SN_PIANO_HIGH = 107;
+static const int SN_PIANO_KEYS = SN_PIANO_HIGH - SN_PIANO_LOW + 1;
+static bool s_pianoKeyOn[SN_PIANO_KEYS] = {};
+static float s_pianoKeyLevel[SN_PIANO_KEYS] = {};
+static int s_pianoKeyChannel[SN_PIANO_KEYS] = {};
+static const bool s_isBlackNote[12] = {false, true, false, true, false, false, true, false, true, false, true, false};
+
+// ============ Level Meter State ============
+static float s_channelLevel[4] = {};
+
+// ============ Scope State ============
+static ModizerViz s_scope;
+static bool s_showScope = false;
+static float s_scopeHeight = 80.0f;
+static int s_voiceCh[4] = {-1, -1, -1, -1};
+static int s_scopeSamples = 441;
+static float s_scopeAmplitude = 3.0f;
+static int s_lastToneLatchCh = 0;  // for VGM 0x50 unlatched data
+
 // ============ Log ============
 static std::string s_log;
 static char s_logDisplay[65536] = "";
@@ -113,6 +136,7 @@ static bool s_isSequentialPlayback = true;
 // ============ UI Collapse State ============
 static bool s_snPlayerCollapsed = false;
 static bool s_snHistoryCollapsed = false;
+static bool s_showTestPopup = false;
 
 // ============ Config ============
 static char s_configPath[MAX_PATH] = "";
@@ -133,6 +157,11 @@ static void NavigateTo(const char* rawPath);
 static void NavBack(void);
 static void NavForward(void);
 static void NavToParent(void);
+static void UpdateChannelLevels(void);
+static void RenderPianoKeyboard(void);
+static void RenderLevelMeters(void);
+static void RenderScopeArea(void);
+static void RenderTestPopup(void);
 
 // ============ Log ============
 static void DcLog(const char* fmt, ...) {
@@ -189,9 +218,16 @@ static void DrawScrollingText(const char* id, const char* text, ImU32 col, float
 }
 
 // ============ Hardware Helpers ============
+static FILE* sn_fopen(const char* path, const char* mode) {
+    std::wstring wPath = MidiPlayer::UTF8ToWide(std::string(path));
+    std::wstring wMode = MidiPlayer::UTF8ToWide(std::string(mode));
+    return _wfopen(wPath.c_str(), wMode.c_str());
+}
+
 static void sn76489_write(uint8_t data) {
     ::spfm_write_data(0, data);
     ::spfm_hw_wait(3);
+    ::spfm_flush();
 }
 
 static void sn76489_set_tone(uint8_t ch, uint16_t period) {
@@ -450,6 +486,39 @@ static void NavToParent(void) {
     }
 }
 
+// ============ Piano / Level Helpers ============
+static int period_to_midi_note(uint16_t period) {
+    if (period == 0) return -1;
+    double freq = SN76489_CLOCK_NTSC / (32.0 * period);
+    return (int)round(69.0 + 12.0 * log2(freq / 440.0));
+}
+
+static void UpdateChannelLevels(void) {
+    // Clear all piano keys first
+    for (int i = 0; i < SN_PIANO_KEYS; i++) {
+        s_pianoKeyOn[i] = false;
+        s_pianoKeyLevel[i] = 0.0f;
+        s_pianoKeyChannel[i] = -1;
+    }
+
+    for (int ch = 0; ch < 4; ch++) {
+        float target = (15.0f - (float)s_vol[ch]) / 15.0f;
+        s_channelLevel[ch] += (target - s_channelLevel[ch]) * 0.3f;
+        if (s_channelLevel[ch] < 0.001f) s_channelLevel[ch] = 0.0f;
+
+        // Piano: only tone channels (0-2)
+        if (ch < 3 && s_channelLevel[ch] > 0.01f) {
+            int midi = period_to_midi_note(s_fullPeriod[ch]);
+            if (midi >= SN_PIANO_LOW && midi <= SN_PIANO_HIGH) {
+                int idx = midi - SN_PIANO_LOW;
+                s_pianoKeyOn[idx] = true;
+                s_pianoKeyLevel[idx] = s_channelLevel[ch];
+                s_pianoKeyChannel[idx] = ch;
+            }
+        }
+    }
+}
+
 // ============ VGM Player ============
 static UINT32 ReadLE32(FILE* f) {
     UINT8 b[4]; fread(b, 1, 4, f);
@@ -505,7 +574,7 @@ static bool LoadVGMFile(const char* path) {
     s_vgmTotalSamples = 0; s_vgmCurrentSamples = 0;
     s_vgmTrackEnded = false;
 
-    FILE* f = fopen(path, "rb");
+    FILE* f = sn_fopen(path, "rb");
     if (!f) { DcLog("[VGM] Cannot open: %s\n", path); return false; }
 
     char sig[4]; fread(sig, 1, 4, f);
@@ -515,21 +584,28 @@ static bool LoadVGMFile(const char* path) {
     s_vgmVersion = ReadLE32(f);
     UINT32 snClock = ReadLE32(f);
     fseek(f, 0x14, SEEK_SET);
-    UINT32 gd3Off = ReadLE32(f);
+    UINT32 gd3RelOff = ReadLE32(f);
+    UINT32 gd3Off = gd3RelOff ? (gd3RelOff + 0x14) : 0;  // relative offset from 0x14
     s_vgmTotalSamples = ReadLE32(f);
-    s_vgmLoopOffset = ReadLE32(f);
+    UINT32 loopRelOff = ReadLE32(f);
+    s_vgmLoopOffset = loopRelOff ? (loopRelOff + 0x1C) : 0;  // relative offset from 0x1C
     s_vgmLoopSamples = ReadLE32(f);
 
     UINT32 dataOff = 0x40;
-    fseek(f, 0x34, SEEK_SET);
-    UINT32 hdrDataOff = ReadLE32(f);
-    if (hdrDataOff >= 0x40) dataOff = hdrDataOff;
+    if (s_vgmVersion >= 0x150) {
+        fseek(f, 0x34, SEEK_SET);
+        UINT32 hdrDataOff = ReadLE32(f);
+        if (hdrDataOff > 0) dataOff = hdrDataOff + 0x34;
+    }
     s_vgmDataOffset = dataOff;
+
+    DcLog("[VGM] hdr: ver=0x%X dataAbs=0x%X loopAbs=0x%X gd3Abs=0x%X\n",
+        s_vgmVersion, s_vgmDataOffset, s_vgmLoopOffset, gd3Off);
 
     ParseGD3Tags(f, gd3Off);
 
     fclose(f);
-    s_vgmFile = fopen(path, "rb");
+    s_vgmFile = sn_fopen(path, "rb");
     if (!s_vgmFile) { DcLog("[VGM] Reopen failed\n"); return false; }
 
     snprintf(s_vgmPath, MAX_PATH, "%s", path);
@@ -553,39 +629,119 @@ static bool LoadVGMFile(const char* path) {
     return true;
 }
 
+static int s_vgmCmdCount = 0;
+
+// VGM Command Length Table — from libvgm _CMD_INFO[0x100] (vgmplayer_cmdhandler.cpp)
+// cmdLen = total bytes including opcode. 0 = invalid/special.
+static const UINT8 VGM_CMD_LEN[0x100] = {
+    // 0x00-0x1F: invalid
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    // 0x20-0x2F: 20=AY8910(3), 22-2F=unknown(2)
+    0x03,0x02,0x02,0x02,0x02,0x02,0x02,0x02, 0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,
+    // 0x30-0x3F: 30=SN76489_2nd(2), 31=AY8910_stereo(2), 3F=GG_stereo_2nd(2)
+    0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02, 0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,
+    // 0x40-0x4F: 40=Mikey(3), 4F=GG_stereo(2)
+    0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03, 0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x02,
+    // 0x50-0x5F: 50=SN76489(2), 51-5F=YM chips(3)
+    0x02,0x03,0x03,0x03,0x03,0x03,0x03,0x03, 0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,
+    // 0x60-0x6F: 61=wait_N(3), 62=735(1), 63=882(1), 66=end(special), 67=datablock(special), 68=PCM_RAM(12)
+    0x00,0x03,0x01,0x01,0x00,0x00,0x00,0x00, 0x0C,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    // 0x70-0x7F: short wait (op&0x0F)+1 samples, 1 byte each
+    0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01, 0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
+    // 0x80-0x8F: YM2612 DAC write + wait (2 bytes each)
+    0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02, 0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,
+    // 0x90-0x9F: DAC stream control
+    0x05,0x05,0x06,0x0B,0x02,0x05, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+    // 0xA0-0xAF: 2nd chip writes (3 bytes each)
+    0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03, 0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,
+    // 0xB0-0xBF: block chip writes (3 bytes each)
+    0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03, 0x03,0x03,0x03,0x03,0x03,0x03,0x03,0x03,
+    // 0xC0-0xCF: memory/bank writes (4-5 bytes)
+    0x05,0x05,0x05,0x04,0x04,0x04,0x04,0x04, 0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+    // 0xD0-0xDF: port/register writes (4-5 bytes)
+    0x04,0x04,0x04,0x05,0x05,0x05,0x05,0x04, 0x04,0x04,0x04,0x04,0x04,0x04,0x04,0x04,
+    // 0xE0-0xFF: PCM seek(5), C352(5), unknown(5)
+    0x05,0x05,0x05,0x05,0x05,0x05,0x05,0x05, 0x05,0x05,0x05,0x05,0x05,0x05,0x05,0x05,
+    0x05,0x05,0x05,0x05,0x05,0x05,0x05,0x05, 0x05,0x05,0x05,0x05,0x05,0x05,0x05,0x05,
+};
+
+// Table-driven VGM command processor based on libvgm _CMD_INFO
+// Returns: wait samples (>0), 0 = no wait, -1 = EOF/error
 static int VGMProcessCommand(void) {
     UINT8 cmd;
     if (fread(&cmd, 1, 1, s_vgmFile) != 1) return -1;
 
+    if (s_vgmCmdCount < 50) {
+        DcLog("[VGM] cmd=0x%02X at %ld\n", cmd, ftell(s_vgmFile) - 1);
+    }
+
+    // Special commands with unique behavior
     switch (cmd) {
-        case 0x50: { UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1; sn76489_write(data); return 0; }
-        case 0x51: { UINT8 buf[2]; fread(buf, 1, 2, s_vgmFile); return 0; }
-        case 0x52: case 0x53: { UINT8 buf[2]; fread(buf, 1, 2, s_vgmFile); return 0; }
-        case 0x54: { UINT8 buf[2]; fread(buf, 1, 2, s_vgmFile); return 0; }
-        case 0x55: { UINT8 buf[2]; fread(buf, 1, 2, s_vgmFile); return 0; }
-        case 0x56: case 0x57: { UINT8 buf[2]; fread(buf, 1, 2, s_vgmFile); return 0; }
-        case 0x61: { UINT8 buf[2]; fread(buf, 1, 2, s_vgmFile); return buf[0] | (buf[1] << 8); }
-        case 0x62: return 735;
-        case 0x63: return 882;
-        case 0x66: {
-            if (s_vgmLoopOffset > 0) { fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET); s_vgmLoopCount++; return 0; }
+        case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
+            UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
+            if (s_connected) sn76489_write(data);
+            s_vgmCmdCount++;
+            if (data & 0x80) {
+                int ch = (data >> 5) & 3;
+                if (data & 0x10) {
+                    if (ch < 4) s_vol[ch] = data & 0x0F;
+                } else {
+                    if (ch < 3) { s_fullPeriod[ch] = (s_fullPeriod[ch] & 0x3F0) | (data & 0x0F); s_lastToneLatchCh = ch; }
+                }
+            } else {
+                if (s_lastToneLatchCh < 3) s_fullPeriod[s_lastToneLatchCh] = (s_fullPeriod[s_lastToneLatchCh] & 0x0F) | ((data & 0x3F) << 4);
+            }
+            return 0;
+        }
+        case 0x61: { // Wait N samples (libvgm: Cmd_DelaySamples2B, 3 bytes)
+            UINT16 wait; if (fread(&wait, 1, 2, s_vgmFile) != 2) return -1;
+            return wait;
+        }
+        case 0x62: return 735;  // Wait 735 samples (libvgm: Cmd_Delay60Hz)
+        case 0x63: return 882;  // Wait 882 samples (libvgm: Cmd_Delay50Hz)
+        case 0x70: case 0x71: case 0x72: case 0x73:
+        case 0x74: case 0x75: case 0x76: case 0x77:
+        case 0x78: case 0x79: case 0x7A: case 0x7B:
+        case 0x7C: case 0x7D: case 0x7E: case 0x7F: // Short wait (libvgm: Cmd_DelaySamplesN1)
+            return (cmd & 0x0F) + 1;
+        case 0x66: { // End of data (libvgm: Cmd_EndOfData)
+            if (s_vgmLoopOffset > 0) {
+                fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
+                s_vgmLoopCount++;
+                return 0;
+            }
             return -1;
         }
-        case 0x67: { UINT8 buf[3]; fread(buf, 1, 3, s_vgmFile); UINT32 size = buf[0] | (buf[1] << 8) | (buf[2] << 16); fseek(s_vgmFile, size, SEEK_CUR); return 0; }
-        default:
-            if (cmd >= 0x70 && cmd <= 0x7F) return (cmd & 0x0F) + 1;
+        case 0x67: { // Data block (libvgm: Cmd_DataBlock, variable length)
+            UINT8 compat; if (fread(&compat, 1, 1, s_vgmFile) != 1) return -1;
+            if (compat != 0x66) return -1;
+            UINT8 type; if (fread(&type, 1, 1, s_vgmFile) != 1) return -1;
+            UINT32 size; if (fread(&size, 4, 1, s_vgmFile) != 1) return -1;
+            fseek(s_vgmFile, size, SEEK_CUR);
             return 0;
+        }
     }
+
+    // All other commands: skip using VGM_CMD_LEN table
+    UINT8 cmdLen = VGM_CMD_LEN[cmd];
+    if (cmdLen <= 1) return 0; // 0=invalid/1=opcode only, nothing to skip
+    UINT8 skip = cmdLen - 1;
+    if (fseek(s_vgmFile, skip, SEEK_CUR) != 0) return -1;
+    return 0;
 }
 
 static void StartVGMPlayback(void) {
-    if (!s_vgmLoaded || !s_connected) return;
+    if (!s_vgmLoaded) return;
+    DcLog("[VGM] StartPlayback: loaded=%d connected=%d dataOff=0x%X\n", s_vgmLoaded, s_connected, s_vgmDataOffset);
     StopTest();
-    if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = fopen(s_vgmPath, "rb"); }
-    if (!s_vgmFile) return;
+    if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
+    if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
     fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
-    InitHardware();
+    DcLog("[VGM] Seeked to 0x%X, ftell=%ld\n", s_vgmDataOffset, ftell(s_vgmFile));
+    if (s_connected) InitHardware();
     s_vgmPlaying = true; s_vgmPaused = false; s_vgmTrackEnded = false;
+    s_vgmCmdCount = 0;
     s_vgmCurrentSamples = 0; s_vgmSamplesRemaining = 0;
     s_vgmLoopCount = 0; s_vgmPauseAccum = 0.0;
     QueryPerformanceFrequency(&s_perfFreq);
@@ -628,7 +784,7 @@ static void SeekVGMToStart(void) {
     if (s_vgmPlaying) { s_vgmPlaying = false; s_vgmPaused = false; }
     if (s_connected) InitHardware();
     fclose(s_vgmFile);
-    s_vgmFile = fopen(s_vgmPath, "rb");
+    s_vgmFile = sn_fopen(s_vgmPath, "rb");
     if (!s_vgmFile) return;
     fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
     s_vgmCurrentSamples = 0; s_vgmLoopCount = 0;
@@ -743,6 +899,7 @@ static void StartTest(int type) {
 void Init() {
     QueryPerformanceFrequency(&s_perfFreq);
     QueryPerformanceCounter(&s_lastCheckTime);
+    s_scope.Init();
     LoadConfig();
     if (s_currentPath[0] != '\0') {
         RefreshFileList();
@@ -759,8 +916,29 @@ void Shutdown() {
 
 void Update() {
     CheckAutoConnect();
+    UpdateChannelLevels();
+
+    // Update scope voice channel offsets (check periodically)
+    static int scopeCheckCounter = 0;
+    if (++scopeCheckCounter >= 60) {
+        scopeCheckCounter = 0;
+        ScopeChipSlot *slot = scope_find_slot("SN76489", 0);
+        if (slot) {
+            for (int i = 0; i < 4; i++) s_voiceCh[i] = slot->slot_base + i;
+        } else {
+            for (int i = 0; i < 4; i++) s_voiceCh[i] = -1;
+        }
+    }
 
     // VGM playback
+    static int s_dbgUpdateCount = 0;
+    if (s_vgmPlaying && s_dbgUpdateCount < 5) {
+        DcLog("[VGM-DBG] Update() playing=%d paused=%d samplesRemain=%u ftell=%ld\n",
+            s_vgmPlaying, s_vgmPaused, s_vgmSamplesRemaining,
+            s_vgmFile ? ftell(s_vgmFile) : -1);
+        s_dbgUpdateCount++;
+    }
+    if (!s_vgmPlaying) s_dbgUpdateCount = 0;  // reset when stopped
     if (s_vgmPlaying && !s_vgmPaused) {
         if (s_vgmSamplesRemaining > 0) {
             LARGE_INTEGER now; QueryPerformanceCounter(&now);
@@ -773,7 +951,6 @@ void Update() {
             if (samples < 0) {
                 s_vgmTrackEnded = true;
                 StopVGMPlayback();
-                // Auto-play next
                 if (s_autoPlayNext && !s_playlist.empty()) PlayPlaylistNext();
                 break;
             }
@@ -790,6 +967,289 @@ void Update() {
         double elapsed = GetTestElapsedMs();
         if (elapsed >= s_testStepMs) { TestStep(); s_testStepMs += GetStepDurationMs(s_testType); }
     }
+}
+
+// ============ Piano Keyboard ============
+static void RenderPianoKeyboard(void) {
+    ImGui::BeginChild("SN_Piano", ImVec2(0, 150), true, ImGuiWindowFlags_HorizontalScrollbar);
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    float availW = ImGui::GetContentRegionAvail().x;
+
+    float whiteKeyW = 20.0f;
+    float whiteKeyH = 100.0f;
+    float blackKeyW = 12.0f;
+    float blackKeyH = 60.0f;
+
+    int numOctaves = 6;  // C1-B7
+    int totalWhite = numOctaves * 7; // 42
+    float pianoW = totalWhite * whiteKeyW;
+    float offsetX = (availW > pianoW) ? (availW - pianoW) * 0.5f : 0.0f;
+
+    auto getKeyColor = [&](int idx, float level) -> ImU32 {
+        int ch = s_pianoKeyChannel[idx];
+        if (ch >= 0 && ch < 4) {
+            ImVec4 c = ImVec4(
+                ((kChColors[ch] >>  0) & 0xFF) / 255.0f,
+                ((kChColors[ch] >>  8) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f);
+            int r = (int)(c.x * 255 * (0.3f + 0.7f * level));
+            int g = (int)(c.y * 255 * (0.3f + 0.7f * level));
+            int b = (int)(c.z * 255 * (0.3f + 0.7f * level));
+            return IM_COL32(r, g, b, 255);
+        }
+        return IM_COL32((int)(40 + 180 * level), (int)(80 + 175 * level), 255, 255);
+    };
+
+    auto getKeyColorBlack = [&](int idx, float level) -> ImU32 {
+        int ch = s_pianoKeyChannel[idx];
+        if (ch >= 0 && ch < 4) {
+            ImVec4 c = ImVec4(
+                ((kChColors[ch] >>  0) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> 8) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f);
+            int r = (int)(c.x * 255 * (0.2f + 0.6f * level));
+            int g = (int)(c.y * 255 * (0.2f + 0.6f * level));
+            int b = (int)(c.z * 255 * (0.2f + 0.6f * level));
+            return IM_COL32(r, g, b, 255);
+        }
+        return IM_COL32((int)(30 + 150 * level), (int)(60 + 155 * level), 255, 255);
+    };
+
+    // Draw white keys
+    int wkc = 0;
+    for (int oct = 0; oct < numOctaves; oct++) {
+        for (int n = 0; n < 12; n++) {
+            if (s_isBlackNote[n]) continue;
+            int midi = SN_PIANO_LOW + oct * 12 + n;
+            int idx = midi - SN_PIANO_LOW;
+            float x = p.x + offsetX + wkc * whiteKeyW;
+            float y = p.y;
+
+            ImU32 color = s_pianoKeyOn[idx] ? getKeyColor(idx, s_pianoKeyLevel[idx]) : IM_COL32(255, 255, 255, 255);
+            dl->AddRectFilled(ImVec2(x, y), ImVec2(x + whiteKeyW, y + whiteKeyH), color);
+            dl->AddRect(ImVec2(x, y), ImVec2(x + whiteKeyW, y + whiteKeyH), IM_COL32(0, 0, 0, 255));
+
+            if (n == 0) {
+                char lbl[8];
+                snprintf(lbl, sizeof(lbl), "C%d", oct + 1);
+                dl->AddText(ImVec2(x + 2, y + whiteKeyH - 18), IM_COL32(0, 0, 0, 255), lbl);
+            }
+            wkc++;
+        }
+    }
+
+    // Draw black keys
+    wkc = 0;
+    for (int oct = 0; oct < numOctaves; oct++) {
+        for (int n = 0; n < 12; n++) {
+            if (!s_isBlackNote[n]) continue;
+            int midi = SN_PIANO_LOW + oct * 12 + n;
+            int idx = midi - SN_PIANO_LOW;
+
+            int wkOff = 0;
+            if (n == 1) wkOff = 0;
+            else if (n == 3) wkOff = 1;
+            else if (n == 6) wkOff = 3;
+            else if (n == 8) wkOff = 4;
+            else if (n == 10) wkOff = 5;
+
+            float x = p.x + offsetX + (wkc + wkOff) * whiteKeyW - blackKeyW / 2;
+            float y = p.y;
+
+            ImU32 color = (idx >= 0 && idx < SN_PIANO_KEYS && s_pianoKeyOn[idx])
+                ? getKeyColorBlack(idx, s_pianoKeyLevel[idx]) : IM_COL32(0, 0, 0, 255);
+            dl->AddRectFilled(ImVec2(x, y), ImVec2(x + blackKeyW, y + blackKeyH), color);
+            dl->AddRect(ImVec2(x, y), ImVec2(x + blackKeyW, y + blackKeyH), IM_COL32(128, 128, 128, 255));
+        }
+        wkc += 7;
+    }
+
+    ImGui::EndChild();
+}
+
+// ============ Level Meters ============
+static void RenderLevelMeters(void) {
+    ImGui::BeginChild("SN_LevelMeters", ImVec2(0, 0), true);
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    float availW = ImGui::GetContentRegionAvail().x;
+    float availH = ImGui::GetContentRegionAvail().y;
+
+    float groupW = availW / 4.0f;
+    float meterW = (groupW - 24.0f) / 1.0f;
+    if (meterW > 40.0f) meterW = 40.0f;
+    float meterH = availH - 30.0f;
+
+    auto levelToDB = [](float level) -> float {
+        if (level <= 0.0f) return 0.0f;
+        float db = 20.0f * log10f(level);
+        if (db < -24.0f) db = -24.0f;
+        return (db + 24.0f) / 24.0f;
+    };
+
+    auto getLevelColor = [](float level) -> ImU32 {
+        if (level <= 0.0f) return IM_COL32(40, 40, 40, 255);
+        if (level < 0.33f) {
+            float t = level / 0.33f;
+            return IM_COL32(0, (int)(100 + 155 * t), (int)(255 - 155 * t), 255);
+        } else if (level < 0.66f) {
+            float t = (level - 0.33f) / 0.33f;
+            return IM_COL32((int)(255 * t), 255, (int)(100 - 100 * t), 255);
+        } else {
+            float t = (level - 0.66f) / 0.34f;
+            return IM_COL32(255, (int)(255 - 155 * t), 0, 255);
+        }
+    };
+
+    for (int ch = 0; ch < 4; ch++) {
+        float chX = p.x + ch * groupW;
+        float centerX = chX + (groupW - meterW) * 0.5f;
+        float mY = p.y + 22.0f;
+
+        // Label
+        ImU32 labelCol = kChColors[ch];
+        ImVec2 textSize = ImGui::CalcTextSize(kChNames[ch]);
+        dl->AddText(ImVec2(centerX - textSize.x * 0.5f, p.y + 4), labelCol, kChNames[ch]);
+
+        // Background
+        dl->AddRectFilled(ImVec2(centerX, mY), ImVec2(centerX + meterW, mY + meterH), IM_COL32(30, 30, 30, 255));
+        dl->AddRect(ImVec2(centerX, mY), ImVec2(centerX + meterW, mY + meterH), IM_COL32(100, 100, 100, 255));
+
+        float displayLevel = levelToDB(s_channelLevel[ch]);
+        if (displayLevel > 0.01f) {
+            float barH = meterH * displayLevel;
+            float barY = mY + meterH - barH;
+            int segs = 20;
+            for (int i = 0; i < segs; i++) {
+                float segH = barH / segs;
+                float segY = barY + i * segH;
+                float segLvl = (float)(segs - i) / segs * displayLevel;
+                dl->AddRectFilled(ImVec2(centerX + 1, segY), ImVec2(centerX + meterW - 1, segY + segH), getLevelColor(segLvl));
+            }
+        }
+
+        // Volume value
+        char volStr[8];
+        snprintf(volStr, sizeof(volStr), "%d/15", s_vol[ch]);
+        ImVec2 volSize = ImGui::CalcTextSize(volStr);
+        dl->AddText(ImVec2(centerX - volSize.x * 0.5f, mY + meterH + 3), IM_COL32(180, 180, 180, 255), volStr);
+    }
+
+    ImGui::EndChild();
+}
+
+// ============ Scope (placeholder) ============
+static void RenderScopeArea(void) {
+    if (!s_showScope) return;
+
+    if (s_scopeHeight < 10.0f) s_scopeHeight = 10.0f;
+    ImGui::BeginChild("SN_Scope", ImVec2(0, s_scopeHeight), true);
+
+    bool hasScope = (s_voiceCh[0] >= 0);
+
+    if (hasScope) {
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        ImVec2 p = ImGui::GetCursorScreenPos();
+        float availW = ImGui::GetContentRegionAvail().x;
+        float availH = ImGui::GetContentRegionAvail().y;
+        float chW = availW / 4.0f - 4.0f;
+
+        for (int i = 0; i < 4; i++) {
+            if (s_voiceCh[i] < 0) continue;
+            float x = p.x + i * (chW + 4.0f) + 2.0f;
+            bool keyon = (s_vol[i] < 15);
+            float level = (15.0f - (float)s_vol[i]) / 15.0f;
+
+            s_scope.DrawChannel(s_voiceCh[i], dl, x, p.y + 16, chW, availH - 16,
+                s_scopeAmplitude, kChColors[i], keyon, level,
+                s_scopeSamples, 0, 735, true, true, 1, false);
+        }
+    } else {
+        ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "(Scope requires libvgm SN76489 core integration)");
+    }
+
+    ImGui::EndChild();
+}
+
+// ============ Test & Channel Controls Window ============
+static void RenderTestPopup(void) {
+    if (!s_showTestPopup) return;
+    ImGui::SetNextWindowSize(ImVec2(360, 480), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("SN76489 Debug##sntestwin", &s_showTestPopup)) { ImGui::End(); return; }
+
+    // Hardware Tests
+    if (ImGui::CollapsingHeader("Hardware Tests##sntest", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::Button("Scale##sntest", ImVec2(-1, 0))) StartTest(0);
+        if (ImGui::Button("Arpeggio##sntest", ImVec2(-1, 0))) StartTest(1);
+        if (ImGui::Button("Chord##sntest", ImVec2(-1, 0))) StartTest(2);
+        if (ImGui::Button("Vol Sweep##sntest", ImVec2(-1, 0))) StartTest(3);
+        if (ImGui::Button("Noise##sntest", ImVec2(-1, 0))) StartTest(4);
+        if (s_testRunning) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+            if (ImGui::Button("Stop Test##sntest", ImVec2(-1, 0))) StopTest();
+            ImGui::PopStyleColor();
+            ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Running...");
+        }
+    }
+
+    // Channel Controls
+    if (ImGui::CollapsingHeader("Channel Controls##snch", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+        for (int ch = 0; ch < 3; ch++) {
+            ImGui::PushID(ch);
+            ImGui::TextColored(ImVec4(
+                ((kChColors[ch] >> 0) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> 8) & 0xFF) / 255.0f,
+                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f), "%s", kChNames[ch]);
+            ImGui::SameLine(); ImGui::SetNextItemWidth(80.0f);
+            int volVal = s_vol[ch];
+            if (ImGui::SliderInt("##vol", &volVal, 0, 15)) {
+                s_vol[ch] = (uint8_t)volVal;
+                if (s_connected) { sn76489_set_vol((uint8_t)ch, s_vol[ch]); spfm_flush(); }
+            }
+            ImGui::SameLine(); ImGui::SetNextItemWidth(120.0f);
+            int periodVal = (int)s_fullPeriod[ch];
+            if (ImGui::SliderInt("##period", &periodVal, 0, 1023)) {
+                s_fullPeriod[ch] = (uint16_t)periodVal;
+                if (s_connected) { sn76489_set_tone((uint8_t)ch, s_fullPeriod[ch]); spfm_flush(); }
+            }
+            ImGui::PopID();
+        }
+
+        // Noise
+        ImGui::PushID(100);
+        ImGui::TextColored(ImVec4(
+            ((kChColors[3] >> 0) & 0xFF) / 255.0f,
+            ((kChColors[3] >> 8) & 0xFF) / 255.0f,
+            ((kChColors[3] >> 16) & 0xFF) / 255.0f, 1.0f), "Noise");
+        ImGui::SameLine(); ImGui::SetNextItemWidth(80.0f);
+        int nVolVal = s_vol[3];
+        if (ImGui::SliderInt("##nvol", &nVolVal, 0, 15)) {
+            s_vol[3] = (uint8_t)nVolVal;
+            if (s_connected) { sn76489_set_vol(3, s_vol[3]); spfm_flush(); }
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Periodic##snp", s_noiseType == 0)) { s_noiseType = 0; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("White##snw", s_noiseType == 1)) { s_noiseType = 1; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Ch2##snfch2", s_noiseUseCh2)) { s_noiseUseCh2 = true; if (s_connected) { sn76489_set_noise(s_noiseType, 3); spfm_flush(); } }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("Shift##snfsh", !s_noiseUseCh2)) { s_noiseUseCh2 = false; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
+        if (!s_noiseUseCh2) {
+            ImGui::SameLine(); ImGui::SetNextItemWidth(60.0f);
+            int nFreqVal = s_noiseFreq;
+            if (ImGui::SliderInt("##nfreq", &nFreqVal, 0, 3)) {
+                s_noiseFreq = (uint8_t)nFreqVal;
+                if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); }
+            }
+        }
+        ImGui::PopID();
+    }
+
+    ImGui::End();
 }
 
 // ============ UI Rendering ============
@@ -813,18 +1273,25 @@ static void RenderSidebar(void) {
 
     ImGui::Spacing(); ImGui::Separator();
 
-    if (ImGui::Button("Scale##sn", ImVec2(-1, 0))) StartTest(0);
-    if (ImGui::Button("Arpeggio##sn", ImVec2(-1, 0))) StartTest(1);
-    if (ImGui::Button("Chord##sn", ImVec2(-1, 0))) StartTest(2);
-    if (ImGui::Button("Vol Sweep##sn", ImVec2(-1, 0))) StartTest(3);
-    if (ImGui::Button("Noise##sn", ImVec2(-1, 0))) StartTest(4);
+    // Test popup button
     if (s_testRunning) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
-        if (ImGui::Button("Stop Test##sn", ImVec2(-1, 0))) StopTest();
+        if (ImGui::Button("Test Running...##sntestbtn", ImVec2(-1, 0))) s_showTestPopup = true;
         ImGui::PopStyleColor();
-        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "Running...");
     } else {
-        if (ImGui::Button("Stop Test##sn", ImVec2(-1, 0))) StopTest();
+        if (ImGui::Button("Debug Test##sntestbtn", ImVec2(-1, 0))) s_showTestPopup = true;
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
+    // Scope settings
+    if (ImGui::CollapsingHeader("Scope##snscope", nullptr, 0)) {
+        ImGui::Checkbox("Show Scope##sn", &s_showScope);
+        if (s_showScope) {
+            ImGui::SliderFloat("Height##sn", &s_scopeHeight, 20, 300);
+            ImGui::SliderFloat("Amplitude##sn", &s_scopeAmplitude, 0.5f, 10.0f);
+            ImGui::SliderInt("Samples##sn", &s_scopeSamples, 100, 1000);
+        }
     }
 
     ImGui::Spacing(); ImGui::Separator();
@@ -993,12 +1460,12 @@ static void RenderPlayerBar(void) {
         ImGui::SameLine();
         if (ImGui::Button("Open##snopen")) OpenVGMFileDialog();
 
-        // Progress bar
-        ImGui::Spacing();
+        // Progress bar with seek (VGM-style)
         if (hasFile && s_vgmTotalSamples > 0) {
             float progress = (float)s_vgmCurrentSamples / (float)s_vgmTotalSamples;
             if (progress < 0.0f) progress = 0.0f;
             if (progress > 1.0f) progress = 1.0f;
+
             double posSec = (double)s_vgmCurrentSamples / 44100.0;
             double durSec = (double)s_vgmTotalSamples / 44100.0;
             int curMin = (int)posSec / 60; int curSecI = (int)posSec % 60;
@@ -1007,10 +1474,41 @@ static void RenderPlayerBar(void) {
             snprintf(posStr, sizeof(posStr), "%02d:%02d", curMin, curSecI);
             snprintf(durStr, sizeof(durStr), "%02d:%02d", totMin, totSecI);
             ImGui::Text("%s / %s", posStr, durStr);
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3f, 0.6f, 1.0f, 1.0f));
-            ImGui::ProgressBar(progress, ImVec2(-1, 0));
-            ImGui::PopStyleColor();
+
+            // Slider for seeking — only seek on mouse release
+            static float seek_progress = 0.0f;
+            ImGui::SliderFloat("##snseek", &seek_progress, 0.0f, 1.0f, "");
+            if (ImGui::IsItemActive()) {
+                // Dragging: keep slider value, don't seek yet
+            } else if (ImGui::IsItemDeactivatedAfterEdit()) {
+                // Mouse released: perform the actual seek
+                UINT32 targetSample = (UINT32)(seek_progress * s_vgmTotalSamples);
+                if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
+                if (s_vgmFile) {
+                    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                    UINT32 skipSamples = 0;
+                    while (skipSamples < targetSample) {
+                        int cmdSamples = VGMProcessCommand();
+                        if (cmdSamples < 0) break;
+                        if (cmdSamples > 0) {
+                            if (skipSamples + cmdSamples > targetSample) {
+                                s_vgmSamplesRemaining = skipSamples + cmdSamples - targetSample;
+                                QueryPerformanceCounter(&s_vgmWaitStart);
+                                skipSamples = targetSample;
+                            } else {
+                                skipSamples += cmdSamples;
+                            }
+                        }
+                    }
+                    s_vgmCurrentSamples = targetSample;
+                }
+            } else {
+                // Idle: sync slider to current playback position
+                seek_progress = progress;
+            }
             if (s_vgmLoopCount > 0) ImGui::TextDisabled("Loop #%d", s_vgmLoopCount);
+        } else {
+            ImGui::ProgressBar(0.0f, ImVec2(-1, 20), "");
         }
 
         // Status text
@@ -1035,65 +1533,9 @@ static void RenderPlayerBar(void) {
     }
 }
 
-static void RenderChannelControls(void) {
-    if (!ImGui::CollapsingHeader("Channel Controls##snch", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        return;
-
-    for (int ch = 0; ch < 3; ch++) {
-        ImGui::PushID(ch);
-        ImGui::TextColored(ImVec4(
-            ((kChColors[ch] >> 0) & 0xFF) / 255.0f,
-            ((kChColors[ch] >> 8) & 0xFF) / 255.0f,
-            ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f), "%s", kChNames[ch]);
-        ImGui::SameLine(); ImGui::SetNextItemWidth(60.0f);
-        int volVal = s_vol[ch];
-        if (ImGui::SliderInt("##vol", &volVal, 0, 15)) {
-            s_vol[ch] = (uint8_t)volVal;
-            if (s_connected) { sn76489_set_vol((uint8_t)ch, s_vol[ch]); spfm_flush(); }
-        }
-        ImGui::SameLine(); ImGui::SetNextItemWidth(120.0f);
-        int periodVal = (int)s_fullPeriod[ch];
-        if (ImGui::SliderInt("##period", &periodVal, 0, 1023)) {
-            s_fullPeriod[ch] = (uint16_t)periodVal;
-            if (s_connected) { sn76489_set_tone((uint8_t)ch, s_fullPeriod[ch]); spfm_flush(); }
-        }
-        ImGui::PopID();
-    }
-
-    // Noise
-    ImGui::PushID(100);
-    ImGui::TextColored(ImVec4(
-        ((kChColors[3] >> 0) & 0xFF) / 255.0f,
-        ((kChColors[3] >> 8) & 0xFF) / 255.0f,
-        ((kChColors[3] >> 16) & 0xFF) / 255.0f, 1.0f), "Noise");
-    ImGui::SameLine(); ImGui::SetNextItemWidth(60.0f);
-    int nVolVal = s_vol[3];
-    if (ImGui::SliderInt("##nvol", &nVolVal, 0, 15)) {
-        s_vol[3] = (uint8_t)nVolVal;
-        if (s_connected) { sn76489_set_vol(3, s_vol[3]); spfm_flush(); }
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Periodic##snp", s_noiseType == 0)) { s_noiseType = 0; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("White##snw", s_noiseType == 1)) { s_noiseType = 1; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Ch2##snfch2", s_noiseUseCh2)) { s_noiseUseCh2 = true; if (s_connected) { sn76489_set_noise(s_noiseType, 3); spfm_flush(); } }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Shift##snfsh", !s_noiseUseCh2)) { s_noiseUseCh2 = false; if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); } }
-    if (!s_noiseUseCh2) {
-        ImGui::SameLine(); ImGui::SetNextItemWidth(60.0f);
-        int nFreqVal = s_noiseFreq;
-        if (ImGui::SliderInt("##nfreq", &nFreqVal, 0, 3)) {
-            s_noiseFreq = (uint8_t)nFreqVal;
-            if (s_connected) { sn76489_set_noise(s_noiseType, s_noiseFreq); spfm_flush(); }
-        }
-    }
-    ImGui::PopID();
-}
-
 static void RenderRegisterTable(void) {
-    if (!ImGui::CollapsingHeader("Registers##snreg", nullptr, 0))
-        return;
+    ImGui::TextColored(ImVec4(0.7f, 0.8f, 1.0f, 1.0f), "SN76489 Registers");
+    ImGui::Separator();
 
     if (ImGui::BeginTable("##sn76489regs", 4,
             ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp)) {
@@ -1128,6 +1570,19 @@ static void RenderRegisterTable(void) {
 }
 
 static void RenderFileBrowser(void) {
+    // CollapsingHeader with filter on title bar (VGM-style)
+    ImGui::SetNextItemAllowOverlap();
+    bool browserOpen = ImGui::TreeNodeEx("SN File Browser##snfb",
+        ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_AllowOverlap |
+        ImGuiTreeNodeFlags_DefaultOpen);
+
+    // Filter on title bar
+    ImGui::SameLine(0, 12);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 8);
+    ImGui::InputTextWithHint("##snfbfilter", "Filter...", s_fileBrowserFilter, sizeof(s_fileBrowserFilter));
+
+    if (!browserOpen) return;
+
     // Navigation buttons
     if (ImGui::Button("<##snfbback", ImVec2(25, 0))) NavBack();
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Back");
@@ -1139,8 +1594,9 @@ static void RenderFileBrowser(void) {
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Up to parent directory");
     ImGui::SameLine();
 
-    // Breadcrumb path bar
-    float availWidth = ImGui::GetContentRegionAvail().x;
+    // Breadcrumb path bar (VGM-style: only show InputText when in edit mode)
+    if (!s_pathEditMode) {
+        float availWidth = ImGui::GetContentRegionAvail().x;
     std::vector<std::string> segments = MidiPlayer::SplitPath(s_currentPath);
     std::vector<float> buttonWidths;
     std::vector<std::string> accumulatedPaths;
@@ -1201,9 +1657,9 @@ static void RenderFileBrowser(void) {
             snprintf(s_pathInput, MAX_PATH, "%s", s_currentPath);
         }
     }
-
-    // Path edit mode
-    if (s_pathEditMode) {
+    } // end !s_pathEditMode
+    else {
+        // Path edit mode
         ImGui::SetNextItemWidth(-1);
         if (ImGui::InputText("##snPathInput", s_pathInput, MAX_PATH, ImGuiInputTextFlags_EnterReturnsTrue)) {
             NavigateTo(s_pathInput);
@@ -1221,27 +1677,6 @@ static void RenderFileBrowser(void) {
             s_pathEditModeJustActivated = false;
         }
     }
-
-    // Folder history dropdown
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(100);
-    if (ImGui::BeginCombo("##snHistCombo", "History")) {
-        for (int i = 0; i < (int)s_folderHistory.size(); i++) {
-            const char* slash = strrchr(s_folderHistory[i].c_str(), '\\');
-            const char* folderName = slash ? slash + 1 : s_folderHistory[i].c_str();
-            bool selected = false;
-            if (ImGui::Selectable(folderName, selected)) {
-                NavigateTo(s_folderHistory[i].c_str());
-            }
-            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", s_folderHistory[i].c_str());
-        }
-        ImGui::EndCombo();
-    }
-
-    // Filter
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(120);
-    ImGui::InputTextWithHint("##snFileFilter", "Filter...", s_fileBrowserFilter, sizeof(s_fileBrowserFilter));
 
     // File list
     float fileAreaHeight = ImGui::GetContentRegionAvail().y;
@@ -1275,15 +1710,17 @@ static void RenderFileBrowser(void) {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 1.0f, 0.2f, 1.0f));
 
         bool selected = (i == s_selectedFileIndex);
-        if (ImGui::Selectable(label, selected, ImGuiSelectableFlags_AllowDoubleClick)) {
+        if (ImGui::Selectable(label, selected)) {
             s_selectedFileIndex = i;
-            if (ImGui::IsMouseDoubleClicked(0)) {
-                if (entry.isDirectory) {
-                    if (entry.name == "..") NavToParent();
-                    else NavigateTo(entry.fullPath.c_str());
-                } else {
-                    if (LoadVGMFile(entry.fullPath.c_str()) && s_connected) StartVGMPlayback();
+            if (entry.isDirectory) {
+                if (entry.name == "..") NavToParent();
+                else NavigateTo(entry.fullPath.c_str());
+            } else {
+                s_currentPlayingFilePath = entry.fullPath;
+                for (int pi = 0; pi < (int)s_playlist.size(); pi++) {
+                    if (s_playlist[pi] == entry.fullPath) { s_playlistIndex = pi; break; }
                 }
+                if (LoadVGMFile(entry.fullPath.c_str())) StartVGMPlayback();
             }
         }
 
@@ -1436,16 +1873,30 @@ static void RenderLogPanel(void) {
 }
 
 static void RenderMain(void) {
-    // Top section: Player + Channel + Registers
-    float topHeight = ImGui::GetContentRegionAvail().y * 0.55f;
-    ImGui::BeginChild("SN_TopSection", ImVec2(0, topHeight), true);
-    RenderPlayerBar();
-    RenderChannelControls();
+    float pianoHeight      = 150;
+    float levelMeterHeight = 200;
+    float statusAreaWidth  = 460;
+    float topSectionHeight = pianoHeight + levelMeterHeight;
+
+    // Top section: Piano + LevelMeters (left) | Registers (right)
+    ImGui::BeginGroup();
+    ImGui::BeginChild("SN_PianoArea", ImVec2(ImGui::GetContentRegionAvail().x - statusAreaWidth, pianoHeight), false);
+    RenderPianoKeyboard();
+    ImGui::EndChild();
+    ImGui::BeginChild("SN_LevelMeterArea", ImVec2(ImGui::GetContentRegionAvail().x - statusAreaWidth, levelMeterHeight), false);
+    RenderLevelMeters();
+    ImGui::EndChild();
+    ImGui::EndGroup();
+
+    ImGui::SameLine();
+
+    ImGui::BeginChild("SN_StatusArea", ImVec2(statusAreaWidth - 10, topSectionHeight), false);
     RenderRegisterTable();
     ImGui::EndChild();
 
-    // Bottom section: File Browser | Log+History
+    // Bottom section: Player + FileBrowser | Log+History (matching VGM layout)
     ImGui::BeginChild("SN_BottomLeft", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0), true);
+    RenderPlayerBar();
     RenderFileBrowser();
     ImGui::EndChild();
 
@@ -1454,6 +1905,9 @@ static void RenderMain(void) {
     ImGui::BeginChild("SN_BottomRight", ImVec2(0, 0), true);
     RenderLogPanel();
     ImGui::EndChild();
+
+    // Scope (optional, very bottom)
+    RenderScopeArea();
 }
 
 void Render() {
@@ -1467,6 +1921,9 @@ void Render() {
     RenderMain();
     ImGui::EndChild();
     ImGui::End();
+
+    // Popups
+    RenderTestPopup();
 }
 
 bool WantsKeyboardCapture() { return false; }
