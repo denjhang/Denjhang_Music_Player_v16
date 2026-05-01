@@ -76,85 +76,85 @@ CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o: CMakeFiles/midifile_lib.d
 CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp
 CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o: CMakeFiles/midifile_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp
 
 CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp > CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp > CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.i
 
 CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Binasc.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/Binasc.cpp.s
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o: CMakeFiles/midifile_lib.dir/flags.make
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o: CMakeFiles/midifile_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.i
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEvent.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEvent.cpp.s
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o: CMakeFiles/midifile_lib.dir/flags.make
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o: CMakeFiles/midifile_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.i
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiEventList.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiEventList.cpp.s
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o: CMakeFiles/midifile_lib.dir/flags.make
 CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp
 CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o: CMakeFiles/midifile_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.i
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiFile.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiFile.cpp.s
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o: CMakeFiles/midifile_lib.dir/flags.make
 CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp
 CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o: CMakeFiles/midifile_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp > CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.i
 
 CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/MidiMessage.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/MidiMessage.cpp.s
 
 CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o: CMakeFiles/midifile_lib.dir/flags.make
 CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp
 CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o: CMakeFiles/midifile_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o -MF CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o.d -o CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp
 
 CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp > CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp > CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.i
 
 CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/src/Options.cpp -o CMakeFiles/midifile_lib.dir/midifile/src/Options.cpp.s
 
 # Object files for target midifile_lib
 midifile_lib_OBJECTS = \

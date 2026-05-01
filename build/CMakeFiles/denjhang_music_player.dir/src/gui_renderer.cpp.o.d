@@ -419,6 +419,7 @@ CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o: \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/basic_file.h \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++io.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/fstream.tcc \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.h \
  D:/msys64/mingw64/include/c++/15.2.0/math.h \
  D:/msys64/mingw64/include/c++/15.2.0/cmath \
  D:/msys64/mingw64/include/math.h \

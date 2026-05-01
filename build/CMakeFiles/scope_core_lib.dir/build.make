@@ -76,351 +76,351 @@ CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o: CMakeFiles/sco
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopn.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopn.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ym2151.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ym2151.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/scope_chip_reg.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/scope_chip_reg.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2149.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2149.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ay8910.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ay8910.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/sn76496.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/sn76496.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/k051649.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/k051649.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/fmopl.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/fmopl.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ymf262.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ymf262.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl2.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl2.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/adlibemu_opl3.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/adlibemu_opl3.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/emu2413.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/emu2413.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/segapcm.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/segapcm.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6258.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6258.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okim6295.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okim6295.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/okiadpcm.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/okiadpcm.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/saa1099_vb.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/saa1099_vb.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/Ootake_PSG.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/Ootake_PSG.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/c6280_mame.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/c6280_mame.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/nesintf.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/nesintf.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_apu.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_apu.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/np_nes_dmc.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/np_nes_dmc.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/gb.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/gb.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_24) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/pwm.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/pwm.c.s
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o: CMakeFiles/scope_core_lib.dir/flags.make
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o: CMakeFiles/scope_core_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_25) "Building C object CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o -MF CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o.d -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.i"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.i
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c > CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.i
 
 CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.s"
-	/mingw64/bin/cc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.s
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ws_audio.c -o CMakeFiles/scope_core_lib.dir/libvgm-modizer/emu/cores/ws_audio.c.s
 
 # Object files for target scope_core_lib
 scope_core_lib_OBJECTS = \

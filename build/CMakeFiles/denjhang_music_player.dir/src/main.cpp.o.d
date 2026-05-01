@@ -424,6 +424,7 @@ CMakeFiles/denjhang_music_player.dir/src/main.cpp.o: \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_window.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imconfig.h \
  D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/float.h \

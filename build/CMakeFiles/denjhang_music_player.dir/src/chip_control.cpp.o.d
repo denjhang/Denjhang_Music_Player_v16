@@ -337,6 +337,7 @@ CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o: \
  D:/msys64/mingw64/include/sec_api/stralign_s.h \
  D:/msys64/mingw64/include/winsvc.h D:/msys64/mingw64/include/mcx.h \
  D:/msys64/mingw64/include/imm.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gui_renderer.h \
  D:/msys64/mingw64/include/d3d11.h D:/msys64/mingw64/include/ocidl.h \
  D:/msys64/mingw64/include/dxgi.h D:/msys64/mingw64/include/dxgitype.h \

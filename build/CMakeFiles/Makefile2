@@ -94,7 +94,7 @@ clean: CMakeFiles/scope_core_lib.dir/clean
 CMakeFiles/imgui_lib.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui_lib.dir/build.make CMakeFiles/imgui_lib.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui_lib.dir/build.make CMakeFiles/imgui_lib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=17,18,19,20,21,22,23 "Built target imgui_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=19,20,21,22,23,24,25 "Built target imgui_lib"
 .PHONY : CMakeFiles/imgui_lib.dir/all
 
 # Build rule for subdir invocation for target.
@@ -111,7 +111,7 @@ imgui_lib: CMakeFiles/imgui_lib.dir/rule
 # codegen rule for target.
 CMakeFiles/imgui_lib.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/imgui_lib.dir/build.make CMakeFiles/imgui_lib.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=17,18,19,20,21,22,23 "Finished codegen for target imgui_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=19,20,21,22,23,24,25 "Finished codegen for target imgui_lib"
 .PHONY : CMakeFiles/imgui_lib.dir/codegen
 
 # clean rule for target.
@@ -126,7 +126,7 @@ CMakeFiles/imgui_lib.dir/clean:
 CMakeFiles/midifile_lib.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/midifile_lib.dir/build.make CMakeFiles/midifile_lib.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/midifile_lib.dir/build.make CMakeFiles/midifile_lib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=24,25,26,27,28,29,30 "Built target midifile_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=26,27,28,29,30,31,32 "Built target midifile_lib"
 .PHONY : CMakeFiles/midifile_lib.dir/all
 
 # Build rule for subdir invocation for target.
@@ -143,7 +143,7 @@ midifile_lib: CMakeFiles/midifile_lib.dir/rule
 # codegen rule for target.
 CMakeFiles/midifile_lib.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/midifile_lib.dir/build.make CMakeFiles/midifile_lib.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=24,25,26,27,28,29,30 "Finished codegen for target midifile_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=26,27,28,29,30,31,32 "Finished codegen for target midifile_lib"
 .PHONY : CMakeFiles/midifile_lib.dir/codegen
 
 # clean rule for target.
@@ -160,12 +160,12 @@ CMakeFiles/denjhang_music_player.dir/all: CMakeFiles/imgui_lib.dir/all
 CMakeFiles/denjhang_music_player.dir/all: CMakeFiles/midifile_lib.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 "Built target denjhang_music_player"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 "Built target denjhang_music_player"
 .PHONY : CMakeFiles/denjhang_music_player.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/denjhang_music_player.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles 56
+	$(CMAKE_COMMAND) -E cmake_progress_start /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/denjhang_music_player.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles 0
 .PHONY : CMakeFiles/denjhang_music_player.dir/rule
@@ -177,7 +177,7 @@ denjhang_music_player: CMakeFiles/denjhang_music_player.dir/rule
 # codegen rule for target.
 CMakeFiles/denjhang_music_player.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 "Finished codegen for target denjhang_music_player"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18 "Finished codegen for target denjhang_music_player"
 .PHONY : CMakeFiles/denjhang_music_player.dir/codegen
 
 # clean rule for target.
@@ -192,7 +192,7 @@ CMakeFiles/denjhang_music_player.dir/clean:
 CMakeFiles/scope_core_lib.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/scope_core_lib.dir/build.make CMakeFiles/scope_core_lib.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/scope_core_lib.dir/build.make CMakeFiles/scope_core_lib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56 "Built target scope_core_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58 "Built target scope_core_lib"
 .PHONY : CMakeFiles/scope_core_lib.dir/all
 
 # Build rule for subdir invocation for target.
@@ -209,7 +209,7 @@ scope_core_lib: CMakeFiles/scope_core_lib.dir/rule
 # codegen rule for target.
 CMakeFiles/scope_core_lib.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/scope_core_lib.dir/build.make CMakeFiles/scope_core_lib.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56 "Finished codegen for target scope_core_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58 "Finished codegen for target scope_core_lib"
 .PHONY : CMakeFiles/scope_core_lib.dir/codegen
 
 # clean rule for target.

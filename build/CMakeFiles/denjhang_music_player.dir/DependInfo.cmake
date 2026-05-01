@@ -30,6 +30,7 @@ set(CMAKE_RC_TARGET_INCLUDE_PATH
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.c" "CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/winmm.c" "CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o.d"
+  "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489/spfm_lite.c" "CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_control.cpp" "CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.cpp" "CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/config_manager.cpp" "CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o.d"
@@ -40,6 +41,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.cpp" "CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.cpp" "CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_window.cpp" "CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o.d"
+  "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.cpp" "CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.cpp" "CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o.d"
   "/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_window.cpp" "CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o" "gcc" "CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o.d"
   )

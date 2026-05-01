@@ -1352,6 +1352,54 @@ src/opl3_window.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.s
 .PHONY : src/opl3_window.cpp.s
 
+src/sn76489/spfm_lite.o: src/sn76489/spfm_lite.c.o
+.PHONY : src/sn76489/spfm_lite.o
+
+# target to build an object file
+src/sn76489/spfm_lite.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o
+.PHONY : src/sn76489/spfm_lite.c.o
+
+src/sn76489/spfm_lite.i: src/sn76489/spfm_lite.c.i
+.PHONY : src/sn76489/spfm_lite.i
+
+# target to preprocess a source file
+src/sn76489/spfm_lite.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.i
+.PHONY : src/sn76489/spfm_lite.c.i
+
+src/sn76489/spfm_lite.s: src/sn76489/spfm_lite.c.s
+.PHONY : src/sn76489/spfm_lite.s
+
+# target to generate assembly for a file
+src/sn76489/spfm_lite.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.s
+.PHONY : src/sn76489/spfm_lite.c.s
+
+src/sn76489_window.o: src/sn76489_window.cpp.o
+.PHONY : src/sn76489_window.o
+
+# target to build an object file
+src/sn76489_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o
+.PHONY : src/sn76489_window.cpp.o
+
+src/sn76489_window.i: src/sn76489_window.cpp.i
+.PHONY : src/sn76489_window.i
+
+# target to preprocess a source file
+src/sn76489_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.i
+.PHONY : src/sn76489_window.cpp.i
+
+src/sn76489_window.s: src/sn76489_window.cpp.s
+.PHONY : src/sn76489_window.s
+
+# target to generate assembly for a file
+src/sn76489_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.s
+.PHONY : src/sn76489_window.cpp.s
+
 src/vgm_parser.o: src/vgm_parser.cpp.o
 .PHONY : src/vgm_parser.o
 
@@ -1560,6 +1608,12 @@ help:
 	@echo "... src/opl3_window.o"
 	@echo "... src/opl3_window.i"
 	@echo "... src/opl3_window.s"
+	@echo "... src/sn76489/spfm_lite.o"
+	@echo "... src/sn76489/spfm_lite.i"
+	@echo "... src/sn76489/spfm_lite.s"
+	@echo "... src/sn76489_window.o"
+	@echo "... src/sn76489_window.i"
+	@echo "... src/sn76489_window.s"
 	@echo "... src/vgm_parser.o"
 	@echo "... src/vgm_parser.i"
 	@echo "... src/vgm_parser.s"

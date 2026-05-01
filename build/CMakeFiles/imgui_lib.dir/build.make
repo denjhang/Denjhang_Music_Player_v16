@@ -76,85 +76,85 @@ CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o: CMakeFiles/imgui_lib.dir/flags.make
 CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp
 CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o: CMakeFiles/imgui_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp
 
 CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.i
 
 CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui.cpp.s
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o: CMakeFiles/imgui_lib.dir/flags.make
 CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp
 CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o: CMakeFiles/imgui_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.i
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_draw.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_draw.cpp.s
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o: CMakeFiles/imgui_lib.dir/flags.make
 CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp
 CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o: CMakeFiles/imgui_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.i
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_tables.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_tables.cpp.s
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o: CMakeFiles/imgui_lib.dir/flags.make
 CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp
 CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o: CMakeFiles/imgui_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.i
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_widgets.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_widgets.cpp.s
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o: CMakeFiles/imgui_lib.dir/flags.make
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o: CMakeFiles/imgui_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.i
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_win32.cpp.s
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o: CMakeFiles/imgui_lib.dir/flags.make
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o: CMakeFiles/imgui_lib.dir/compiler_depend.ts
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o -MF CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o.d -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.i"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.i
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp > CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.i
 
 CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.s"
-	/mingw64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.s
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.cpp -o CMakeFiles/imgui_lib.dir/imgui/imgui_impl_dx11.cpp.s
 
 # Object files for target imgui_lib
 imgui_lib_OBJECTS = \
