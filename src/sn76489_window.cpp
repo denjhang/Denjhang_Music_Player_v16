@@ -30,11 +30,19 @@ namespace SN76489Window {
 // ============ Constants ============
 static const int SN_SAMPLE_RATE = 44100;
 
-static ImU32 kChColors[4] = {
-    IM_COL32(80, 220, 80, 255),   // Ch0: green
-    IM_COL32(80, 140, 255, 255),  // Ch1: blue
-    IM_COL32(255, 80, 80, 255),   // Ch2: red
-    IM_COL32(255, 180, 60, 255)   // Ch3: orange (noise)
+static ImU32 kChColors[5] = {
+    IM_COL32(160, 200, 160, 255), // Ch0: green
+    IM_COL32(160, 160, 200, 255), // Ch1: blue
+    IM_COL32(200, 160, 160, 255), // Ch2: red
+    IM_COL32(160, 160, 160, 255), // Ch3: periodic noise (gray)
+    IM_COL32(200, 200, 160, 255),  // Ch4: white noise (yellow)
+};
+static ImU32 kCh2Colors[5] = {
+    IM_COL32(200, 160, 200, 255), // Ch0: purple
+    IM_COL32(200, 200, 160, 255), // Ch1: yellow
+    IM_COL32(160, 200, 200, 255), // Ch2: cyan
+    IM_COL32(200, 160, 160, 255), // Ch3: periodic noise (pink)
+    IM_COL32(160, 200, 200, 255),  // Ch4: white noise (cyan)
 };
 static const char* kChNames[4] = { "Tone0", "Tone1", "Tone2", "Noise" };
 
@@ -42,6 +50,7 @@ static const char* kChNames[4] = { "Tone0", "Tone1", "Tone2", "Noise" };
 static bool s_connected = false;
 static bool s_connected2 = true; // 2nd SN76489 (slot 1, T6W28 noise chip)
 static bool s_manualDisconnect = false;
+static ImU32 kChColorsCustom[10] = {}; // 0=use default
 
 // ============ Test State ============
 static bool s_testRunning = false;
@@ -99,10 +108,13 @@ static const int SN_PIANO_KEYS = SN_PIANO_HIGH - SN_PIANO_LOW + 1;
 static bool s_pianoKeyOn[SN_PIANO_KEYS] = {};
 static float s_pianoKeyLevel[SN_PIANO_KEYS] = {};
 static int s_pianoKeyChannel[SN_PIANO_KEYS] = {};
+static int s_pianoKeyNoiseType[SN_PIANO_KEYS] = {}; // -1=not noise, 0=periodic, 1=white
 static const bool s_isBlackNote[12] = {false, true, false, true, false, false, true, false, true, false, true, false};
+static int s_shiftNoteMap[3] = {96, 84, 72}; // sf0→C7, sf1→C6, sf2→C5
 
 // ============ Level Meter State ============
 static float s_channelLevel[4] = {};
+static float s2_channelLevel[4] = {};
 
 // ============ Scope State ============
 static ModizerViz s_scope;
@@ -392,6 +404,27 @@ static void LoadConfig(void) {
     }
 
     DcLog("[SN] Config loaded\n");
+
+    // Channel colors
+    for (int i = 0; i < 10; i++) {
+        char key[64];
+        snprintf(key, sizeof(key), "ChColor%d", i);
+        char val[32] = "";
+        GetPrivateProfileStringA("Colors", key, "", val, sizeof(val), s_configPath);
+        if (val[0]) {
+            unsigned int c = (unsigned int)strtoul(val, NULL, 16);
+            if (c > 0) kChColorsCustom[i] = (ImU32)c;
+        }
+    }
+
+    // Shift note map
+    for (int i = 0; i < 3; i++) {
+        char key[64];
+        snprintf(key, sizeof(key), "ShiftNote%d", i);
+        s_shiftNoteMap[i] = GetPrivateProfileIntA("Noise", key, s_shiftNoteMap[i], s_configPath);
+        if (s_shiftNoteMap[i] < 0) s_shiftNoteMap[i] = 0;
+        if (s_shiftNoteMap[i] > 127) s_shiftNoteMap[i] = 127;
+    }
 }
 
 static void SaveConfig(void) {
@@ -406,6 +439,24 @@ static void SaveConfig(void) {
         char key[64];
         snprintf(key, sizeof(key), "Folder%d", i);
         WritePrivateProfileStringA("SnFolderHistory", key, s_folderHistory[i].c_str(), s_configPath);
+    }
+
+    // Channel colors
+    for (int i = 0; i < 10; i++) {
+        char key[64], val[32];
+        snprintf(key, sizeof(key), "ChColor%d", i);
+        if (kChColorsCustom[i] != 0) {
+            snprintf(val, sizeof(val), "%08X", kChColorsCustom[i]);
+            WritePrivateProfileStringA("Colors", key, val, s_configPath);
+        }
+    }
+
+    // Shift note map
+    for (int i = 0; i < 3; i++) {
+        char key[64], val[32];
+        snprintf(key, sizeof(key), "ShiftNote%d", i);
+        snprintf(val, sizeof(val), "%d", s_shiftNoteMap[i]);
+        WritePrivateProfileStringA("Noise", key, val, s_configPath);
     }
 }
 
@@ -533,21 +584,86 @@ static void UpdateChannelLevels(void) {
         s_pianoKeyOn[i] = false;
         s_pianoKeyLevel[i] = 0.0f;
         s_pianoKeyChannel[i] = -1;
+        s_pianoKeyNoiseType[i] = -1;
     }
 
+    // Slot 0 (main SN76489)
     for (int ch = 0; ch < 4; ch++) {
         float target = (15.0f - (float)s_vol[ch]) / 15.0f;
         s_channelLevel[ch] += (target - s_channelLevel[ch]) * 0.3f;
         if (s_channelLevel[ch] < 0.001f) s_channelLevel[ch] = 0.0f;
 
-        // Piano: only tone channels (0-2)
         if (ch < 3 && s_channelLevel[ch] > 0.01f) {
             int midi = period_to_midi_note(s_fullPeriod[ch]);
             if (midi >= SN_PIANO_LOW && midi <= SN_PIANO_HIGH) {
                 int idx = midi - SN_PIANO_LOW;
-                s_pianoKeyOn[idx] = true;
-                s_pianoKeyLevel[idx] = s_channelLevel[ch];
-                s_pianoKeyChannel[idx] = ch;
+                if (!s_pianoKeyOn[idx] || s_channelLevel[ch] > s_pianoKeyLevel[idx]) {
+                    s_pianoKeyOn[idx] = true;
+                    s_pianoKeyLevel[idx] = s_channelLevel[ch];
+                    s_pianoKeyChannel[idx] = ch; // 0-2
+                }
+            }
+        } else if (ch == 3 && s_channelLevel[3] > 0.01f) {
+            // Noise channel piano (参考 VGM: white noise→固定音高, periodic→ch2 period)
+            int midi = -1;
+            if (s_noiseType == 1) {
+                // 白噪音: 固定映射音符
+                midi = s_shiftNoteMap[0];
+            } else if (s_noiseUseCh2) {
+                // 周期性噪音 ch2 模式: LFSR 输出频率 = 方波频率 / 16，低3个八度
+                if (s_fullPeriod[2] > 0)
+                    midi = period_to_midi_note(s_fullPeriod[2]) - 36;
+            } else {
+                // 周期性噪音 shift 模式: 用分频映射
+                midi = s_shiftNoteMap[s_noiseFreq & 3];
+            }
+            if (midi >= SN_PIANO_LOW && midi <= SN_PIANO_HIGH) {
+                int idx = midi - SN_PIANO_LOW;
+                if (!s_pianoKeyOn[idx] || s_channelLevel[3] > s_pianoKeyLevel[idx]) {
+                    s_pianoKeyOn[idx] = true;
+                    s_pianoKeyLevel[idx] = s_channelLevel[3];
+                    s_pianoKeyChannel[idx] = 3; // slot0 noise
+                    s_pianoKeyNoiseType[idx] = s_noiseType;
+                }
+            }
+        }
+    }
+
+    // Slot 1 (2nd SN76489)
+    for (int ch = 0; ch < 4; ch++) {
+        float target = (15.0f - (float)s2_vol[ch]) / 15.0f;
+        s2_channelLevel[ch] += (target - s2_channelLevel[ch]) * 0.3f;
+        if (s2_channelLevel[ch] < 0.001f) s2_channelLevel[ch] = 0.0f;
+
+        if (ch < 3 && s2_channelLevel[ch] > 0.01f) {
+            int midi = period_to_midi_note(s2_fullPeriod[ch]);
+            if (midi >= SN_PIANO_LOW && midi <= SN_PIANO_HIGH) {
+                int idx = midi - SN_PIANO_LOW;
+                if (!s_pianoKeyOn[idx] || s2_channelLevel[ch] > s_pianoKeyLevel[idx]) {
+                    s_pianoKeyOn[idx] = true;
+                    s_pianoKeyLevel[idx] = s2_channelLevel[ch];
+                    s_pianoKeyChannel[idx] = ch + 4; // 4-6
+                }
+            }
+        } else if (ch == 3 && s2_channelLevel[3] > 0.01f) {
+            // Slot1 noise (参考 VGM: white→固定, periodic→ch2 period)
+            int midi = -1;
+            if (s2_noiseType == 1) {
+                midi = s_shiftNoteMap[0];
+            } else if (s2_noiseUseCh2) {
+                if (s2_fullPeriod[2] > 0)
+                    midi = period_to_midi_note(s2_fullPeriod[2]) - 36;
+            } else {
+                midi = s_shiftNoteMap[s2_noiseFreq & 3];
+            }
+            if (midi >= SN_PIANO_LOW && midi <= SN_PIANO_HIGH) {
+                int idx = midi - SN_PIANO_LOW;
+                if (!s_pianoKeyOn[idx] || s2_channelLevel[3] > s_pianoKeyLevel[idx]) {
+                    s_pianoKeyOn[idx] = true;
+                    s_pianoKeyLevel[idx] = s2_channelLevel[3];
+                    s_pianoKeyChannel[idx] = 7; // slot1 noise
+                    s_pianoKeyNoiseType[idx] = s2_noiseType;
+                }
             }
         }
     }
@@ -766,7 +882,7 @@ static int VGMProcessCommand(void) {
                 // Passthrough: 全部转发到 slot0
                 sn76489_write(data); safe_flush();
             } else if (s_t6w28Mode == 2) {
-                // Dual Chip: slot1 按需转发 0x30
+                // Dual Chip: slot1 只接收噪音相关数据
                 if (s_connected2) {
                     if ((data & 0x80)) {
                         int ch = (data >> 5) & 3;
@@ -775,20 +891,22 @@ static int VGMProcessCommand(void) {
                             // ch0/1 方波: 始终屏蔽
                         } else if (ch == 2) {
                             if (isVol) {
-                                // ch2 音量: 静音 (写 0xF)
-                                sn76489_write2(0x9F); safe_flush();
-                            } else {
+                                // ch2 方波音量: 不发（无意义）
+                            } else if (s2_noiseUseCh2) {
                                 // ch2 tone: 只在噪音用 ch2 模式时传
-                                if (s2_noiseUseCh2) {
-                                    sn76489_write2(data); safe_flush();
-                                }
+                                sn76489_write2(data); safe_flush();
                             }
                         } else {
-                            // ch3 噪音: 始终传
+                            // ch3 噪音: 始终传（ctrl + volume 都属于 noise chip）
                             sn76489_write2(data); safe_flush();
                         }
                     } else {
-                        sn76489_write2(data); safe_flush();
+                        // Data byte: 只在 lastLatch 是 ch2 tone 或 ch3 时传
+                        if (s_t6w28LastLatchReg == 4 && s2_noiseUseCh2) {
+                            sn76489_write2(data); safe_flush();
+                        } else if (s_t6w28LastLatchReg >= 6) {
+                            sn76489_write2(data); safe_flush();
+                        }
                     }
                 }
             } else {
@@ -823,13 +941,22 @@ static int VGMProcessCommand(void) {
             if (data & 0x80) {
                 int ch = (data >> 5) & 3;
                 if (data & 0x10) {
-                    if (ch < 4) { s_vol[ch] = data & 0x0F; if (ch == 2) tone2VolUpdated = true; }
+                    if (ch < 4) {
+                        // Dual Chip: ch3 噪音音量不发到 slot0，不更新 shadow
+                        if (!(s_t6w28Mode == 2 && s_isT6W28 && ch == 3)) {
+                            s_vol[ch] = data & 0x0F;
+                            if (ch == 2) tone2VolUpdated = true;
+                        }
+                    }
                 } else if (ch == 3) {
-                    s_noiseType = (data >> 2) & 1;
-                    uint8_t sf = data & 0x03;
-                    if (sf == 3) { s_noiseUseCh2 = true; }
-                    else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
-                    noiseCtrlUpdated = true;
+                    // Dual Chip: ch3 噪音控制不发到 slot0，不更新 shadow
+                    if (!(s_t6w28Mode == 2 && s_isT6W28)) {
+                        s_noiseType = (data >> 2) & 1;
+                        uint8_t sf = data & 0x03;
+                        if (sf == 3) { s_noiseUseCh2 = true; }
+                        else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
+                        noiseCtrlUpdated = true;
+                    }
                 } else {
                     if (ch < 3) { s_fullPeriod[ch] = (s_fullPeriod[ch] & 0x3F0) | (data & 0x0F); s_lastToneLatchCh = ch; if (ch == 2) tone2Updated = true; }
                 }
@@ -1166,100 +1293,98 @@ void Update() {
 }
 
 // ============ Piano Keyboard ============
+static ImU32 getChColor(int ch, int noiseType = -1) {
+    // ch 0-2 = tone, 3 = noise (slot0), 4-6 = tone (slot1), 7 = noise (slot1)
+    // noiseType: 0=periodic, 1=white, -1=use default (periodic)
+    int colorIdx;
+    int customIdx;
+    if (ch <= 2) {
+        colorIdx = ch; customIdx = ch;
+    } else if (ch == 3) {
+        colorIdx = (noiseType >= 0) ? 3 + noiseType : 3; // 3=periodic, 4=white
+        customIdx = colorIdx;
+    } else if (ch <= 6) {
+        colorIdx = ch - 4 + 5; // slot1 tone: 4→5, 5→6, 6→7
+        customIdx = colorIdx;
+    } else { // ch == 7
+        colorIdx = (noiseType >= 0) ? 3 + noiseType : 3; // 3 or 4
+        customIdx = colorIdx + 5; // slot1 noise: 8=periodic, 9=white
+    }
+    if (customIdx >= 0 && customIdx < 10 && kChColorsCustom[customIdx] != 0) return kChColorsCustom[customIdx];
+    if (colorIdx < 5) return kChColors[colorIdx];
+    return kCh2Colors[colorIdx - 5];
+}
+
+static ImU32 blendKey(ImU32 col, float lv, bool isBlack) {
+    float blendLv = 0.55f + lv * 0.45f;
+    int r = (col >>  0) & 0xFF;
+    int g = (col >>  8) & 0xFF;
+    int b = (col >> 16) & 0xFF;
+    int br = isBlack ? 20 : 255;
+    return IM_COL32(
+        br + (int)((r - br) * blendLv),
+        br + (int)((g - br) * blendLv),
+        br + (int)((b - br) * blendLv), 255);
+}
+
+static ImU32 getKeyColor(int idx, float level) {
+    int ch = s_pianoKeyChannel[idx];
+    ImU32 col = (ch >= 0) ? getChColor(ch, s_pianoKeyNoiseType[idx]) : IM_COL32(160, 200, 160, 255);
+    return blendKey(col, level, false);
+}
+
+static ImU32 getKeyColorBlack(int idx, float level) {
+    int ch = s_pianoKeyChannel[idx];
+    ImU32 col = (ch >= 0) ? getChColor(ch, s_pianoKeyNoiseType[idx]) : IM_COL32(160, 200, 160, 255);
+    return blendKey(col, level, true);
+}
+
 static void RenderPianoKeyboard(void) {
     ImGui::BeginChild("SN_Piano", ImVec2(0, 150), true, ImGuiWindowFlags_HorizontalScrollbar);
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
     ImVec2 p = ImGui::GetCursorScreenPos();
     float availW = ImGui::GetContentRegionAvail().x;
-
-    float whiteKeyW = 20.0f;
     float whiteKeyH = 100.0f;
-    float blackKeyW = 12.0f;
     float blackKeyH = 60.0f;
 
-    int numOctaves = 6;  // C1-B7
-    int totalWhite = numOctaves * 7; // 42
-    float pianoW = totalWhite * whiteKeyW;
-    float offsetX = (availW > pianoW) ? (availW - pianoW) * 0.5f : 0.0f;
+    const int kMinNote = SN_PIANO_LOW;
+    const int kMaxNote = SN_PIANO_HIGH;
 
-    auto getKeyColor = [&](int idx, float level) -> ImU32 {
-        int ch = s_pianoKeyChannel[idx];
-        if (ch >= 0 && ch < 4) {
-            ImVec4 c = ImVec4(
-                ((kChColors[ch] >>  0) & 0xFF) / 255.0f,
-                ((kChColors[ch] >>  8) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f);
-            int r = (int)(c.x * 255 * (0.3f + 0.7f * level));
-            int g = (int)(c.y * 255 * (0.3f + 0.7f * level));
-            int b = (int)(c.z * 255 * (0.3f + 0.7f * level));
-            return IM_COL32(r, g, b, 255);
+    int numWhiteKeys = 0;
+    for (int n = kMinNote; n <= kMaxNote; n++) if (!s_isBlackNote[n % 12]) numWhiteKeys++;
+
+    float whiteKeyW = availW / (float)numWhiteKeys;
+    if (whiteKeyW < 6.0f) whiteKeyW = 6.0f;
+    float blackKeyW = whiteKeyW * 0.65f;
+
+    // Pass 1: white keys
+    int wkIdx = 0;
+    for (int n = kMinNote; n <= kMaxNote; n++) {
+        if (s_isBlackNote[n % 12]) continue;
+        int idx = n - SN_PIANO_LOW;
+        float x = p.x + wkIdx * whiteKeyW;
+        ImU32 fillCol = s_pianoKeyOn[idx] ? getKeyColor(idx, s_pianoKeyLevel[idx]) : IM_COL32(255, 255, 255, 255);
+        dl->AddRectFilled(ImVec2(x, p.y), ImVec2(x + whiteKeyW - 1, p.y + whiteKeyH), fillCol);
+        dl->AddRect(ImVec2(x, p.y), ImVec2(x + whiteKeyW, p.y + whiteKeyH), IM_COL32(0, 0, 0, 255));
+        if (n % 12 == 0) {
+            char lbl[8];
+            snprintf(lbl, sizeof(lbl), "C%d", n / 12 - 1);
+            dl->AddText(ImVec2(x + 2, p.y + whiteKeyH - 18), IM_COL32(0, 0, 0, 255), lbl);
         }
-        return IM_COL32((int)(40 + 180 * level), (int)(80 + 175 * level), 255, 255);
-    };
-
-    auto getKeyColorBlack = [&](int idx, float level) -> ImU32 {
-        int ch = s_pianoKeyChannel[idx];
-        if (ch >= 0 && ch < 4) {
-            ImVec4 c = ImVec4(
-                ((kChColors[ch] >>  0) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 8) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f);
-            int r = (int)(c.x * 255 * (0.2f + 0.6f * level));
-            int g = (int)(c.y * 255 * (0.2f + 0.6f * level));
-            int b = (int)(c.z * 255 * (0.2f + 0.6f * level));
-            return IM_COL32(r, g, b, 255);
-        }
-        return IM_COL32((int)(30 + 150 * level), (int)(60 + 155 * level), 255, 255);
-    };
-
-    // Draw white keys
-    int wkc = 0;
-    for (int oct = 0; oct < numOctaves; oct++) {
-        for (int n = 0; n < 12; n++) {
-            if (s_isBlackNote[n]) continue;
-            int midi = SN_PIANO_LOW + oct * 12 + n;
-            int idx = midi - SN_PIANO_LOW;
-            float x = p.x + offsetX + wkc * whiteKeyW;
-            float y = p.y;
-
-            ImU32 color = s_pianoKeyOn[idx] ? getKeyColor(idx, s_pianoKeyLevel[idx]) : IM_COL32(255, 255, 255, 255);
-            dl->AddRectFilled(ImVec2(x, y), ImVec2(x + whiteKeyW, y + whiteKeyH), color);
-            dl->AddRect(ImVec2(x, y), ImVec2(x + whiteKeyW, y + whiteKeyH), IM_COL32(0, 0, 0, 255));
-
-            if (n == 0) {
-                char lbl[8];
-                snprintf(lbl, sizeof(lbl), "C%d", oct + 1);
-                dl->AddText(ImVec2(x + 2, y + whiteKeyH - 18), IM_COL32(0, 0, 0, 255), lbl);
-            }
-            wkc++;
-        }
+        wkIdx++;
     }
 
-    // Draw black keys
-    wkc = 0;
-    for (int oct = 0; oct < numOctaves; oct++) {
-        for (int n = 0; n < 12; n++) {
-            if (!s_isBlackNote[n]) continue;
-            int midi = SN_PIANO_LOW + oct * 12 + n;
-            int idx = midi - SN_PIANO_LOW;
-
-            int wkOff = 0;
-            if (n == 1) wkOff = 0;
-            else if (n == 3) wkOff = 1;
-            else if (n == 6) wkOff = 3;
-            else if (n == 8) wkOff = 4;
-            else if (n == 10) wkOff = 5;
-
-            float x = p.x + offsetX + (wkc + wkOff) * whiteKeyW - blackKeyW / 2;
-            float y = p.y;
-
-            ImU32 color = (idx >= 0 && idx < SN_PIANO_KEYS && s_pianoKeyOn[idx])
-                ? getKeyColorBlack(idx, s_pianoKeyLevel[idx]) : IM_COL32(0, 0, 0, 255);
-            dl->AddRectFilled(ImVec2(x, y), ImVec2(x + blackKeyW, y + blackKeyH), color);
-            dl->AddRect(ImVec2(x, y), ImVec2(x + blackKeyW, y + blackKeyH), IM_COL32(128, 128, 128, 255));
-        }
-        wkc += 7;
+    // Pass 2: black keys
+    wkIdx = 0;
+    for (int n = kMinNote; n <= kMaxNote; n++) {
+        if (!s_isBlackNote[n % 12]) { wkIdx++; continue; }
+        int idx = n - SN_PIANO_LOW;
+        float x = p.x + (wkIdx - 1) * whiteKeyW + whiteKeyW - blackKeyW * 0.5f;
+        ImU32 fillCol = (idx >= 0 && idx < SN_PIANO_KEYS && s_pianoKeyOn[idx])
+            ? getKeyColorBlack(idx, s_pianoKeyLevel[idx]) : IM_COL32(0, 0, 0, 255);
+        dl->AddRectFilled(ImVec2(x, p.y), ImVec2(x + blackKeyW, p.y + blackKeyH), fillCol);
+        dl->AddRect(ImVec2(x, p.y), ImVec2(x + blackKeyW, p.y + blackKeyH), IM_COL32(128, 128, 128, 255));
     }
 
     ImGui::EndChild();
@@ -1274,10 +1399,14 @@ static void RenderLevelMeters(void) {
     float availW = ImGui::GetContentRegionAvail().x;
     float availH = ImGui::GetContentRegionAvail().y;
 
-    float groupW = availW / 4.0f;
-    float meterW = (groupW - 24.0f) / 1.0f;
-    if (meterW > 40.0f) meterW = 40.0f;
-    float meterH = availH - 30.0f;
+    int numCh = 8; // 4 per chip
+    float groupW = availW / (float)numCh;
+    float meterW = groupW - 8.0f;
+    if (meterW > 28.0f) meterW = 28.0f;
+    float labelH = 20.0f;
+    float volTextH = 18.0f;
+    float meterH = availH - labelH - volTextH - 4.0f;
+    if (meterH < 10.0f) meterH = 10.0f;
 
     auto levelToDB = [](float level) -> float {
         if (level <= 0.0f) return 0.0f;
@@ -1300,38 +1429,45 @@ static void RenderLevelMeters(void) {
         }
     };
 
-    for (int ch = 0; ch < 4; ch++) {
-        float chX = p.x + ch * groupW;
-        float centerX = chX + (groupW - meterW) * 0.5f;
-        float mY = p.y + 22.0f;
+    static const char* kChLabels[8] = {"T0", "T1", "T2", "N", "2T0", "2T1", "2T2", "2N"};
+
+    for (int i = 0; i < numCh; i++) {
+        int chip = i / 4;  // 0 or 1
+        int ch = i % 4;
+
+        float centerX = p.x + i * groupW + groupW * 0.5f;
+        float mY = p.y + labelH;
 
         // Label
-        ImU32 labelCol = kChColors[ch];
-        ImVec2 textSize = ImGui::CalcTextSize(kChNames[ch]);
-        dl->AddText(ImVec2(centerX - textSize.x * 0.5f, p.y + 4), labelCol, kChNames[ch]);
+        int noiseType = (ch == 3) ? ((chip == 0) ? s_noiseType : s2_noiseType) : -1;
+        ImU32 labelCol = getChColor(chip * 4 + ch, noiseType);
+        ImVec2 textSize = ImGui::CalcTextSize(kChLabels[i]);
+        dl->AddText(ImVec2(centerX - textSize.x * 0.5f, p.y + 3), labelCol, kChLabels[i]);
 
         // Background
-        dl->AddRectFilled(ImVec2(centerX, mY), ImVec2(centerX + meterW, mY + meterH), IM_COL32(30, 30, 30, 255));
-        dl->AddRect(ImVec2(centerX, mY), ImVec2(centerX + meterW, mY + meterH), IM_COL32(100, 100, 100, 255));
+        dl->AddRectFilled(ImVec2(centerX - meterW * 0.5f, mY), ImVec2(centerX + meterW * 0.5f, mY + meterH), IM_COL32(30, 30, 30, 255));
+        dl->AddRect(ImVec2(centerX - meterW * 0.5f, mY), ImVec2(centerX + meterW * 0.5f, mY + meterH), IM_COL32(100, 100, 100, 255));
 
-        float displayLevel = levelToDB(s_channelLevel[ch]);
+        float level = (chip == 0) ? s_channelLevel[ch] : s2_channelLevel[ch];
+        float displayLevel = levelToDB(level);
         if (displayLevel > 0.01f) {
             float barH = meterH * displayLevel;
             float barY = mY + meterH - barH;
             int segs = 20;
-            for (int i = 0; i < segs; i++) {
+            for (int s = 0; s < segs; s++) {
                 float segH = barH / segs;
-                float segY = barY + i * segH;
-                float segLvl = (float)(segs - i) / segs * displayLevel;
-                dl->AddRectFilled(ImVec2(centerX + 1, segY), ImVec2(centerX + meterW - 1, segY + segH), getLevelColor(segLvl));
+                float segY = barY + s * segH;
+                float segLvl = (float)(segs - s) / segs * displayLevel;
+                dl->AddRectFilled(ImVec2(centerX - meterW * 0.5f + 1, segY), ImVec2(centerX + meterW * 0.5f - 1, segY + segH), getLevelColor(segLvl));
             }
         }
 
         // Volume value
+        uint8_t vol = (chip == 0) ? s_vol[ch] : s2_vol[ch];
         char volStr[8];
-        snprintf(volStr, sizeof(volStr), "%d/15", s_vol[ch]);
+        snprintf(volStr, sizeof(volStr), "%d", vol);
         ImVec2 volSize = ImGui::CalcTextSize(volStr);
-        dl->AddText(ImVec2(centerX - volSize.x * 0.5f, mY + meterH + 3), IM_COL32(180, 180, 180, 255), volStr);
+        dl->AddText(ImVec2(centerX - volSize.x * 0.5f, mY + meterH + 2), IM_COL32(180, 180, 180, 255), volStr);
     }
 
     ImGui::EndChild();
@@ -1360,7 +1496,7 @@ static void RenderScopeArea(void) {
             float level = (15.0f - (float)s_vol[i]) / 15.0f;
 
             s_scope.DrawChannel(s_voiceCh[i], dl, x, p.y + 16, chW, availH - 16,
-                s_scopeAmplitude, kChColors[i], keyon, level,
+                s_scopeAmplitude, getChColor(i, (i == 3) ? s_noiseType : -1), keyon, level,
                 s_scopeSamples, 0, 735, true, true, 1, false);
         }
     } else {
@@ -1393,12 +1529,12 @@ static void RenderTestPopup(void) {
 
     // Channel Controls
     if (ImGui::CollapsingHeader("Channel Controls##snch", nullptr, ImGuiTreeNodeFlags_DefaultOpen)) {
+        auto colorToVec4 = [](ImU32 c) -> ImVec4 {
+            return ImVec4(((c >> 0) & 0xFF) / 255.0f, ((c >> 8) & 0xFF) / 255.0f, ((c >> 16) & 0xFF) / 255.0f, 1.0f);
+        };
         for (int ch = 0; ch < 3; ch++) {
             ImGui::PushID(ch);
-            ImGui::TextColored(ImVec4(
-                ((kChColors[ch] >> 0) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 8) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f), "%s", kChNames[ch]);
+            ImGui::TextColored(colorToVec4(getChColor(ch)), "%s", kChNames[ch]);
             ImGui::SameLine(); ImGui::SetNextItemWidth(80.0f);
             int volVal = s_vol[ch];
             if (ImGui::SliderInt("##vol", &volVal, 0, 15)) {
@@ -1416,10 +1552,7 @@ static void RenderTestPopup(void) {
 
         // Noise
         ImGui::PushID(100);
-        ImGui::TextColored(ImVec4(
-            ((kChColors[3] >> 0) & 0xFF) / 255.0f,
-            ((kChColors[3] >> 8) & 0xFF) / 255.0f,
-            ((kChColors[3] >> 16) & 0xFF) / 255.0f, 1.0f), "Noise");
+        ImGui::TextColored(colorToVec4(getChColor(3, s_noiseType)), "Noise");
         ImGui::SameLine(); ImGui::SetNextItemWidth(80.0f);
         int nVolVal = s_vol[3];
         if (ImGui::SliderInt("##nvol", &nVolVal, 0, 15)) {
@@ -1503,6 +1636,72 @@ static void RenderSidebar(void) {
     if (ImGui::RadioButton("T6W28 Dual Chip##t6w28dc", s_t6w28Mode == 2)) s_t6w28Mode = 2;
     if (s_t6w28Mode == 2 && !s_connected2) {
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.3f, 1.0f), "Enable 2nd SN76489 above!");
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
+    // Shift noise note mapping
+    if (ImGui::CollapsingHeader("Noise Shift Note Map##snshiftmap")) {
+        static const char* kSfLabels[3] = {"SF0 (16x)", "SF1 (32x)", "SF2 (64x)"};
+        for (int i = 0; i < 3; i++) {
+            ImGui::PushID(i);
+            ImGui::SetNextItemWidth(80);
+            if (ImGui::DragInt(kSfLabels[i], &s_shiftNoteMap[i], 1.0f, 0, 127)) {
+                if (s_shiftNoteMap[i] < 0) s_shiftNoteMap[i] = 0;
+                if (s_shiftNoteMap[i] > 127) s_shiftNoteMap[i] = 127;
+            }
+            ImGui::SameLine();
+            static const char* kNoteNames[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+            int n = s_shiftNoteMap[i];
+            ImGui::Text("%s%d", kNoteNames[n % 12], n / 12 - 1);
+            ImGui::PopID();
+        }
+    }
+
+    ImGui::Spacing(); ImGui::Separator();
+
+    // Channel Colors
+    if (ImGui::CollapsingHeader("Channel Colors##snchcolors")) {
+        static const char* kChLabels[10] = {"Tone0", "Tone1", "Tone2", "N-Periodic", "N-White", "2-Tone0", "2-Tone1", "2-Tone2", "2N-Periodic", "2N-White"};
+        for (int i = 0; i < 10; i++) {
+            ImGui::PushID(i);
+            float colF[4];
+            ImU32 curCol = kChColorsCustom[i];
+            ImU32 defCol = (i < 5) ? kChColors[i] : kCh2Colors[i - 5];
+            if (curCol != 0) {
+                colF[0] = ((curCol >> 0) & 0xFF) / 255.0f;
+                colF[1] = ((curCol >> 8) & 0xFF) / 255.0f;
+                colF[2] = ((curCol >> 16) & 0xFF) / 255.0f;
+                colF[3] = ((curCol >> 24) & 0xFF) / 255.0f;
+            } else {
+                colF[0] = ((defCol >> 0) & 0xFF) / 255.0f;
+                colF[1] = ((defCol >> 8) & 0xFF) / 255.0f;
+                colF[2] = ((defCol >> 16) & 0xFF) / 255.0f;
+                colF[3] = 1.0f;
+            }
+            if (ImGui::ColorEdit4(("##snclredit" + std::to_string(i)).c_str(), colF, ImGuiColorEditFlags_NoInputs)) {
+                kChColorsCustom[i] = IM_COL32(
+                    (int)(colF[0] * 255 + 0.5f), (int)(colF[1] * 255 + 0.5f),
+                    (int)(colF[2] * 255 + 0.5f), (int)(colF[3] * 255 + 0.5f));
+                SaveConfig();
+            }
+            ImGui::SameLine();
+            ImGui::TextUnformatted(kChLabels[i]);
+            if (kChColorsCustom[i] == 0) {
+                ImGui::SameLine();
+                ImGui::TextDisabled("(auto)");
+            }
+            ImGui::SameLine();
+            if (ImGui::SmallButton(("Reset##rclr" + std::to_string(i)).c_str())) {
+                kChColorsCustom[i] = 0;
+                SaveConfig();
+            }
+            ImGui::PopID();
+        }
+        if (ImGui::SmallButton("Reset All Colors##snrclrall")) {
+            memset(kChColorsCustom, 0, sizeof(kChColorsCustom)); // 10 entries
+            SaveConfig();
+        }
     }
 
     ImGui::Spacing(); ImGui::Separator();
