@@ -1044,6 +1044,7 @@ static DWORD WINAPI VGMPlaybackThread(LPVOID) {
                 int s = VGMProcessCommand();
                 if (s < 0) {
                     s_vgmTrackEnded = true;
+                    s_vgmPlaying = false;
                     break;
                 }
                 if (s > 0) processed += s;
@@ -1801,7 +1802,14 @@ static void RenderPlayerBar(void) {
 
     // Semi-transparent progress bar background when collapsed
     if (!playerOpen && hasFile && s_vgmTotalSamples > 0) {
-        float progress = (float)s_vgmCurrentSamples / (float)s_vgmTotalSamples;
+        double posSec = (double)s_vgmCurrentSamples / 44100.0;
+        double durSec;
+        if (s_vgmLoopSamples > 0 && s_vgmMaxLoops > 0) {
+            durSec = (double)(s_vgmTotalSamples - s_vgmLoopSamples) / 44100.0 + (double)s_vgmLoopSamples / 44100.0 * s_vgmMaxLoops;
+        } else {
+            durSec = (double)s_vgmTotalSamples / 44100.0;
+        }
+        float progress = (durSec > 0.0) ? (float)(posSec / durSec) : 0.0f;
         if (progress < 0.0f) progress = 0.0f;
         if (progress > 1.0f) progress = 1.0f;
         ImVec2 rectMin = ImGui::GetItemRectMin();
@@ -1858,7 +1866,12 @@ static void RenderPlayerBar(void) {
     // Time display when collapsed
     if (!playerOpen && hasFile && s_vgmTotalSamples > 0) {
         double posSec = (double)s_vgmCurrentSamples / 44100.0;
-        double durSec = (double)s_vgmTotalSamples / 44100.0;
+        double durSec;
+        if (s_vgmLoopSamples > 0 && s_vgmMaxLoops > 0) {
+            durSec = (double)(s_vgmTotalSamples - s_vgmLoopSamples) / 44100.0 + (double)s_vgmLoopSamples / 44100.0 * s_vgmMaxLoops;
+        } else {
+            durSec = (double)s_vgmTotalSamples / 44100.0;
+        }
         int curMin = (int)posSec / 60; int curSecI = (int)posSec % 60;
         int totMin = (int)durSec / 60; int totSecI = (int)durSec % 60;
         char timeStr[64];
@@ -1907,12 +1920,20 @@ static void RenderPlayerBar(void) {
 
         // Progress bar with seek (VGM-style)
         if (hasFile && s_vgmTotalSamples > 0) {
-            float progress = (float)s_vgmCurrentSamples / (float)s_vgmTotalSamples;
+            // 真实播放时间（含循环）
+            double posSec = (double)s_vgmCurrentSamples / 44100.0;
+            // 有循环时，总时长 = intro + loop × maxLoops
+            double durSec;
+            if (s_vgmLoopSamples > 0 && s_vgmMaxLoops > 0) {
+                double introSec = (double)(s_vgmTotalSamples - s_vgmLoopSamples) / 44100.0;
+                double loopSec = (double)s_vgmLoopSamples / 44100.0;
+                durSec = introSec + loopSec * s_vgmMaxLoops;
+            } else {
+                durSec = (double)s_vgmTotalSamples / 44100.0;
+            }
+            float progress = (float)(posSec / durSec);
             if (progress < 0.0f) progress = 0.0f;
             if (progress > 1.0f) progress = 1.0f;
-
-            double posSec = (double)s_vgmCurrentSamples / 44100.0;
-            double durSec = (double)s_vgmTotalSamples / 44100.0;
             int curMin = (int)posSec / 60; int curSecI = (int)posSec % 60;
             int totMin = (int)durSec / 60; int totSecI = (int)durSec % 60;
             char posStr[32], durStr[32];
