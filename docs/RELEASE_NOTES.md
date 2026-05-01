@@ -49,6 +49,14 @@ v16.0 (Build 2026-05-02)
 - 双芯片音量条、寄存器表格，Dual Chip 模式下仅显示实际发送到硬件的数据
 - 硬件测试（音阶/琶音/和弦/音量扫描/噪音）+ 通道控制面板
 
+### Gigatron Tracker Player Module (NEW)
+- Gigatron TTL 4 通道音频仿真（振荡器相位累加 + 波表查表）
+- 4 种内置波形（Noise/Triangle/Pulse/Sawtooth）+ 自定义波表编辑器
+- 高精度波表支持（6/8/12/16-bit），鼠标手绘 + 9 种预设
+- 钢琴键盘（C1-C8）、4 通道 VU 电平表、示波器（互相关触发 + AC 耦合）
+- `.c` / `.gbas.c` 文件解析，文件浏览器 + 文件夹历史
+- 播放控制：速度调节、段落选择、自动跳过静音
+
 ## Bug Fixes
 - Fixed MIDI resume progress bar jump (lastPerfCounter not reset)
 - Fixed piano key residual after track switch (ResetPianoKeyStates was empty)
@@ -61,6 +69,9 @@ v16.0 (Build 2026-05-02)
 - Fixed 2nd chip reset: activate channels before muting
 - Fixed getChColor slot1 noise color index mapping overflow
 - Fixed periodic noise frequency: LFSR output = square wave / 16, down 3 octaves
+- Fixed Gigatron wavA volume mapping: actual range 64-127 (64=max, 127=mute)
+- Fixed custom wave table silence on all bit depths: mod instead of clamp for wavA offset
+- Fixed Gigatron audio clipping: volume scaling + saturation limiting
 
 ## Project Reorganization (April 29, 2026)
 - 程序正式改名为 **Denjhang's Music Player** v16

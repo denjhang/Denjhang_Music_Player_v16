@@ -74,6 +74,38 @@
 #### 钢琴键盘修复
 - 🐛 修复 v15 白键/黑键八度编号不匹配
 
+### Gigatron Tracker 播放器模块（2026-04-30）
+
+#### 仿真核心
+- ✨ Gigatron TTL 4 通道音频仿真（振荡器相位累加 + 波表查表）
+- ✨ 4 种内置波形：Noise / Triangle / Pulse / Sawtooth
+- ✨ 双波表系统：原始 6-bit soundTable + 高精度自定义波表（6/8/12/16-bit）
+- ✨ 音频管线：量化 → DC 偏移移除（IIR 高通）→ PCM 转换 → WinMM 输出（44100Hz）
+- ✨ `.c` / `.gbas.c` 文件解析
+
+#### 波形编辑器
+- ✨ 鼠标手绘波形 + 9 种预设波形
+- ✨ 4 种位深模式（6/8/12/16-bit）
+- ✨ 自定义波表持久化到 `gigatron_custom_wave.wtab`（二进制 256×uint16）
+- ✨ INI 开关控制是否使用自定义波表
+
+#### 可视化
+- ✨ 钢琴键盘（C1-C8），颜色亮度匹配 wavA 音量（64-127 映射）
+- ✨ 4 通道垂直 VU 电平表，带峰值衰减
+- ✨ 示波器：互相关触发 + 边缘对齐 + AC 耦合，设置面板复用 VGM 示波器
+- ✨ 寄存器表格：ImGui 可调列宽，实时显示 4 通道寄存器状态
+
+#### 播放控制
+- ✨ Play/Stop/Pause，速度调节，段落选择，帧定位
+- ✨ 音量控制，自动跳过开头静音
+- ✨ 文件浏览器 + 文件夹历史
+
+#### Bug 修复
+- 🐛 修复 wavA 音量映射：实际使用 64-127 范围（64=最大，127=静音）
+- 🐛 修复自定义波表在全位深下产生静音：用 mod 替代 clamp 处理 wavA 偏移
+- 🐛 修复音频削波：添加音量缩放 + 饱和限幅
+- 🐛 修复钢琴键盘频率显示不匹配
+
 ### SN76489 (DCSG) 硬件窗口（2026-05-01 ~ 2026-05-02）
 
 #### VGM 硬件播放
@@ -145,6 +177,15 @@
 | `src/gui_renderer_impl.cpp` | 修改 - 动态衰减颜色渲染、tooltip 更新 |
 | `src/opl3_renderer.cpp` | 修改 - OPL3 文件夹历史改用 INI API |
 | `CMakeLists.txt` | 修改 - 项目名 DenjhangMusicPlayerV16，输出到 bin/ |
+| `src/gigatron_window.cpp/h` | 新建 - Gigatron Tracker 窗口模块（文件浏览、钢琴、示波器、波形编辑器） |
+| `src/gigatron/gigatron_emu.c/h` | 新建 - Gigatron 仿真核心（4通道 TTL 音频） |
+| `src/gigatron/winmm.c/h` | 新建 - WinMM 音频输出 |
+| `src/gigatron/audio_output.h` | 新建 - 音频输出接口 |
+| `src/gigatron/fnum_table.h` | 新建 - 频率表（96 entries, 8 八度×12） |
+| `src/sn76489_window.cpp/h` | 新建 - SN76489 硬件窗口：VGM 播放、T6W28 双芯片、钢琴键盘、颜色系统 |
+| `src/sn76489/spfm.h` | 新建 - SPFM Light 接口头文件 |
+| `src/sn76489/spfm_lite.c` | 新建 - SPFM Light FTDI 驱动实现 |
+| `src/sn76489/sn76489.h` | 新建 - SN76489 寄存器/频率辅助函数 |
 | `src/sn76489_window.cpp/h` | 新建 - SN76489 硬件窗口：VGM 播放、T6W28 双芯片、钢琴键盘、颜色系统 |
 | `src/sn76489/spfm.h` | 新建 - SPFM Light 接口头文件 |
 | `src/sn76489/spfm_lite.c` | 新建 - SPFM Light FTDI 驱动实现 |
