@@ -81,6 +81,13 @@ static int s_t6w28Mode = 2;    // 0=passthrough, 1=force sf2, 2=dual chip (defau
 static uint16_t s_t6w28NoiseCh2Period = 0; // T6W28 noise chip 的独立 ch2 频率
 static int s_t6w28LastLatchReg = -1;       // 0x30 最后 latch 的寄存器号
 
+// Seek & Fadeout
+static int s_seekMode = 0;           // 0=fast-forward, 1=direct (reset + resume)
+static float s_fadeoutDuration = 3.0f; // fadeout duration in seconds (0=disabled)
+static bool s_fadeoutActive = false;
+static float s_fadeoutLevel = 1.0f;   // 1.0=normal, 0.0=mute
+static UINT32 s_fadeoutStartSample = 0;
+
 // GD3 tags
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
 static UINT32 s_vgmVersion = 0;
@@ -425,6 +432,16 @@ static void LoadConfig(void) {
         if (s_shiftNoteMap[i] < 0) s_shiftNoteMap[i] = 0;
         if (s_shiftNoteMap[i] > 127) s_shiftNoteMap[i] = 127;
     }
+
+    // Seek & fadeout
+    s_seekMode = GetPrivateProfileIntA("Settings", "SeekMode", 0, s_configPath);
+    if (s_seekMode < 0 || s_seekMode > 1) s_seekMode = 0;
+    {
+        char val[32] = "";
+        GetPrivateProfileStringA("Settings", "FadeoutDuration", "3.0", val, sizeof(val), s_configPath);
+        s_fadeoutDuration = (float)atof(val);
+        if (s_fadeoutDuration < 0.0f) s_fadeoutDuration = 0.0f;
+    }
 }
 
 static void SaveConfig(void) {
@@ -457,6 +474,14 @@ static void SaveConfig(void) {
         snprintf(key, sizeof(key), "ShiftNote%d", i);
         snprintf(val, sizeof(val), "%d", s_shiftNoteMap[i]);
         WritePrivateProfileStringA("Noise", key, val, s_configPath);
+    }
+
+    // Seek & fadeout
+    WritePrivateProfileStringA("Settings", "SeekMode", std::to_string(s_seekMode).c_str(), s_configPath);
+    {
+        char val[32];
+        snprintf(val, sizeof(val), "%.1f", s_fadeoutDuration);
+        WritePrivateProfileStringA("Settings", "FadeoutDuration", val, s_configPath);
     }
 }
 
@@ -999,6 +1024,21 @@ static int VGMProcessCommand(void) {
             return (cmd & 0x0F) + 1;
         case 0x66: { // End of data (libvgm: Cmd_EndOfData)
             if (s_vgmLoopOffset > 0 && (s_vgmMaxLoops == 0 || s_vgmLoopCount < s_vgmMaxLoops)) {
+                // 淡出触发：最后一次循环，在进入循环前启动淡出
+                if (s_vgmMaxLoops > 0 && s_vgmLoopCount >= s_vgmMaxLoops - 1
+                    && s_fadeoutDuration > 0 && !s_fadeoutActive) {
+                    s_fadeoutActive = true;
+                    s_fadeoutLevel = 1.0f;
+                    // 淡出从此循环开始处算起
+                    UINT32 introSamples = s_vgmTotalSamples - s_vgmLoopSamples;
+                    UINT32 fadeoutSamples = (UINT32)(s_fadeoutDuration * 44100.0);
+                    if (s_vgmLoopSamples <= fadeoutSamples) {
+                        s_fadeoutStartSample = introSamples + s_vgmLoopSamples * s_vgmLoopCount;
+                    } else {
+                        s_fadeoutStartSample = introSamples + s_vgmLoopSamples * s_vgmLoopCount
+                            + (s_vgmLoopSamples - fadeoutSamples);
+                    }
+                }
                 fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
                 s_vgmLoopCount++;
                 return 0;
@@ -1051,6 +1091,42 @@ static DWORD WINAPI VGMPlaybackThread(LPVOID) {
             }
             samplesToProcess -= processed;
             s_vgmCurrentSamples += processed;
+
+            // 淡出音量覆盖
+            if (s_fadeoutActive && s_fadeoutDuration > 0) {
+                if (s_vgmCurrentSamples >= s_fadeoutStartSample) {
+                    UINT32 fadeoutSamples = (UINT32)(s_fadeoutDuration * 44100.0);
+                    float progress = (float)(s_vgmCurrentSamples - s_fadeoutStartSample) / (float)fadeoutSamples;
+                    if (progress >= 1.0f) {
+                        s_fadeoutLevel = 0.0f;
+                        s_fadeoutActive = false;
+                    } else {
+                        s_fadeoutLevel = 1.0f - progress;
+                    }
+                    // 每 ~10ms 发送一次淡出音量（约 441 samples）
+                    static UINT32 lastFadeSample = 0;
+                    if (s_vgmCurrentSamples - lastFadeSample >= 441 || s_fadeoutLevel <= 0.0f) {
+                        lastFadeSample = s_vgmCurrentSamples;
+                        if (s_connected) {
+                            for (int ch = 0; ch < 3; ch++) {
+                                uint8_t vol = (uint8_t)(s_vol[ch] + (15 - s_vol[ch]) * (1.0f - s_fadeoutLevel));
+                                sn76489_write(sn76489_vol_latch(ch, vol));
+                            }
+                            uint8_t nvol = (uint8_t)(s_vol[3] + (15 - s_vol[3]) * (1.0f - s_fadeoutLevel));
+                            sn76489_write(sn76489_noise_vol_latch(nvol));
+                        }
+                        if (s_connected2) {
+                            for (int ch = 0; ch < 3; ch++) {
+                                uint8_t vol = (uint8_t)(s2_vol[ch] + (15 - s2_vol[ch]) * (1.0f - s_fadeoutLevel));
+                                sn76489_write2(sn76489_vol_latch(ch, vol));
+                            }
+                            uint8_t nvol = (uint8_t)(s2_vol[3] + (15 - s2_vol[3]) * (1.0f - s_fadeoutLevel));
+                            sn76489_write2(sn76489_noise_vol_latch(nvol));
+                        }
+                    }
+                }
+            }
+
             safe_flush();
         }
         Sleep(1);
@@ -1088,6 +1164,7 @@ static void StartVGMPlayback(void) {
 static void StopVGMPlayback(void) {
     s_vgmPlaying = false; s_vgmPaused = false;
     s_vgmThreadRunning = false;
+    s_fadeoutActive = false; s_fadeoutLevel = 1.0f;
     if (s_vgmThread) {
         WaitForSingleObject(s_vgmThread, 2000);
         CloseHandle(s_vgmThread);
@@ -1122,6 +1199,7 @@ static void SeekVGMToStart(void) {
     fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
     s_vgmCurrentSamples = 0; s_vgmLoopCount = 0;
     s_vgmTrackEnded = false;
+    s_fadeoutActive = false; s_fadeoutLevel = 1.0f;
 }
 
 static void PlayPlaylistNext(void) {
@@ -1728,6 +1806,21 @@ static void RenderSidebar(void) {
         s_vgmMaxLoops = maxL;
     }
 
+    // Seek mode
+    ImGui::TextDisabled("Seek Mode");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Fast-forward: replay commands from start\nDirect: skip without HW, reset chip on target");
+    ImGui::RadioButton("Fast-forward##snseek", &s_seekMode, 0); ImGui::SameLine();
+    ImGui::RadioButton("Direct##snseek", &s_seekMode, 1);
+
+    // Fadeout
+    ImGui::TextDisabled("Loop Fadeout");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Fade out volume before final loop end\n0 = disabled");
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(80.0f);
+    if (ImGui::DragFloat("##snfadeout", &s_fadeoutDuration, 0.1f, 0.0f, 30.0f, "%.1f sec")) {
+        if (s_fadeoutDuration < 0.0f) s_fadeoutDuration = 0.0f;
+    }
+
     ImGui::Spacing(); ImGui::Separator();
 
     // Scope settings
@@ -1947,24 +2040,53 @@ static void RenderPlayerBar(void) {
             if (ImGui::IsItemActive()) {
                 // Dragging: keep slider value, don't seek yet
             } else if (ImGui::IsItemDeactivatedAfterEdit()) {
-                UINT32 targetSample = (UINT32)(seek_progress * s_vgmTotalSamples);
+                // targetSample 按含循环的时间轴计算
+                double totalDurSec;
+                if (s_vgmLoopSamples > 0 && s_vgmMaxLoops > 0) {
+                    totalDurSec = (double)(s_vgmTotalSamples - s_vgmLoopSamples) / 44100.0
+                                + (double)s_vgmLoopSamples / 44100.0 * s_vgmMaxLoops;
+                } else {
+                    totalDurSec = (double)s_vgmTotalSamples / 44100.0;
+                }
+                UINT32 targetSample = (UINT32)(seek_progress * totalDurSec * 44100.0);
                 // Stop thread temporarily for seek
                 s_vgmThreadRunning = false; s_vgmPlaying = false;
                 if (s_vgmThread) { WaitForSingleObject(s_vgmThread, 2000); CloseHandle(s_vgmThread); s_vgmThread = nullptr; }
                 if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
                 if (s_vgmFile) {
-                    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
-                    UINT32 skipSamples = 0;
-                    while (skipSamples < targetSample) {
-                        int cmdSamples = VGMProcessCommand();
-                        if (cmdSamples < 0) break;
-                        if (cmdSamples > 0) {
-                            skipSamples += cmdSamples;
-                            if (skipSamples > targetSample) skipSamples = targetSample;
+                    if (s_seekMode == 0) {
+                        // 快进模式：从头解析到目标位置（发送硬件数据）
+                        fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                        UINT32 skipSamples = 0;
+                        while (skipSamples < targetSample) {
+                            int cmdSamples = VGMProcessCommand();
+                            if (cmdSamples < 0) break;
+                            if (cmdSamples > 0) {
+                                skipSamples += cmdSamples;
+                                if (skipSamples > targetSample) skipSamples = targetSample;
+                            }
                         }
+                        s_vgmCurrentSamples = targetSample;
+                        if (s_connected) safe_flush();
+                    } else {
+                        // 直接跳转模式：快进但不发送硬件（快），然后复位硬件
+                        fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                        bool wasConn = s_connected, wasConn2 = s_connected2;
+                        s_connected = false; s_connected2 = false;
+                        UINT32 skipSamples = 0;
+                        while (skipSamples < targetSample) {
+                            int cmdSamples = VGMProcessCommand();
+                            if (cmdSamples < 0) break;
+                            if (cmdSamples > 0) {
+                                skipSamples += cmdSamples;
+                                if (skipSamples > targetSample) skipSamples = targetSample;
+                            }
+                        }
+                        s_connected = wasConn; s_connected2 = wasConn2;
+                        s_vgmCurrentSamples = targetSample;
+                        // 复位硬件
+                        if (s_connected) { InitHardware(); safe_flush(); }
                     }
-                    s_vgmCurrentSamples = targetSample;
-                    if (s_connected) safe_flush();
                     // Restart playback
                     s_vgmPlaying = true;
                     s_vgmPaused = false;
