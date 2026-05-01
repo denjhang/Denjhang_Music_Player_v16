@@ -1,10 +1,10 @@
 # Denjhang's Music Player v16 Release Notes
 
 ## Release Date
-April 28, 2026 (Updated April 29, 2026)
+April 28, 2026 (Updated May 2, 2026)
 
 ## Version
-v16.0 (Build 2026-04-29)
+v16.0 (Build 2026-05-02)
 
 ## Major Improvements
 
@@ -40,12 +40,27 @@ v16.0 (Build 2026-04-29)
 - 恢复 v12 渐变配色：Blue→Green→Yellow→Red
 - 衰减加快：Decay=50, Fast=25, Medium=10, Slow=4
 
+### SN76489 (DCSG) Hardware Window (NEW)
+- SPFM Light 接口驱动 SN76489 芯片，VGM 文件实时硬件播放
+- T6W28 (NeoGeoPocket) 双芯片模式：slot0 方波 + slot1 噪音独立转发
+- 钢琴键盘 VGM blendKey 着色（音量→颜色渐变）
+- 噪音通道钢琴显示（白噪音固定映射、周期性噪音频率计算、shift 三档映射）
+- 10 通道独立颜色（Tone0/1/2 + Periodic/White Noise × 2 芯片），自定义颜色持久化
+- 双芯片音量条、寄存器表格，Dual Chip 模式下仅显示实际发送到硬件的数据
+- 硬件测试（音阶/琶音/和弦/音量扫描/噪音）+ 通道控制面板
+
 ## Bug Fixes
 - Fixed MIDI resume progress bar jump (lastPerfCounter not reset)
 - Fixed piano key residual after track switch (ResetPianoKeyStates was empty)
 - Fixed PauseMIDI() overriding auto-pause flag
 - Fixed g_midiUserPaused linker error (namespace scope)
 - Fixed piano keyboard octave numbering mismatch (v15 regression)
+- Fixed T6W28 Dual Chip 0x30 forwarding: ch2 tone volume incorrectly sent to slot1
+- Fixed T6W28 Dual Chip 0x30 data byte leaking ch0/ch1 to slot1
+- Fixed T6W28 Dual Chip 0x50 shadow state updating ch3 despite not sending to hardware
+- Fixed 2nd chip reset: activate channels before muting
+- Fixed getChColor slot1 noise color index mapping overflow
+- Fixed periodic noise frequency: LFSR output = square wave / 16, down 3 octaves
 
 ## Project Reorganization (April 29, 2026)
 - 程序正式改名为 **Denjhang's Music Player** v16
@@ -58,11 +73,13 @@ v16.0 (Build 2026-04-29)
 ```
 Denjhang_Music_Player_v16/
 ├── src/          ← 所有源码（25 个文件）
-├── bin/          ← 可执行文件 + 配置文件（4 个 INI）
+│   ├── sn76489/  ← SN76489 驱动子目录（spfm.h, spfm_lite.c, sn76489.h）
+├── bin/          ← 可执行文件 + 配置文件（5 个 INI）
 │   ├── denjhang_music_player.exe
 │   ├── ym2163_config.ini   # YM2163 窗口配置
 │   ├── opl3_config.ini     # OPL3 窗口配置
 │   ├── vgm_config.ini      # VGM 窗口配置
+│   ├── sn76489_config.ini  # SN76489 窗口配置（颜色、shift 映射）
 │   └── imgui.ini          # DockSpace 布局
 ├── docs/         ← 所有文档
 ├── legacy/       ← v11-v15 旧版文件

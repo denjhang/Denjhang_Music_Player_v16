@@ -74,12 +74,56 @@
 #### 钢琴键盘修复
 - 🐛 修复 v15 白键/黑键八度编号不匹配
 
+### SN76489 (DCSG) 硬件窗口（2026-05-01 ~ 2026-05-02）
+
+#### VGM 硬件播放
+- ✨ SPFM Light 接口驱动 SN76489 芯片（FTDI USB）
+- ✨ VGM 文件解析 + 实时硬件播放（44100Hz 采样率同步）
+- ✨ GD3 标签显示（曲名、游戏、系统、作者）
+- ✨ 循环播放支持（可配置最大循环次数）
+- ✨ 文件浏览器（目录导航、历史记录、过滤）
+
+#### T6W28 双芯片模式
+- ✨ T6W28 (NeoGeoPocket) VGM 自动检测（header bit31）
+- ✨ 双 SN76489 芯片支持：slot0 = 方波芯片，slot1 = 噪音芯片
+- ✨ 三种 T6W28 模式：直通 / 强制 SF2 / 双芯片（默认）
+- ✨ 双芯片转发逻辑：ch0/1 屏蔽，ch2 条件转发（noiseUseCh2），ch3 噪音全部转发
+- ✨ 方波音量不发送到 slot1，噪音音量只发送到 slot1
+
+#### 钢琴键盘
+- ✨ VGM 风格 blendKey 着色：音量小→白/黑键底色，音量大→通道颜色
+- ✨ 噪音通道钢琴显示：白噪音→固定映射音符，周期性噪音 ch2→计算频率，shift→三档映射
+- ✨ 周期性噪音频率修正：LFSR 输出 = 方波频率 / 16，下降 3 个八度
+- ✨ Shift 模式可配置映射音符（侧边栏设置 sf0/sf1/sf2 → MIDI 音符）
+
+#### 颜色系统
+- ✨ 每芯片 5 色独立通道颜色：Tone0/1/2 + Periodic Noise + White Noise
+- ✨ 10 通道颜色自定义（ColorEdit4 选择器）
+- ✨ 颜色持久化到 `sn76489_config.ini`
+- ✨ 周期性噪音和白噪音使用不同颜色
+- ✨ 音量条/示波器/通道控制/钢琴统一使用 `getChColor()` 引用
+
+#### 可视化
+- ✨ 双芯片音量条（8 通道：slot0 × 4 + slot1 × 4）
+- ✨ 双芯片寄存器表格（周期、频率、音量、噪音控制）
+- ✨ Dual Chip 模式下 shadow state 按实际转发更新（UI 只显示真实硬件数据）
+- ✨ 示波器波形显示（依赖 libvgm SN76489 核心）
+
+#### 硬件测试
+- ✨ 音阶测试 / 琶音测试 / 和弦测试 / 音量扫描 / 噪音测试
+- ✨ 通道控制：音量滑块、周期滑块、噪音类型/频率/Ch2 模式切换
+
 ### Bug 修复
 - 🐛 `PauseMIDI()` 覆盖自动暂停标志 → 改为直接操作播放状态
 - 🐛 `g_midiUserPaused` 链接错误 → 移到全局作用域
 - 🐛 MIDI 恢复后进度条跳变 → 重置 `lastPerfCounter`
 - 🐛 曲目切换钢琴键残留 → 实现 `ResetPianoKeyStates()`
 - 🐛 FTDI 波特率错误（3Mbps→1.5Mbps）修复硬件无声（v15 移植）
+- 🐛 T6W28 Dual Chip 0x30 转发：ch2 方波音量误发到 slot1 → 屏蔽
+- 🐛 T6W28 Dual Chip 0x30 转发：data byte 全透传 → 仅转发 ch2 tone/ch3 相关
+- 🐛 T6W28 Dual Chip 0x50 shadow：ch3 噪音状态未发送却更新 → 加模式判断
+- 🐛 第二芯片复位不完整 → 先激活通道再静音
+- 🐛 `getChColor` slot1 噪音颜色映射越界 → 修正 customIdx 计算
 
 ### 修改文件清单
 | 文件 | 操作 |
@@ -101,6 +145,10 @@
 | `src/gui_renderer_impl.cpp` | 修改 - 动态衰减颜色渲染、tooltip 更新 |
 | `src/opl3_renderer.cpp` | 修改 - OPL3 文件夹历史改用 INI API |
 | `CMakeLists.txt` | 修改 - 项目名 DenjhangMusicPlayerV16，输出到 bin/ |
+| `src/sn76489_window.cpp/h` | 新建 - SN76489 硬件窗口：VGM 播放、T6W28 双芯片、钢琴键盘、颜色系统 |
+| `src/sn76489/spfm.h` | 新建 - SPFM Light 接口头文件 |
+| `src/sn76489/spfm_lite.c` | 新建 - SPFM Light FTDI 驱动实现 |
+| `src/sn76489/sn76489.h` | 新建 - SN76489 寄存器/频率辅助函数 |
 
 ---
 
