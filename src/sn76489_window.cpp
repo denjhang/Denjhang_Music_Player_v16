@@ -703,8 +703,8 @@ static void UpdateChannelLevels(void) {
 
     // Slot 1 (2nd SN76489)
     for (int ch = 0; ch < 4; ch++) {
-        // Dual Chip 模式: slot1 ch0/ch1 不负责，强制静音
-        if (isDualChip && ch < 2) {
+        // Dual Chip 模式: slot1 ch0/ch1 不负责，ch2 只用频率不用音量
+        if (isDualChip && ch < 3) {
             s2_channelLevel[ch] = 0.0f;
             continue;
         }
@@ -2351,7 +2351,8 @@ static void RenderRegisterTable(void) {
 
     ImGui::Spacing();
 
-    // Noise channel: separate detailed table
+    // Noise channel: separate detailed table (Dual Chip 模式下 slot0 无噪音)
+    if (!(s_isT6W28 && s_t6w28Mode == 2)) {
     if (ImGui::BeginTable("##snnoiseregs", 2,
             ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
         ImGui::TableSetupColumn("Item", ImGuiTableColumnFlags_WidthFixed, 90.0f);
@@ -2374,6 +2375,7 @@ static void RenderRegisterTable(void) {
         ImGui::TableSetColumnIndex(1); ImGui::Text("0x%02X", sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
         ImGui::EndTable();
     }
+    } // Dual Chip skip slot0 noise
 }
 
 static void RenderRegisterTable2(void) {
@@ -2388,7 +2390,10 @@ static void RenderRegisterTable2(void) {
         ImGui::TableSetupColumn("Period", ImGuiTableColumnFlags_WidthFixed, 60.0f);
         ImGui::TableSetupColumn("Volume", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
+        bool isDualChip = (s_isT6W28 && s_t6w28Mode == 2);
         for (int ch = 0; ch < 3; ch++) {
+            // Dual Chip: slot1 ch0/ch1 不使用，跳过
+            if (isDualChip && ch < 2) continue;
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0); ImGui::Text("Tone%d", ch);
             ImGui::TableSetColumnIndex(1);
@@ -2401,7 +2406,12 @@ static void RenderRegisterTable2(void) {
                 ImGui::Text("-");
             }
             ImGui::TableSetColumnIndex(2); ImGui::Text("%u", s2_fullPeriod[ch]);
-            ImGui::TableSetColumnIndex(3); ImGui::Text("%u%s", s2_vol[ch], s2_vol[ch] == 15 ? " [MUTE]" : "");
+            ImGui::TableSetColumnIndex(3);
+            if (isDualChip && ch == 2) {
+                ImGui::TextDisabled("Freq only");
+            } else {
+                ImGui::Text("%u%s", s2_vol[ch], s2_vol[ch] == 15 ? " [MUTE]" : "");
+            }
         }
         ImGui::EndTable();
     }
