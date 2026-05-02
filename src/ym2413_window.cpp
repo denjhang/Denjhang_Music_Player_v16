@@ -175,8 +175,8 @@ static bool   s_rhythmMode = false;    // Register 0x0E bit 5
 static bool s_rhythmOn[5] = {};
 
 // ============ Piano State ============
-static const int YM_PIANO_LOW = 36;   // C2
-static const int YM_PIANO_HIGH = 96;  // C7
+static const int YM_PIANO_LOW = 24;   // C1
+static const int YM_PIANO_HIGH = 107; // B7
 static const int YM_PIANO_KEYS = YM_PIANO_HIGH - YM_PIANO_LOW + 1;
 static bool s_pianoKeyOn[YM_PIANO_KEYS] = {};
 static float s_pianoKeyLevel[YM_PIANO_KEYS] = {};
@@ -420,7 +420,7 @@ static int fn_to_midi_note(int ch) {
     int fullFn = (fn_hi << 8) | s_freqLo[ch];
     if (fullFn == 0 && block == 0) return -1;
 
-    double freq = (double)fullFn * YM2413_FM_CLOCK / (double)(1 << (20 - block));
+    double freq = (double)fullFn * YM2413_FM_CLOCK / (double)(1 << (19 - block));
     int midiNote = (int)round(69.0 + 12.0 * log2(freq / 440.0));
     return midiNote;
 }
