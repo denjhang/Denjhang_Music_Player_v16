@@ -2191,7 +2191,7 @@ static void RenderPlayerBar(void) {
                 if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
                 if (s_vgmFile) {
                     if (s_seekMode == 0) {
-                        // 快进模式：先静音，从头解析到目标位置，恢复后 VGM 命令自动设音量
+                        // 快进模式：静音从头解析到目标位置，恢复后 VGM 命令自动设音量
                         if (s_connected) sn76489_mute_all();
                         if (s_connected2) sn76489_mute_all2();
                         safe_flush();
@@ -2208,11 +2208,27 @@ static void RenderPlayerBar(void) {
                         s_vgmCurrentSamples = targetSample;
                         if (s_connected) safe_flush();
                     } else {
-                        // 直接跳转模式：快进不发送硬件，然后复位芯片
+                        // 直接跳转模式：静音快进到目标前 0.5s，静音快过剩余 0.5s，恢复寄存器
+                        UINT32 preRoll = (UINT32)(0.5 * 44100.0);
+                        UINT32 preRollTarget = (targetSample > preRoll) ? (targetSample - preRoll) : 0;
+                        // Phase 1: 快进到 preRollTarget，不发送硬件（纯解析 shadow state）
                         fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
                         bool wasConn = s_connected, wasConn2 = s_connected2;
                         s_connected = false; s_connected2 = false;
                         UINT32 skipSamples = 0;
+                        while (skipSamples < preRollTarget) {
+                            int cmdSamples = VGMProcessCommand();
+                            if (cmdSamples < 0) break;
+                            if (cmdSamples > 0) {
+                                skipSamples += cmdSamples;
+                                if (skipSamples > preRollTarget) skipSamples = preRollTarget;
+                            }
+                        }
+                        s_connected = wasConn; s_connected2 = wasConn2;
+                        // Phase 2: 静音，快过最后 0.5s 发送硬件（恢复所有寄存器状态）
+                        if (s_connected) sn76489_mute_all();
+                        if (s_connected2) sn76489_mute_all2();
+                        safe_flush();
                         while (skipSamples < targetSample) {
                             int cmdSamples = VGMProcessCommand();
                             if (cmdSamples < 0) break;
@@ -2221,17 +2237,8 @@ static void RenderPlayerBar(void) {
                                 if (skipSamples > targetSample) skipSamples = targetSample;
                             }
                         }
-                        s_connected = wasConn; s_connected2 = wasConn2;
                         s_vgmCurrentSamples = targetSample;
-                        // 复位硬件（学习断开时的复位序列）
-                        if (s_connected) {
-                            sn76489_mute_all();
-                            if (s_connected2) sn76489_mute_all2();
-                            safe_flush();
-                            Sleep(50);
-                            InitHardware();
-                            safe_flush();
-                        }
+                        if (s_connected) safe_flush();
                     }
                     // Restart playback
                     s_vgmPlaying = true;
