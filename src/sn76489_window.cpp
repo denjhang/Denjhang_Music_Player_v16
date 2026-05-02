@@ -654,7 +654,7 @@ static void UpdateChannelLevels(void) {
     // Slot 0 (main SN76489)
     bool isDualChip = (s_isT6W28 && s_t6w28Mode == 2);
     for (int ch = 0; ch < 4; ch++) {
-        // Dual Chip 模式: slot0 噪音 ch3 不负责，强制静音
+        // Dual Chip 模式: slot0 噪音 ch3 不负责，音量条强制 0
         if (isDualChip && ch == 3) {
             s_channelLevel[3] = 0.0f;
             continue;
@@ -2356,8 +2356,7 @@ static void RenderRegisterTable(void) {
 
     ImGui::Spacing();
 
-    // Noise channel: separate detailed table (Dual Chip 模式下 slot0 无噪音)
-    if (!(s_isT6W28 && s_t6w28Mode == 2)) {
+    // Noise channel: separate detailed table
     if (ImGui::BeginTable("##snnoiseregs", 2,
             ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
         ImGui::TableSetupColumn("Item", ImGuiTableColumnFlags_WidthFixed, 90.0f);
@@ -2380,7 +2379,6 @@ static void RenderRegisterTable(void) {
         ImGui::TableSetColumnIndex(1); ImGui::Text("0x%02X", sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
         ImGui::EndTable();
     }
-    } // Dual Chip skip slot0 noise
 }
 
 static void RenderRegisterTable2(void) {
@@ -2397,8 +2395,6 @@ static void RenderRegisterTable2(void) {
         ImGui::TableHeadersRow();
         bool isDualChip = (s_isT6W28 && s_t6w28Mode == 2);
         for (int ch = 0; ch < 3; ch++) {
-            // Dual Chip: slot1 ch0/ch1 不使用，跳过
-            if (isDualChip && ch < 2) continue;
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0); ImGui::Text("Tone%d", ch);
             ImGui::TableSetColumnIndex(1);
@@ -2412,7 +2408,9 @@ static void RenderRegisterTable2(void) {
             }
             ImGui::TableSetColumnIndex(2); ImGui::Text("%u", s2_fullPeriod[ch]);
             ImGui::TableSetColumnIndex(3);
-            if (isDualChip && ch == 2) {
+            if (isDualChip && ch < 2) {
+                ImGui::TextDisabled("-");
+            } else if (isDualChip && ch == 2) {
                 ImGui::TextDisabled("Freq only");
             } else {
                 ImGui::Text("%u%s", s2_vol[ch], s2_vol[ch] == 15 ? " [MUTE]" : "");
