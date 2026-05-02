@@ -309,22 +309,32 @@ static void sn76489_mute_all2(void) {
 
 // Write all shadow state registers to hardware (used after seek)
 static void ApplyShadowState(void) {
-    // Slot 0: tone periods + volumes
+    bool isDualChip = (s_isT6W28 && s_t6w28Mode == 2);
+
+    // Slot 0: tone ch0-ch2
     for (int ch = 0; ch < 3; ch++) {
         sn76489_set_tone(ch, s_fullPeriod[ch]);
         sn76489_write(sn76489_vol_latch(ch, s_vol[ch]));
     }
-    // Slot 0: noise
-    sn76489_write(sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
-    sn76489_write(sn76489_noise_vol_latch(s_vol[3]));
+    // Slot 0: noise (Dual Chip 模式下 slot0 噪音必须静音)
+    if (isDualChip) {
+        sn76489_write(sn76489_noise_vol_latch(0x0F));  // mute noise
+    } else {
+        sn76489_write(sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
+        sn76489_write(sn76489_noise_vol_latch(s_vol[3]));
+    }
     safe_flush();
+
     // Slot 1 (if T6W28 dual chip)
-    if (s_connected2 && s_isT6W28 && s_t6w28Mode == 2) {
-        for (int ch = 0; ch < 3; ch++) {
-            sn76489_write2(sn76489_tone_latch(ch, s2_fullPeriod[ch] & 0x0F));
-            sn76489_write2(sn76489_tone_data(s2_fullPeriod[ch] >> 4));
-            sn76489_write2(sn76489_vol_latch(ch, s2_vol[ch]));
-        }
+    if (s_connected2 && isDualChip) {
+        // ch0/ch1: 必须静音（slot1 不负责方波）
+        sn76489_write2(sn76489_vol_latch(0, 0x0F));
+        sn76489_write2(sn76489_vol_latch(1, 0x0F));
+        // ch2: 写 tone（噪音可能在 ch2 模式下需要）+ 静音音量
+        sn76489_write2(sn76489_tone_latch(2, s2_fullPeriod[2] & 0x0F));
+        sn76489_write2(sn76489_tone_data(s2_fullPeriod[2] >> 4));
+        sn76489_write2(sn76489_vol_latch(2, 0x0F));  // ch2 tone 静音
+        // ch3: noise control + volume
         sn76489_write2(sn76489_noise_latch(s2_noiseType, s2_noiseUseCh2 ? 3 : s2_noiseFreq));
         sn76489_write2(sn76489_noise_vol_latch(s2_vol[3]));
         safe_flush();
