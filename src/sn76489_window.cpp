@@ -1541,7 +1541,12 @@ static void RenderPianoKeyboard(void) {
 // ============ Level Meters ============
 static void ApplyChannelMute(int i) {
     int chip = i / 4, ch = i % 4;
-    if (s_chMuted[i]) {
+    bool isDualChip = (s_isT6W28 && s_t6w28Mode == 2);
+
+    // Dual Chip: slot0 ch3 (noise) 和 slot1 ch0/ch1/ch2 始终静音
+    bool alwaysMute = (isDualChip && ((chip == 0 && ch == 3) || (chip == 1 && ch < 3)));
+
+    if (s_chMuted[i] || alwaysMute) {
         if (chip == 0 && s_connected) {
             sn76489_write(ch < 3 ? sn76489_vol_latch(ch, 0x0F) : sn76489_noise_vol_latch(0x0F));
         }
