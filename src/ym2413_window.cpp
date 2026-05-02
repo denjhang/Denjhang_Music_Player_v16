@@ -44,12 +44,51 @@ static const char* kMelodicNames[9] = {
 };
 static const char* kRhythmNames[5] = { "BD", "SD", "TOM", "HH", "CYM" };
 
-// 16 built-in instrument names
+// 16 built-in instrument names (matching libvgm kOPLLPatch)
 static const char* kInstNames[16] = {
-    "User", "Violin", "Guitar", "Piano", "Flute",
-    "Clarinet", "Oboe", "Trumpet", "Organ", "Bass",
-    "Vibraphone", "Synth", "Chime", "Bell", "Castanet",
-    "EGuitar"
+    "Custom", "Bell", "Guitar", "Piano", "Flute",
+    "Clarinet", "Oboe", "Trumpet", "Organ", "Horn",
+    "Synth", "Harp", "Vibraphone", "SynBass", "AcBass", "ElecBass"
+};
+
+// Note names for register display
+static const char* kNoteNames[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+
+// OPLL built-in patch ROM: [patch][op][TL,FB,AR,DR,SL,RR,KL,ML,AM,VIB]
+// patch 0 = custom (from regs), patches 1-15 from YM2413 datasheet ROM
+static const uint8_t kOPLLRom[16][2][10] = {
+    // Custom (placeholder, filled from regs 0x00-0x07)
+    {{0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0}},
+    // 1 Bell
+    {{0,5,15,7, 4,0,0,13,0,0},{0,0,15,8, 5,6,0,1,0,0}},
+    // 2 Guitar
+    {{3,5,12,8, 4,4,0, 1,0,0},{0,0,15,8, 4,4,0,1,0,0}},
+    // 3 Piano
+    {{0,5,15,9, 6,7,0, 1,0,0},{0,0,15,8, 5,6,0,1,0,0}},
+    // 4 Flute
+    {{1,5,15,8, 4,0,0, 9,1,1},{0,0,13,6, 3,0,0,2,0,0}},
+    // 5 Clarinet
+    {{3,5, 9,8, 6,4,0, 1,0,0},{0,0,15,8, 4,4,0,1,0,0}},
+    // 6 Oboe
+    {{0,5,15,7, 5,6,0, 1,0,0},{0,0,14,8, 5,6,0,1,0,0}},
+    // 7 Trumpet
+    {{0,5,15,8, 5,6,0, 1,0,0},{0,0,15,8, 5,6,0,1,0,0}},
+    // 8 Organ
+    {{0,5,15,9, 5,0,0, 1,0,0},{0,0,15,8, 5,0,0,1,0,0}},
+    // 9 Horn
+    {{0,3,12,6, 7,7,0, 1,0,0},{0,0,15,8, 5,6,0,1,0,0}},
+    // 10 Synth
+    {{0,5,15,7, 5,6,0,13,0,0},{0,0,15,7, 4,7,1,1,0,0}},
+    // 11 Harp
+    {{0,0,15,9, 8,7,0, 9,0,0},{0,0,12,6, 6,6,0,1,0,0}},
+    // 12 Vibraphone
+    {{0,0,15,4, 4,0,0, 9,1,0},{0,0,15,8, 5,0,0,2,0,1}},
+    // 13 SynBass
+    {{0,0,12,6, 7,5,0, 9,0,0},{0,0,15,8, 4,6,0,1,0,0}},
+    // 14 AcBass
+    {{0,0,15,8, 8,6,0, 9,0,0},{0,0,15,9, 7,6,0,1,0,0}},
+    // 15 ElecBass
+    {{0,0,15,7, 6,5,0, 9,0,0},{0,0,15,8, 4,5,0,1,0,0}},
 };
 
 // 14 distinct channel colors (9 melodic + 5 rhythm)
@@ -596,39 +635,28 @@ static void UpdateChannelLevels(void) {
     // YM2413 register 0x20-0x28: bit 4 = KEY ON, bit 3-1 = BLOCK, bit 0 = F-number bit 8
     for (int ch = 0; ch < YM_NUM_MELODIC; ch++) {
         uint8_t vol = s_instVol[ch] & 0x0F;
-        bool keyOn = (s_blockFnHi[ch] & 0x10) != 0;
+        bool keyoff = s_chKeyOff[ch];
+        bool sus = (s_blockFnHi[ch] >> 5) & 1; // SUS bit: sustain after keyoff
 
-        // Key-on rising edge detection
-        uint8_t prevKon = s_prevKeyOn[ch];
-        s_prevKeyOn[ch] = keyOn ? 1 : 0;
-        if (keyOn && !prevKon) {
-            s_chDecay[ch] = 1.0f;  // rising edge: reset decay
-            s_chKeyOff[ch] = false;
+        // Decay envelope (edge detection done in VGMProcessCommand)
+        if (keyoff && !sus) {
+            s_chDecay[ch] = 0.0f;          // no SUS: immediate kill
+        } else if (keyoff) {
+            s_chDecay[ch] *= 0.85f;         // SUS: slow release
+            if (s_chDecay[ch] < 0.01f) s_chDecay[ch] = 0.0f;
+        } else {
+            s_chDecay[ch] *= 0.98f;         // sustain: near-full
+            if (s_chDecay[ch] < 0.01f) s_chDecay[ch] = 0.0f;
         }
 
-        // Decay envelope
-        if (!keyOn) {
-            // Key-off: fast release
-            s_chDecay[ch] *= 0.80f;
-            s_chKeyOff[ch] = true;
-        } else if (s_chDecay[ch] < 1.0f) {
-            // Sustained (key-on but past initial attack): slow decay
-            s_chDecay[ch] *= 0.95f;
-        }
-        if (s_chDecay[ch] < 0.001f) s_chDecay[ch] = 0.0f;
-
-        float baseLevel = (vol >= 15) ? 0.0f : (1.0f - (float)vol / 15.0f);
-        float target = keyOn ? baseLevel * s_chDecay[ch] : 0.0f;
-        // If decay is still active during release, keep showing level
-        if (!keyOn && s_chDecay[ch] > 0.0f) {
-            target = baseLevel * s_chDecay[ch];
-        }
-        s_channelLevel[ch] += (target - s_channelLevel[ch]) * 0.3f;
+        float lv = (vol >= 15) ? 0.0f : (1.0f - (float)vol / 15.0f) * s_chDecay[ch];
+        s_channelLevel[ch] += (lv - s_channelLevel[ch]) * 0.3f;
         if (s_channelLevel[ch] < 0.001f) s_channelLevel[ch] = 0.0f;
 
         if (s_chMuted[ch]) continue;
 
-        if (s_channelLevel[ch] > 0.01f) {
+        bool kon = s_chDecay[ch] > 0.01f;
+        if (kon && s_channelLevel[ch] > 0.01f) {
             int midi = fn_to_midi_note(ch);
             if (midi >= YM_PIANO_LOW && midi <= YM_PIANO_HIGH) {
                 int idx = midi - YM_PIANO_LOW;
@@ -646,51 +674,30 @@ static void UpdateChannelLevels(void) {
     // Rhythm volumes from registers 0x36-0x38:
     //   BD vol = (reg_0x36 >> 4) & 0x0F
     //   HH vol = (reg_0x37 >> 4) & 0x0F
+    // Rhythm volumes from registers 0x36-0x38:
+    //   BD vol = (reg_0x36 >> 4) & 0x0F
+    //   HH vol = (reg_0x37 >> 4) & 0x0F
     //   SD vol = reg_0x37 & 0x0F
     //   TOM vol = (reg_0x38 >> 4) & 0x0F
     //   CYM vol = reg_0x38 & 0x0F
     // Display order: BD(0), SD(1), TOM(2), HH(3), CYM(4)
-    // Register bit order: BD=bit4, SD=bit3, TOM=bit2, CYM=bit1, HH=bit0
-    static const int kRhythmRegBit[5] = { 0x10, 0x08, 0x04, 0x01, 0x02 };
-    // Volume extraction: which register and which nibble
-    // BD: reg 0x36 high nibble
-    // HH: reg 0x37 high nibble
-    // SD: reg 0x37 low nibble
-    // TOM: reg 0x38 high nibble
-    // CYM: reg 0x38 low nibble
     static const int kRhythmVolReg[5] = { 0x36, 0x37, 0x38, 0x37, 0x38 };
     static const int kRhythmVolShift[5] = { 4, 0, 4, 4, 0 }; // high or low nibble
 
-    uint8_t rhyReg0E = s_regShadow[0x0E];
     for (int r = 0; r < YM_NUM_RHYTHM; r++) {
         int chIdx = YM_NUM_MELODIC + r;
-        bool rhyOn = s_rhythmMode && (rhyReg0E & kRhythmRegBit[r]) != 0;
 
-        // Rhythm key-on rising edge detection
-        uint8_t prevBit = (s_rhyPrevKon & kRhythmRegBit[r]) ? 1 : 0;
-        uint8_t curBit = rhyOn ? 1 : 0;
-        if (curBit && !prevBit) {
-            s_rhyDecay[r] = 1.0f;
-        }
-        // Rhythm decay
-        if (!rhyOn) {
-            s_rhyDecay[r] *= 0.80f; // fast release
-        } else if (s_rhyDecay[r] < 1.0f) {
-            s_rhyDecay[r] *= 0.95f; // sustained decay
-        }
-        if (s_rhyDecay[r] < 0.001f) s_rhyDecay[r] = 0.0f;
+        // Rhythm decay (edge detection done in VGMProcessCommand)
+        s_rhyDecay[r] *= 0.80f;
+        if (s_rhyDecay[r] < 0.01f) s_rhyDecay[r] = 0.0f;
 
         // Get rhythm volume
         uint8_t rhyVol = (s_regShadow[kRhythmVolReg[r]] >> kRhythmVolShift[r]) & 0x0F;
         float baseLevel = (rhyVol >= 15) ? 0.0f : (1.0f - (float)rhyVol / 15.0f);
-        float target = rhyOn ? baseLevel * s_rhyDecay[r] : 0.0f;
-        if (!rhyOn && s_rhyDecay[r] > 0.0f) {
-            target = baseLevel * s_rhyDecay[r];
-        }
+        float target = baseLevel * s_rhyDecay[r];
         s_channelLevel[chIdx] += (target - s_channelLevel[chIdx]) * 0.3f;
         if (s_channelLevel[chIdx] < 0.001f) s_channelLevel[chIdx] = 0.0f;
     }
-    s_rhyPrevKon = rhyReg0E & 0x1F; // store only rhythm bits
 
     // Rhythm channels don't show on piano keyboard (no pitch)
 }
@@ -870,7 +877,20 @@ static int VGMProcessCommand(void) {
             if (reg >= 0x10 && reg <= 0x18) {
                 s_freqLo[reg - 0x10] = data;
             } else if (reg >= 0x20 && reg <= 0x28) {
-                s_blockFnHi[reg - 0x20] = data;
+                int ch = reg - 0x20;
+                // Key-on edge detection (rising/falling edge on bit4)
+                bool prevKon = (s_prevKeyOn[ch] != 0);
+                bool newKon  = (data >> 4) & 1;
+                if (newKon && !prevKon) {
+                    // Rising edge: fresh keyon, reset decay
+                    s_chDecay[ch] = 1.0f;
+                    s_chKeyOff[ch] = false;
+                } else if (!newKon && prevKon) {
+                    // Falling edge: keyoff
+                    s_chKeyOff[ch] = true;
+                }
+                s_prevKeyOn[ch] = newKon ? 1 : 0;
+                s_blockFnHi[ch] = data;
             } else if (reg >= 0x30 && reg <= 0x38) {
                 s_instVol[reg - 0x30] = data;
             } else if (reg == 0x0E) {
@@ -882,6 +902,18 @@ static int VGMProcessCommand(void) {
                 s_rhythmOn[2] = s_rhythmMode && (data & 0x04); // TOM
                 s_rhythmOn[3] = s_rhythmMode && (data & 0x01); // HH (bit 0)
                 s_rhythmOn[4] = s_rhythmMode && (data & 0x02); // CYM (bit 1)
+                // Rhythm key-on edge detection
+                // Display order: BD=0, SD=1, TOM=2, HH=3, CYM=4
+                // Register bits: BD=bit4, SD=bit3, TOM=bit2, HH=bit0, CYM=bit1
+                static const int kRhBit[5] = {4, 3, 2, 0, 1};
+                for (int i = 0; i < 5; i++) {
+                    bool prev = (s_rhyPrevKon >> kRhBit[i]) & 1;
+                    bool cur  = (data >> kRhBit[i]) & 1;
+                    if (cur && !prev) {
+                        s_rhyDecay[i] = 1.0f;
+                    }
+                }
+                s_rhyPrevKon = data & 0x1F;
             }
 
             // Fadeout: intercept 0x30-0x38 volume writes
@@ -1590,10 +1622,10 @@ static void RenderScopeArea(void) {
             bool keyOn = false;
             float level = 0.0f;
             if (i < YM_NUM_MELODIC) {
-                keyOn = (s_blockFnHi[i] & 0x10) != 0;
-                level = (s_channelLevel[i]);
+                keyOn = s_chDecay[i] > 0.01f;
+                level = s_channelLevel[i];
             } else {
-                keyOn = s_rhythmOn[i - YM_NUM_MELODIC];
+                keyOn = s_rhyDecay[i - YM_NUM_MELODIC] > 0.01f;
                 level = s_channelLevel[i];
             }
 
@@ -2046,139 +2078,167 @@ static void RenderRegisterTable(void) {
     ImGui::TextColored(ImVec4(0.7f, 0.8f, 1.0f, 1.0f), "YM2413 Registers");
     ImGui::Separator();
 
-    // Register table: 0x00-0x3F
-    if (ImGui::BeginTable("##ymregs", 8,
-            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("Reg", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-        ImGui::TableSetupColumn("Val", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-        ImGui::TableSetupColumn("Bits", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Ch0", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-        ImGui::TableSetupColumn("Ch1", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-        ImGui::TableSetupColumn("Ch2", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-        ImGui::TableSetupColumn("Ch3", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-        ImGui::TableSetupColumn("Ch4", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-        ImGui::TableHeadersRow();
+    UINT8 rhythmReg = s_regShadow[0x0E];
+    bool  rhythmMode = (rhythmReg >> 5) & 1;
 
-        // User instruments 0x00-0x07
-        for (int reg = 0; reg < 8; reg++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("0x%02X", reg);
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%02X", s_regShadow[reg]);
-            ImGui::TableSetColumnIndex(2);
-            ImGui::TextDisabled("User Inst");
+    ImGui::TextDisabled("-- FM --");
+    for (int ch = 0; ch < 9; ch++) {
+        UINT8 lo   = s_regShadow[0x10 + ch];
+        UINT8 hi   = s_regShadow[0x20 + ch];
+        UINT8 inst = s_regShadow[0x30 + ch];
+        int fnum   = ((hi & 0x01) << 8) | lo;
+        int block  = (hi >> 1) & 0x07;
+        int patch  = (inst >> 4) & 0x0F;
+        int vol    = inst & 0x0F;
+        int midi = (fnum > 0) ? fn_to_midi_note(ch) : -1;
+        // More useful keyon: bit4 set AND volume audible
+        bool activeKeyon = ((hi >> 4) & 1) || (fnum > 0 && vol < 15);
+        bool isRhCh = rhythmMode && ch >= 6;
+
+        char chLabel[32];
+        if (isRhCh) {
+            static const char* kRhChName[3] = {"BD","HH+SD","TOM+CYM"};
+            snprintf(chLabel, sizeof(chLabel), "CH%d [%s]##ym2413ch%d",
+                ch+1, kRhChName[ch-6], ch);
+        } else {
+            snprintf(chLabel, sizeof(chLabel), "CH%d##ym2413ch%d", ch+1, ch);
         }
 
-        // Rhythm 0x0E
-        ImGui::TableNextRow();
-        ImGui::TableSetColumnIndex(0);
-        ImGui::Text("0x0E");
-        ImGui::TableSetColumnIndex(1);
-        ImGui::Text("%02X", s_regShadow[0x0E]);
-        ImGui::TableSetColumnIndex(2);
-        ImGui::Text("Rhythm:%s%s%s%s%s",
-            s_rhythmOn[0] ? " BD" : "",
-            s_rhythmOn[1] ? " SD" : "",
-            s_rhythmOn[2] ? " TOM" : "",
-            s_rhythmOn[3] ? " HH" : "",
-            s_rhythmOn[4] ? " CYM" : "");
-
-        // Frequency low 0x10-0x18
-        for (int ch = 0; ch < 9; ch++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("0x%02X", 0x10 + ch);
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%02X", s_regShadow[0x10 + ch]);
-            ImGui::TableSetColumnIndex(2);
-            ImGui::Text("FN_LO ch%d", ch);
-        }
-
-        // Block/FN_hi/KeyOn 0x20-0x28
-        for (int ch = 0; ch < 9; ch++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("0x%02X", 0x20 + ch);
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%02X", s_regShadow[0x20 + ch]);
-            ImGui::TableSetColumnIndex(2);
-            // bit 4: KEY ON, bit 3-1: BLOCK, bit 0: F-number bit 8
-            int block = (s_blockFnHi[ch] >> 1) & 7;
-            int fnhi = s_blockFnHi[ch] & 1;
-            bool keyOn = (s_blockFnHi[ch] & 0x10) != 0;
-            int midi = fn_to_midi_note(ch);
-            static const char* kNoteNames[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
-            if (midi >= 0 && midi < 128) {
-                ImGui::Text("B%d FNhi%d %s%d %s", block, fnhi, kNoteNames[midi % 12], midi / 12 - 1, keyOn ? "ON" : "off");
-            } else {
-                ImGui::Text("B%d FNhi%d -- %s", block, fnhi, keyOn ? "ON" : "off");
+        ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_DefaultOpen;
+        bool nodeOpen = ImGui::TreeNodeEx(chLabel, nodeFlags);
+        if (nodeOpen) {
+            // Channel info: Note / Patch / Vol (for non-rhythm channels)
+            if (!isRhCh) {
+                char noteBuf[8];
+                if (activeKeyon && midi >= 0)
+                    snprintf(noteBuf, sizeof(noteBuf), "%s%d", kNoteNames[midi % 12], midi / 12 - 1);
+                else if (activeKeyon)
+                    snprintf(noteBuf, sizeof(noteBuf), "F%03X/%d", fnum, block);
+                else
+                    snprintf(noteBuf, sizeof(noteBuf), "---");
+                ImVec4 infoCol = activeKeyon ? ImVec4(1,1,1,1) : ImVec4(0.5f,0.5f,0.5f,1);
+                if (ImGui::BeginTable("##ym2413info", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit)) {
+                    ImGui::TableSetupColumn("Note", ImGuiTableColumnFlags_WidthFixed, 50.f);
+                    ImGui::TableSetupColumn("Patch", ImGuiTableColumnFlags_WidthFixed, 68.f);
+                    ImGui::TableSetupColumn("Vol", ImGuiTableColumnFlags_WidthFixed, 28.f);
+                    ImGui::TableHeadersRow();
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::TextColored(infoCol, "%s", noteBuf);
+                    ImGui::TableSetColumnIndex(1); ImGui::TextColored(infoCol, "%s", kInstNames[patch]);
+                    ImGui::TableSetColumnIndex(2); ImGui::TextColored(infoCol, "%d", vol);
+                    ImGui::EndTable();
+                }
+                ImGui::Spacing();
             }
-        }
 
-        // Instrument + Volume 0x30-0x38
-        for (int ch = 0; ch < 9; ch++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("0x%02X", 0x30 + ch);
-            ImGui::TableSetColumnIndex(1);
-            ImGui::Text("%02X", s_regShadow[0x30 + ch]);
-            ImGui::TableSetColumnIndex(2);
-            int inst = (s_instVol[ch] >> 4) & 0x0F;
-            int vol = s_instVol[ch] & 0x0F;
-            ImGui::Text("%s Vol%d%s", kInstNames[inst], vol, vol == 15 ? " [MUTE]" : "");
-        }
+            // Resolve patch params: custom from regs 0x00-0x07, built-in from ROM
+            UINT8 pTL[2], pFB[2], pAR[2], pDR[2], pSL[2], pRR[2], pKL[2], pML[2], pAM[2], pVIB[2];
+            if (patch == 0) {
+                UINT8 r0=s_regShadow[0x00],r1=s_regShadow[0x01];
+                UINT8 r2=s_regShadow[0x02],r3=s_regShadow[0x03];
+                UINT8 r4=s_regShadow[0x04],r5=s_regShadow[0x05];
+                UINT8 r6=s_regShadow[0x06],r7=s_regShadow[0x07];
+                pAM[0]=(r0>>7)&1; pVIB[0]=(r0>>6)&1; pML[0]=r0&0xF; pKL[0]=(r2>>6)&3;
+                pAM[1]=(r1>>7)&1; pVIB[1]=(r1>>6)&1; pML[1]=r1&0xF; pKL[1]=(r3>>6)&3;
+                pTL[0]=r2&0x3F; pFB[0]=(r3>>1)&7;
+                pTL[1]=0;       pFB[1]=0;
+                pAR[0]=r4>>4; pDR[0]=r4&0xF; pAR[1]=r5>>4; pDR[1]=r5&0xF;
+                pSL[0]=r6>>4; pRR[0]=r6&0xF; pSL[1]=r7>>4; pRR[1]=r7&0xF;
+            } else {
+                for (int op=0;op<2;op++) {
+                    pTL[op]=kOPLLRom[patch][op][0]; pFB[op]=kOPLLRom[patch][op][1];
+                    pAR[op]=kOPLLRom[patch][op][2]; pDR[op]=kOPLLRom[patch][op][3];
+                    pSL[op]=kOPLLRom[patch][op][4]; pRR[op]=kOPLLRom[patch][op][5];
+                    pKL[op]=kOPLLRom[patch][op][6]; pML[op]=kOPLLRom[patch][op][7];
+                    pAM[op]=kOPLLRom[patch][op][8]; pVIB[op]=kOPLLRom[patch][op][9];
+                }
+            }
 
-        ImGui::EndTable();
+            // 10-column operator table: OP/TL/FB/AR/DR/SL/RR/KL/ML/AM_VIB
+            if (ImGui::BeginTable("##oplltbl", 10, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit)) {
+                ImGui::TableSetupColumn("OP",     ImGuiTableColumnFlags_WidthFixed, 28.f);
+                ImGui::TableSetupColumn("TL",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("FB",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("AR",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("DR",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("SL",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("RR",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("KL",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("ML",     ImGuiTableColumnFlags_WidthFixed, 26.f);
+                ImGui::TableSetupColumn("AM/VIB", ImGuiTableColumnFlags_WidthFixed, 46.f);
+                ImGui::TableHeadersRow();
+                static const char* opName[2] = {"MOD","CAR"};
+                for (int op = 0; op < 2; op++) {
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0); ImGui::Text("%s", opName[op]);
+                    ImGui::TableSetColumnIndex(1); ImGui::Text("%d", pTL[op]);
+                    ImGui::TableSetColumnIndex(2); ImGui::Text("%d", pFB[op]);
+                    ImGui::TableSetColumnIndex(3); ImGui::Text("%d", pAR[op]);
+                    ImGui::TableSetColumnIndex(4); ImGui::Text("%d", pDR[op]);
+                    ImGui::TableSetColumnIndex(5); ImGui::Text("%d", pSL[op]);
+                    ImGui::TableSetColumnIndex(6); ImGui::Text("%d", pRR[op]);
+                    ImGui::TableSetColumnIndex(7); ImGui::Text("%d", pKL[op]);
+                    ImGui::TableSetColumnIndex(8); ImGui::Text("%d", pML[op]);
+                    ImGui::TableSetColumnIndex(9); ImGui::Text("%d/%d", pAM[op], pVIB[op]);
+                }
+                ImGui::EndTable();
+            }
+            ImGui::TreePop();
+        }
     }
 
-    ImGui::Spacing();
-
-    // Channel summary table
-    if (ImGui::BeginTable("##ymchsummary", 7,
-            ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp)) {
-        ImGui::TableSetupColumn("Ch", ImGuiTableColumnFlags_WidthFixed, 30.0f);
-        ImGui::TableSetupColumn("Note", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-        ImGui::TableSetupColumn("Inst", ImGuiTableColumnFlags_WidthFixed, 60.0f);
-        ImGui::TableSetupColumn("Vol", ImGuiTableColumnFlags_WidthFixed, 30.0f);
-        ImGui::TableSetupColumn("FNum", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-        ImGui::TableSetupColumn("KeyOn", ImGuiTableColumnFlags_WidthFixed, 40.0f);
-        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableHeadersRow();
-
-        static const char* kNoteNames[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
-
-        for (int ch = 0; ch < 9; ch++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::TextColored(ImVec4(
-                ((kChColors[ch] >> 0) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 8) & 0xFF) / 255.0f,
-                ((kChColors[ch] >> 16) & 0xFF) / 255.0f, 1.0f), "Ch%d", ch);
-            ImGui::TableSetColumnIndex(1);
-            int midi = fn_to_midi_note(ch);
-            if (midi >= 0 && midi < 128) ImGui::Text("%s%d", kNoteNames[midi % 12], midi / 12 - 1);
-            else ImGui::Text("-");
-            ImGui::TableSetColumnIndex(2);
-            int inst = (s_instVol[ch] >> 4) & 0x0F;
-            ImGui::Text("%s", kInstNames[inst]);
-            ImGui::TableSetColumnIndex(3);
-            int vol = s_instVol[ch] & 0x0F;
-            ImGui::Text("%d", vol);
-            ImGui::TableSetColumnIndex(4);
-            int fnhi = s_blockFnHi[ch] & 1;
-            int fullFn = (fnhi << 8) | s_freqLo[ch];
-            ImGui::Text("%d", fullFn);
-            ImGui::TableSetColumnIndex(5);
-            bool keyOn = (s_blockFnHi[ch] & 0x10) != 0;
-            ImGui::Text("%s", keyOn ? "ON" : "off");
-            ImGui::TableSetColumnIndex(6);
-            if (s_chMuted[ch]) ImGui::TextDisabled("[MUTED]");
-            else if (keyOn && vol < 15) ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Active");
-            else ImGui::TextDisabled("-");
+    // Rhythm channels table
+    if (rhythmMode) {
+        static const char* kRhName[5] = {"BD","HH","SD","TM","CY"};
+        // Register bit positions: BD=bit4, SD=bit3, TOM=bit2, CYM=bit1, HH=bit0
+        static const int kRhBit[5] = {4, 0, 3, 2, 1};
+        ImGui::Spacing();
+        ImGui::TextDisabled("-- Rhythm --");
+        UINT8 bdVol  = (s_regShadow[0x36] >> 4) & 0x0F;
+        UINT8 hhVol  = (s_regShadow[0x37] >> 4) & 0x0F;
+        UINT8 sdVol  =  s_regShadow[0x37] & 0x0F;
+        UINT8 tomVol = (s_regShadow[0x38] >> 4) & 0x0F;
+        UINT8 cymVol =  s_regShadow[0x38] & 0x0F;
+        UINT8 rhVols[5] = {bdVol, hhVol, sdVol, tomVol, cymVol};
+        if (ImGui::BeginTable("##ym2413rhythm", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit)) {
+            ImGui::TableSetupColumn("Inst", ImGuiTableColumnFlags_WidthFixed, 32.f);
+            ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthFixed, 32.f);
+            ImGui::TableSetupColumn("Vol",  ImGuiTableColumnFlags_WidthFixed, 30.f);
+            ImGui::TableHeadersRow();
+            for (int i = 0; i < 5; i++) {
+                bool kon = (rhythmReg >> kRhBit[i]) & 1;
+                ImVec4 col = kon ? ImVec4(1.0f,0.8f,0.4f,1.0f) : ImVec4(0.5f,0.5f,0.5f,1.0f);
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0); ImGui::TextColored(col, "%s", kRhName[i]);
+                ImGui::TableSetColumnIndex(1); ImGui::TextColored(col, "%s", kon ? "[ON]" : "[--]");
+                ImGui::TableSetColumnIndex(2); ImGui::TextColored(col, "%d", rhVols[i]);
+            }
+            ImGui::EndTable();
         }
+    }
 
-        ImGui::EndTable();
+    // All Regs hex dump
+    ImGui::Spacing();
+    if (ImGui::TreeNode("All Regs##ym2413")) {
+        if (ImGui::BeginTable("##ym2413allregs", 8,
+                ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+            for (int col = 0; col < 8; col++) {
+                ImGui::TableSetupColumn(col == 0 ? "Reg" : "Val", ImGuiTableColumnFlags_WidthFixed, 36.f);
+            }
+            ImGui::TableHeadersRow();
+            for (int row = 0; row < 8; row++) {
+                ImGui::TableNextRow();
+                for (int col = 0; col < 8; col++) {
+                    ImGui::TableSetColumnIndex(col);
+                    int reg = row * 8 + col;
+                    if (reg < 0x40) {
+                        ImGui::Text("%02X", s_regShadow[reg]);
+                    }
+                }
+            }
+            ImGui::EndTable();
+        }
+        ImGui::TreePop();
     }
 }
 
