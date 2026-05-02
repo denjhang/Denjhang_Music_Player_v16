@@ -307,6 +307,30 @@ static void sn76489_mute_all2(void) {
     sn76489_write2(0xFF); // ch3 noise vol=0 (mute)
 }
 
+// Write all shadow state registers to hardware (used after seek)
+static void ApplyShadowState(void) {
+    // Slot 0: tone periods + volumes
+    for (int ch = 0; ch < 3; ch++) {
+        sn76489_set_tone(ch, s_fullPeriod[ch]);
+        sn76489_write(sn76489_vol_latch(ch, s_vol[ch]));
+    }
+    // Slot 0: noise
+    sn76489_write(sn76489_noise_latch(s_noiseType, s_noiseUseCh2 ? 3 : s_noiseFreq));
+    sn76489_write(sn76489_noise_vol_latch(s_vol[3]));
+    safe_flush();
+    // Slot 1 (if T6W28 dual chip)
+    if (s_connected2 && s_isT6W28 && s_t6w28Mode == 2) {
+        for (int ch = 0; ch < 3; ch++) {
+            sn76489_write2(sn76489_tone_latch(ch, s2_fullPeriod[ch] & 0x0F));
+            sn76489_write2(sn76489_tone_data(s2_fullPeriod[ch] >> 4));
+            sn76489_write2(sn76489_vol_latch(ch, s2_vol[ch]));
+        }
+        sn76489_write2(sn76489_noise_latch(s2_noiseType, s2_noiseUseCh2 ? 3 : s2_noiseFreq));
+        sn76489_write2(sn76489_noise_vol_latch(s2_vol[3]));
+        safe_flush();
+    }
+}
+
 static void sn76489_set_noise(uint8_t ntype, uint8_t shift_freq) {
     sn76489_write(sn76489_noise_latch(ntype, shift_freq));
 }
@@ -2191,11 +2215,10 @@ static void RenderPlayerBar(void) {
                 if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
                 if (s_vgmFile) {
                     if (s_seekMode == 0) {
-                        // 快进模式：静音从头解析到目标位置，恢复后 VGM 命令自动设音量
-                        if (s_connected) sn76489_mute_all();
-                        if (s_connected2) sn76489_mute_all2();
-                        safe_flush();
+                        // 快进模式：断开硬件快进（仅解析 shadow state），到达后恢复寄存器
                         fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                        bool wasConn = s_connected, wasConn2 = s_connected2;
+                        s_connected = false; s_connected2 = false;
                         UINT32 skipSamples = 0;
                         while (skipSamples < targetSample) {
                             int cmdSamples = VGMProcessCommand();
@@ -2206,7 +2229,15 @@ static void RenderPlayerBar(void) {
                             }
                         }
                         s_vgmCurrentSamples = targetSample;
-                        if (s_connected) safe_flush();
+                        s_connected = wasConn; s_connected2 = wasConn2;
+                        // 从 shadow state 恢复所有硬件寄存器
+                        if (s_connected) {
+                            sn76489_mute_all();
+                            if (s_connected2) sn76489_mute_all2();
+                            safe_flush();
+                            ApplyShadowState();
+                            safe_flush();
+                        }
                     } else {
                         // 直接跳转模式：静音快进到目标前 0.5s，静音快过剩余 0.5s，恢复寄存器
                         UINT32 preRoll = (UINT32)(0.5 * 44100.0);
