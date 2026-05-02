@@ -87,6 +87,11 @@ static float s_fadeoutDuration = 3.0f; // fadeout duration in seconds (0=disable
 static bool s_fadeoutActive = false;
 static float s_fadeoutLevel = 1.0f;   // 1.0=normal, 0.0=mute
 static UINT32 s_fadeoutStartSample = 0;
+static UINT32 s_fadeoutEndSample = 0;
+
+// Channel mute/solo
+static bool s_chMuted[8] = {};       // per-channel mute (8 channels: slot0×4 + slot1×4)
+static int s_soloCh = -1;            // solo channel (-1=none)
 
 // GD3 tags
 static std::string s_trackName, s_gameName, s_systemName, s_artistName;
@@ -902,6 +907,13 @@ static int VGMProcessCommand(void) {
                     s2_fullPeriod[s2_lastToneLatchCh] = (s2_fullPeriod[s2_lastToneLatchCh] & 0x00F) | ((data & 0x3F) << 4);
                 }
             }
+            // 屏蔽 slot1 通道（0x30 的通道偏移 +4）
+            if ((data & 0x80) && (data & 0x10)) {
+                int ch = (data >> 5) & 3;
+                if (s_chMuted[4 + ch]) {
+                    data = (data & 0xF0) | 0x0F;
+                }
+            }
             if (!s_connected) return 0;
             if (s_t6w28Mode == 0) {
                 // Passthrough: 全部转发到 slot0
@@ -988,8 +1000,15 @@ static int VGMProcessCommand(void) {
             } else {
                 if (s_lastToneLatchCh < 3) { s_fullPeriod[s_lastToneLatchCh] = (s_fullPeriod[s_lastToneLatchCh] & 0x0F) | ((data & 0x3F) << 4); if (s_lastToneLatchCh == 2) tone2Updated = true; }
             }
-            // Hardware write
+            // Hardware write (with channel mute support)
             if (s_connected) {
+                // 屏蔽通道：音量 latch 时替换为静音
+                if ((data & 0x80) && (data & 0x10)) {
+                    int ch = (data >> 5) & 3;
+                    if (s_chMuted[ch]) {
+                        data = (data & 0xF0) | 0x0F;  // vol=15 (mute)
+                    }
+                }
                 if (s_t6w28Mode == 2 && s_isT6W28) {
                     // Dual Chip: slot0 只接收 tone (ch0-2)，屏蔽噪音 (ch3)
                     if (data & 0x80) {
@@ -1024,20 +1043,17 @@ static int VGMProcessCommand(void) {
             return (cmd & 0x0F) + 1;
         case 0x66: { // End of data (libvgm: Cmd_EndOfData)
             if (s_vgmLoopOffset > 0 && (s_vgmMaxLoops == 0 || s_vgmLoopCount < s_vgmMaxLoops)) {
-                // 淡出触发：最后一次循环，在进入循环前启动淡出
+                // 淡出触发：倒数第二次 0x66（进入最后一遍循环时）
                 if (s_vgmMaxLoops > 0 && s_vgmLoopCount >= s_vgmMaxLoops - 1
                     && s_fadeoutDuration > 0 && !s_fadeoutActive) {
                     s_fadeoutActive = true;
                     s_fadeoutLevel = 1.0f;
-                    // 淡出从此循环开始处算起
-                    UINT32 introSamples = s_vgmTotalSamples - s_vgmLoopSamples;
+                    s_fadeoutStartSample = s_vgmCurrentSamples;
                     UINT32 fadeoutSamples = (UINT32)(s_fadeoutDuration * 44100.0);
-                    if (s_vgmLoopSamples <= fadeoutSamples) {
-                        s_fadeoutStartSample = introSamples + s_vgmLoopSamples * s_vgmLoopCount;
-                    } else {
-                        s_fadeoutStartSample = introSamples + s_vgmLoopSamples * s_vgmLoopCount
-                            + (s_vgmLoopSamples - fadeoutSamples);
-                    }
+                    // 淡出长度限制在一遍循环内
+                    if (s_vgmLoopSamples > 0 && fadeoutSamples > s_vgmLoopSamples)
+                        fadeoutSamples = s_vgmLoopSamples;
+                    s_fadeoutEndSample = s_vgmCurrentSamples + fadeoutSamples;
                 }
                 fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
                 s_vgmLoopCount++;
@@ -1094,36 +1110,40 @@ static DWORD WINAPI VGMPlaybackThread(LPVOID) {
 
             // 淡出音量覆盖
             if (s_fadeoutActive && s_fadeoutDuration > 0) {
-                if (s_vgmCurrentSamples >= s_fadeoutStartSample) {
-                    UINT32 fadeoutSamples = (UINT32)(s_fadeoutDuration * 44100.0);
-                    float progress = (float)(s_vgmCurrentSamples - s_fadeoutStartSample) / (float)fadeoutSamples;
-                    if (progress >= 1.0f) {
-                        s_fadeoutLevel = 0.0f;
-                        s_fadeoutActive = false;
-                    } else {
-                        s_fadeoutLevel = 1.0f - progress;
-                    }
-                    // 每 ~10ms 发送一次淡出音量（约 441 samples）
-                    static UINT32 lastFadeSample = 0;
-                    if (s_vgmCurrentSamples - lastFadeSample >= 441 || s_fadeoutLevel <= 0.0f) {
-                        lastFadeSample = s_vgmCurrentSamples;
-                        if (s_connected) {
-                            for (int ch = 0; ch < 3; ch++) {
-                                uint8_t vol = (uint8_t)(s_vol[ch] + (15 - s_vol[ch]) * (1.0f - s_fadeoutLevel));
-                                sn76489_write(sn76489_vol_latch(ch, vol));
-                            }
-                            uint8_t nvol = (uint8_t)(s_vol[3] + (15 - s_vol[3]) * (1.0f - s_fadeoutLevel));
-                            sn76489_write(sn76489_noise_vol_latch(nvol));
+                UINT32 fadeRange = s_fadeoutEndSample - s_fadeoutStartSample;
+                if (fadeRange == 0) fadeRange = 1;
+                float progress = (float)(s_vgmCurrentSamples - s_fadeoutStartSample) / (float)fadeRange;
+                if (s_vgmCurrentSamples >= s_fadeoutEndSample) {
+                    s_fadeoutLevel = 0.0f;
+                    s_fadeoutActive = false;
+                } else {
+                    s_fadeoutLevel = 1.0f - progress;
+                }
+                // 每 ~10ms 发送一次淡出音量
+                static UINT32 lastFadeSample = 0;
+                if (s_vgmCurrentSamples - lastFadeSample >= 441 || s_fadeoutLevel <= 0.0f) {
+                    lastFadeSample = s_vgmCurrentSamples;
+                    if (s_connected) {
+                        for (int ch = 0; ch < 3; ch++) {
+                            uint8_t vol = (uint8_t)(s_vol[ch] + (15 - s_vol[ch]) * (1.0f - s_fadeoutLevel));
+                            sn76489_write(sn76489_vol_latch(ch, vol));
                         }
-                        if (s_connected2) {
-                            for (int ch = 0; ch < 3; ch++) {
-                                uint8_t vol = (uint8_t)(s2_vol[ch] + (15 - s2_vol[ch]) * (1.0f - s_fadeoutLevel));
-                                sn76489_write2(sn76489_vol_latch(ch, vol));
-                            }
-                            uint8_t nvol = (uint8_t)(s2_vol[3] + (15 - s2_vol[3]) * (1.0f - s_fadeoutLevel));
-                            sn76489_write2(sn76489_noise_vol_latch(nvol));
-                        }
+                        uint8_t nvol = (uint8_t)(s_vol[3] + (15 - s_vol[3]) * (1.0f - s_fadeoutLevel));
+                        sn76489_write(sn76489_noise_vol_latch(nvol));
                     }
+                    if (s_connected2) {
+                        for (int ch = 0; ch < 3; ch++) {
+                            uint8_t vol = (uint8_t)(s2_vol[ch] + (15 - s2_vol[ch]) * (1.0f - s_fadeoutLevel));
+                            sn76489_write2(sn76489_vol_latch(ch, vol));
+                        }
+                        uint8_t nvol = (uint8_t)(s2_vol[3] + (15 - s2_vol[3]) * (1.0f - s_fadeoutLevel));
+                        sn76489_write2(sn76489_noise_vol_latch(nvol));
+                    }
+                }
+                // 淡出完成后立即结束播放
+                if (s_fadeoutLevel <= 0.0f) {
+                    s_vgmTrackEnded = true;
+                    s_vgmPlaying = false;
                 }
             }
 
@@ -1470,6 +1490,27 @@ static void RenderPianoKeyboard(void) {
 }
 
 // ============ Level Meters ============
+static void ApplyChannelMute(int i) {
+    int chip = i / 4, ch = i % 4;
+    if (s_chMuted[i]) {
+        if (chip == 0 && s_connected) {
+            sn76489_write(ch < 3 ? sn76489_vol_latch(ch, 0x0F) : sn76489_noise_vol_latch(0x0F));
+        }
+        if (chip == 1 && s_connected2) {
+            sn76489_write2(ch < 3 ? sn76489_vol_latch(ch, 0x0F) : sn76489_noise_vol_latch(0x0F));
+        }
+    } else {
+        uint8_t vol = (chip == 0) ? s_vol[ch] : s2_vol[ch];
+        if (chip == 0 && s_connected) {
+            sn76489_write(ch < 3 ? sn76489_vol_latch(ch, vol) : sn76489_noise_vol_latch(vol));
+        }
+        if (chip == 1 && s_connected2) {
+            sn76489_write2(ch < 3 ? sn76489_vol_latch(ch, vol) : sn76489_noise_vol_latch(vol));
+        }
+    }
+    safe_flush();
+}
+
 static void RenderLevelMeters(void) {
     ImGui::BeginChild("SN_LevelMeters", ImVec2(0, 0), true);
 
@@ -1510,22 +1551,96 @@ static void RenderLevelMeters(void) {
 
     static const char* kChLabels[8] = {"T0", "T1", "T2", "N", "2T0", "2T1", "2T2", "2N"};
 
+    // 滚轮反转所有通道
+    if (ImGui::IsWindowHovered() && ImGui::GetIO().MouseWheel != 0) {
+        for (int j = 0; j < numCh; j++) s_chMuted[j] = !s_chMuted[j];
+        s_soloCh = -1;
+        for (int j = 0; j < numCh; j++) ApplyChannelMute(j);
+    }
+
     for (int i = 0; i < numCh; i++) {
         int chip = i / 4;  // 0 or 1
         int ch = i % 4;
 
         float centerX = p.x + i * groupW + groupW * 0.5f;
         float mY = p.y + labelH;
+        float meterLeft = centerX - meterW * 0.5f;
+        float meterRight = centerX + meterW * 0.5f;
+        float meterBottom = mY + meterH;
 
-        // Label
+        // Channel label as ImGui button
         int noiseType = (ch == 3) ? ((chip == 0) ? s_noiseType : s2_noiseType) : -1;
         ImU32 labelCol = getChColor(chip * 4 + ch, noiseType);
+        bool isMuted = s_chMuted[i];
+        bool isSolo = (s_soloCh == i);
+
         ImVec2 textSize = ImGui::CalcTextSize(kChLabels[i]);
-        dl->AddText(ImVec2(centerX - textSize.x * 0.5f, p.y + 3), labelCol, kChLabels[i]);
+        float btnW = textSize.x + 6.0f;
+        float btnH = textSize.y + 4.0f;
+        ImGui::SetCursorScreenPos(ImVec2(centerX - btnW * 0.5f, p.y + 1));
+
+        // Style button per state
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
+        if (isMuted) {
+            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(180, 50, 50, 200));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(220, 70, 70, 220));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 90, 90, 240));
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 200, 200, 255));
+        } else if (isSolo) {
+            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(180, 160, 30, 200));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(220, 200, 50, 220));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 240, 70, 240));
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 200, 255));
+        } else {
+            ImColor col(labelCol);
+            ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(col.Value.x * 0.4f * 255, col.Value.y * 0.4f * 255, col.Value.z * 0.4f * 255, 180));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(col.Value.x * 0.6f * 255, col.Value.y * 0.6f * 255, col.Value.z * 0.6f * 255, 220));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(col.Value.x * 0.8f * 255, col.Value.y * 0.8f * 255, col.Value.z * 0.8f * 255, 240));
+            ImGui::PushStyleColor(ImGuiCol_Text, labelCol);
+        }
+
+        char btnId[16];
+        snprintf(btnId, sizeof(btnId), "##ch%d", i);
+        if (ImGui::Button(btnId, ImVec2(btnW, btnH))) {
+            // Left-click: toggle mute
+            if (s_soloCh >= 0) {
+                s_soloCh = -1;
+                s_chMuted[i] = !s_chMuted[i];
+            } else {
+                s_chMuted[i] = !s_chMuted[i];
+            }
+            ApplyChannelMute(i);
+        }
+        if (ImGui::IsItemClicked(1)) {
+            // Right-click: toggle solo
+            if (s_soloCh == i) {
+                s_soloCh = -1;
+                for (int j = 0; j < numCh; j++) { s_chMuted[j] = false; ApplyChannelMute(j); }
+            } else {
+                s_soloCh = i;
+                for (int j = 0; j < numCh; j++) {
+                    s_chMuted[j] = (j != i);
+                    ApplyChannelMute(j);
+                }
+            }
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted("Left-click: Mute/Unmute\nRight-click: Solo\nScroll: Invert all");
+            ImGui::EndTooltip();
+        }
+
+        // Draw label text on top of button (button itself is small, no visible text)
+        ImGui::PopStyleColor(4);
+        ImGui::PopStyleVar();
+
+        // Overlay label text on the button area
+        dl->AddText(ImVec2(centerX - textSize.x * 0.5f, p.y + 3),
+                     isMuted ? IM_COL32(255, 200, 200, 255) : labelCol, kChLabels[i]);
 
         // Background
-        dl->AddRectFilled(ImVec2(centerX - meterW * 0.5f, mY), ImVec2(centerX + meterW * 0.5f, mY + meterH), IM_COL32(30, 30, 30, 255));
-        dl->AddRect(ImVec2(centerX - meterW * 0.5f, mY), ImVec2(centerX + meterW * 0.5f, mY + meterH), IM_COL32(100, 100, 100, 255));
+        dl->AddRectFilled(ImVec2(meterLeft, mY), ImVec2(meterRight, meterBottom), IM_COL32(30, 30, 30, 255));
+        dl->AddRect(ImVec2(meterLeft, mY), ImVec2(meterRight, meterBottom), IM_COL32(100, 100, 100, 255));
 
         float level = (chip == 0) ? s_channelLevel[ch] : s2_channelLevel[ch];
         float displayLevel = levelToDB(level);
@@ -1537,8 +1652,19 @@ static void RenderLevelMeters(void) {
                 float segH = barH / segs;
                 float segY = barY + s * segH;
                 float segLvl = (float)(segs - s) / segs * displayLevel;
-                dl->AddRectFilled(ImVec2(centerX - meterW * 0.5f + 1, segY), ImVec2(centerX + meterW * 0.5f - 1, segY + segH), getLevelColor(segLvl));
+                dl->AddRectFilled(ImVec2(meterLeft + 1, segY), ImVec2(meterRight - 1, segY + segH), getLevelColor(segLvl));
             }
+        }
+
+        // 屏蔽覆盖层 + X 标记
+        if (s_chMuted[i]) {
+            dl->AddRectFilled(ImVec2(meterLeft, mY), ImVec2(meterRight, meterBottom), IM_COL32(0, 0, 0, 120));
+            dl->AddLine(ImVec2(meterLeft + 2, mY + 2), ImVec2(meterRight - 2, meterBottom - 2), IM_COL32(255, 80, 80, 200), 2);
+            dl->AddLine(ImVec2(meterRight - 2, mY + 2), ImVec2(meterLeft + 2, meterBottom - 2), IM_COL32(255, 80, 80, 200), 2);
+        }
+        // 独奏高亮
+        if (s_soloCh == i) {
+            dl->AddRect(ImVec2(meterLeft - 1, mY - 1), ImVec2(meterRight + 1, meterBottom + 1), IM_COL32(255, 220, 50, 200), 0, 0, 2);
         }
 
         // Volume value
@@ -1546,7 +1672,8 @@ static void RenderLevelMeters(void) {
         char volStr[8];
         snprintf(volStr, sizeof(volStr), "%d", vol);
         ImVec2 volSize = ImGui::CalcTextSize(volStr);
-        dl->AddText(ImVec2(centerX - volSize.x * 0.5f, mY + meterH + 2), IM_COL32(180, 180, 180, 255), volStr);
+        ImU32 volCol = s_chMuted[i] ? IM_COL32(180, 60, 60, 255) : IM_COL32(180, 180, 180, 255);
+        dl->AddText(ImVec2(centerX - volSize.x * 0.5f, mY + meterH + 2), volCol, volStr);
     }
 
     ImGui::EndChild();
@@ -2033,6 +2160,11 @@ static void RenderPlayerBar(void) {
             snprintf(posStr, sizeof(posStr), "%02d:%02d", curMin, curSecI);
             snprintf(durStr, sizeof(durStr), "%02d:%02d", totMin, totSecI);
             ImGui::Text("%s / %s", posStr, durStr);
+            ImGui::SameLine(ImGui::GetContentRegionAvail().x + ImGui::GetCursorPos().x - 70);
+            if (s_vgmLoopCount > 0)
+                ImGui::TextDisabled("Loop #%d", s_vgmLoopCount);
+            else
+                ImGui::TextDisabled("       ");  // 占位
 
             // Slider for seeking — only seek on mouse release
             static float seek_progress = 0.0f;
@@ -2055,7 +2187,10 @@ static void RenderPlayerBar(void) {
                 if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
                 if (s_vgmFile) {
                     if (s_seekMode == 0) {
-                        // 快进模式：从头解析到目标位置（发送硬件数据）
+                        // 快进模式：先静音，从头解析到目标位置，恢复后 VGM 命令自动设音量
+                        if (s_connected) sn76489_mute_all();
+                        if (s_connected2) sn76489_mute_all2();
+                        safe_flush();
                         fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
                         UINT32 skipSamples = 0;
                         while (skipSamples < targetSample) {
@@ -2069,7 +2204,7 @@ static void RenderPlayerBar(void) {
                         s_vgmCurrentSamples = targetSample;
                         if (s_connected) safe_flush();
                     } else {
-                        // 直接跳转模式：快进但不发送硬件（快），然后复位硬件
+                        // 直接跳转模式：快进不发送硬件，然后复位芯片
                         fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
                         bool wasConn = s_connected, wasConn2 = s_connected2;
                         s_connected = false; s_connected2 = false;
@@ -2084,8 +2219,15 @@ static void RenderPlayerBar(void) {
                         }
                         s_connected = wasConn; s_connected2 = wasConn2;
                         s_vgmCurrentSamples = targetSample;
-                        // 复位硬件
-                        if (s_connected) { InitHardware(); safe_flush(); }
+                        // 复位硬件（学习断开时的复位序列）
+                        if (s_connected) {
+                            sn76489_mute_all();
+                            if (s_connected2) sn76489_mute_all2();
+                            safe_flush();
+                            Sleep(50);
+                            InitHardware();
+                            safe_flush();
+                        }
                     }
                     // Restart playback
                     s_vgmPlaying = true;
@@ -2097,7 +2239,6 @@ static void RenderPlayerBar(void) {
                 // Idle: sync slider to current playback position
                 seek_progress = progress;
             }
-            if (s_vgmLoopCount > 0) ImGui::TextDisabled("Loop #%d", s_vgmLoopCount);
         } else {
             ImGui::ProgressBar(0.0f, ImVec2(-1, 20), "");
         }
