@@ -652,7 +652,13 @@ static void UpdateChannelLevels(void) {
     }
 
     // Slot 0 (main SN76489)
+    bool isDualChip = (s_isT6W28 && s_t6w28Mode == 2);
     for (int ch = 0; ch < 4; ch++) {
+        // Dual Chip 模式: slot0 噪音 ch3 不负责，强制静音
+        if (isDualChip && ch == 3) {
+            s_channelLevel[3] = 0.0f;
+            continue;
+        }
         float target = (15.0f - (float)s_vol[ch]) / 15.0f;
         s_channelLevel[ch] += (target - s_channelLevel[ch]) * 0.3f;
         if (s_channelLevel[ch] < 0.001f) s_channelLevel[ch] = 0.0f;
@@ -697,6 +703,11 @@ static void UpdateChannelLevels(void) {
 
     // Slot 1 (2nd SN76489)
     for (int ch = 0; ch < 4; ch++) {
+        // Dual Chip 模式: slot1 ch0/ch1 不负责，强制静音
+        if (isDualChip && ch < 2) {
+            s2_channelLevel[ch] = 0.0f;
+            continue;
+        }
         float target = (15.0f - (float)s2_vol[ch]) / 15.0f;
         s2_channelLevel[ch] += (target - s2_channelLevel[ch]) * 0.3f;
         if (s2_channelLevel[ch] < 0.001f) s2_channelLevel[ch] = 0.0f;
