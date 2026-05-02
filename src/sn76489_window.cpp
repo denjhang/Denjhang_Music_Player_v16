@@ -374,6 +374,7 @@ static void InitHardware(void) {
     sn76489_set_tone(0, 0); sn76489_set_tone(1, 0); sn76489_set_tone(2, 0);
     if (s_connected2) sn76489_mute_all2();
     safe_flush();
+    Sleep(50);
 }
 
 static void ResetState(void) {
