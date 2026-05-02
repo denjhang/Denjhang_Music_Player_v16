@@ -19,6 +19,7 @@
 #include "opl3_window.h"
 #include "gigatron_window.h"
 #include "sn76489_window.h"
+#include "ym2413_window.h"
 #include "spfm_manager.h"
 #include "spfm_window.h"
 
@@ -151,6 +152,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     GigatronWindow::Init();
     SN76489Window::Init();
+    YM2413Window::Init();
     if (MidiPlayer::g_enableGlobalMediaKeys)
         MidiPlayer::RegisterGlobalMediaKeys();
 
@@ -188,6 +190,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         OPL3Window::Update();
         GigatronWindow::Update();
         SN76489Window::Update();
+    YM2413Window::Update();
         // VgmWindow handles its own updates internally (via RenderInline)
         // But we still need to run MIDI playback updates
         MidiPlayer::UpdateMIDIPlayback();
@@ -230,6 +233,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             ImGui::DockBuilderDockWindow("libvgm", dockSpaceID);
             ImGui::DockBuilderDockWindow("Gigatron", dockSpaceID);
             ImGui::DockBuilderDockWindow("SN76489(DCSG)", dockSpaceID);
+    ImGui::DockBuilderDockWindow("YM2413(OPLL)", dockSpaceID);
             ImGui::DockBuilderDockWindow("SPFM", dockSpaceID);
             ImGui::DockBuilderFinish(dockSpaceID);
         }
@@ -243,6 +247,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         VgmWindow::RenderTab();
         GigatronWindow::Render();
         SN76489Window::Render();
+    YM2413Window::Render();
 
         // Update keyboard capture state from active window
         MidiPlayer::g_isInputActive = YM2163Window::WantsKeyboardCapture();
@@ -270,6 +275,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     VgmWindow::Shutdown();
     GigatronWindow::Shutdown();
     SPFMWindow::Shutdown();
+    YM2413Window::Shutdown();
     SPFMManager::Shutdown();
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();

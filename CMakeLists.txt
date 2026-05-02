@@ -82,6 +82,7 @@ set(APP_SOURCES
     src/sn76489/spfm_lite.c
     src/spfm_manager.cpp
     src/spfm_window.cpp
+    src/ym2413_window.cpp
 )
 
 add_executable(denjhang_music_player WIN32 ${APP_SOURCES})
