@@ -3,7 +3,6 @@
 #include "spfm_window.h"
 #include "spfm_manager.h"
 #include "chip_control.h"
-#include "sn76489_window.h"
 #include "imgui/imgui.h"
 
 namespace SPFMWindow {
@@ -30,7 +29,7 @@ void Update() {
 }
 
 void Render() {
-    ImGui::SetNextWindowSize(ImVec2(350, 400), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(380, 420), ImGuiCond_FirstUseEver);
     bool visible = ImGui::Begin("SPFM");
 
     if (!visible) { ImGui::End(); return; }
@@ -52,58 +51,62 @@ void Render() {
     ImGui::Text("Card Slots");
     ImGui::Separator();
 
-    // Slot list
-    for (int i = 0; i < SPFMManager::MAX_SLOTS; i++) {
-        SPFMManager::ChipType ct = SPFMManager::GetSlotType(i);
-        const char* typeName = (ct == SPFMManager::CHIP_YM2163) ? "YM2163"
-                             : (ct == SPFMManager::CHIP_SN76489) ? "SN76489"
-                             : "---";
-        bool enabled = SPFMManager::g_device.slots[i].enabled;
-
-        ImGui::PushID(i);
-        ImGui::Text("Slot %d:", i);
-        ImGui::SameLine(60);
-        if (enabled) {
-            ImGui::Text("%s", typeName);
-        } else {
-            ImGui::TextDisabled("%s", typeName);
-        }
-        ImGui::PopID();
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-    // Chip type selection (Phase 1: all slots same type)
-    ImGui::Text("Chip Type");
-    ImGui::Spacing();
-
+    // Slot table
     SPFMManager::ChipType activeType = SPFMManager::GetActiveChipType();
-    bool isYM = (activeType == SPFMManager::CHIP_YM2163);
-    bool isSN = (activeType == SPFMManager::CHIP_SN76489);
+    if (ImGui::BeginTable("##spfmslots", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        ImGui::TableSetupColumn("Slot", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+        ImGui::TableSetupColumn("Chip Type", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 80.0f);
+        ImGui::TableHeadersRow();
 
-    if (ImGui::RadioButton("YM2163", isYM)) {
-        SPFMManager::SetAllSlots(SPFMManager::CHIP_YM2163);
-        // Notify YM2163 module
-        YM2163::g_hardwareConnected = SPFMManager::IsConnected();
-        YM2163::g_manualDisconnect = false;
-        if (SPFMManager::IsConnected()) {
-            SPFMManager::SendReset();
-            Sleep(200);
-            YM2163::ym2163_init();
+        for (int i = 0; i < SPFMManager::MAX_SLOTS; i++) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Slot %d", i);
+
+            ImGui::TableSetColumnIndex(1);
+            int current = static_cast<int>(SPFMManager::GetSlotType(i));
+            const char* items[] = { "YM2163", "SN76489", "Disabled" };
+            ImGui::PushID(i);
+            if (ImGui::Combo("##chiptype", &current, items, 3)) {
+                SPFMManager::ChipType newType = static_cast<SPFMManager::ChipType>(current + 1);
+                if (newType != activeType) {
+                    SwitchToChipType(newType);
+                }
+            }
+            ImGui::PopID();
+
+            ImGui::TableSetColumnIndex(2);
+            bool enabled = SPFMManager::g_device.slots[i].enabled;
+            if (enabled) {
+                ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "Active");
+            } else {
+                ImGui::TextDisabled("---");
+            }
+        }
+
+        ImGui::EndTable();
+    }
+
+    ImGui::Spacing();
+
+    // Connect / Disconnect buttons
+    {
+        float w = (ImGui::GetContentRegionAvail().x - 5.0f) / 2.0f;
+        if (ImGui::Button("Connect YM2163##spfm", ImVec2(w, 0))) {
+            SwitchToChipType(SPFMManager::CHIP_YM2163);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Connect SN76489##spfm", ImVec2(w, 0))) {
+            SwitchToChipType(SPFMManager::CHIP_SN76489);
         }
     }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("All 4 slots: YM2163 (FM synthesis)");
-
-    ImGui::SameLine();
-    if (ImGui::RadioButton("SN76489", isSN)) {
-        SPFMManager::SetAllSlots(SPFMManager::CHIP_SN76489);
-        // SN76489 module will pick up via SyncConnectionState in Update()
-        if (SPFMManager::IsConnected()) {
-            SPFMManager::SendReset();
+    {
+        if (ImGui::Button("Disconnect##spfm", ImVec2(-1, 0))) {
+            SwitchToChipType(SPFMManager::CHIP_NONE);
         }
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("Set chip type to None, send SPFM reset");
     }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip("All 4 slots: SN76489 (DCSG/PSG)");
 
     ImGui::Spacing();
 
@@ -114,11 +117,6 @@ void Render() {
         }
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("Send SPFM reset command (0xFE)");
     }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::TextDisabled("Phase 1: Single device, unified chip type");
-    ImGui::TextDisabled("Future: Multi-device, mixed chip types per slot");
 
     ImGui::End();
 }

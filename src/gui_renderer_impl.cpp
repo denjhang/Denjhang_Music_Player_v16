@@ -2,6 +2,8 @@
 // Included by gui_renderer.cpp via #include
 // Extracted from ym2163_piano_gui_v11.cpp lines 2772-4594
 
+#include "spfm_manager.h"
+
 // ===== RenderMIDIPlayer =====
 
 void RenderMIDIPlayer() {
@@ -447,14 +449,16 @@ void RenderPianoKeyboard() {
         float velocityFactor = (g_pianoKeyVelocity[keyIdx] > 0)
             ? (g_pianoKeyVelocity[keyIdx] / 127.0f) : 1.0f;
         float intensity = level * velocityFactor;
+        // Power curve to spread out high-velocity differences
+        intensity = powf(intensity, 0.5f);
         if (chipIdx >= 0 && chipIdx < 4) {
             ImVec4 baseColor = g_chipColors[chipIdx];
-            int r = (int)(baseColor.x * 255 * (0.3f + 0.7f * intensity));
-            int g = (int)(baseColor.y * 255 * (0.3f + 0.7f * intensity));
-            int b = (int)(baseColor.z * 255 * (0.3f + 0.7f * intensity));
+            int r = (int)(baseColor.x * 255 * (0.15f + 0.85f * intensity));
+            int g = (int)(baseColor.y * 255 * (0.15f + 0.85f * intensity));
+            int b = (int)(baseColor.z * 255 * (0.15f + 0.85f * intensity));
             return IM_COL32(r, g, b, 255);
         }
-        return IM_COL32((int)(40 + 180 * intensity), (int)(80 + 175 * intensity), 255, 255);
+        return IM_COL32((int)(30 + 225 * intensity), (int)(60 + 195 * intensity), 255, 255);
     };
 
     // Draw B2
@@ -564,15 +568,17 @@ void RenderPianoKeyboard() {
                 float velocityFactor = (g_pianoKeyVelocity[keyIdx] > 0)
                     ? (g_pianoKeyVelocity[keyIdx] / 127.0f) : 1.0f;
                 float intensity = level * velocityFactor;
+                // Power curve to spread out high-velocity differences
+                intensity = powf(intensity, 0.5f);
                 int chipIdx = g_pianoKeyChipIndex[keyIdx];
                 if (chipIdx >= 0 && chipIdx < 4) {
                     ImVec4 baseColor = g_chipColors[chipIdx];
-                    int r = (int)(baseColor.x * 255 * (0.2f + 0.6f * intensity));
-                    int g = (int)(baseColor.y * 255 * (0.2f + 0.6f * intensity));
-                    int b = (int)(baseColor.z * 255 * (0.2f + 0.6f * intensity));
+                    int r = (int)(baseColor.x * 255 * (0.1f + 0.7f * intensity));
+                    int g = (int)(baseColor.y * 255 * (0.1f + 0.7f * intensity));
+                    int b = (int)(baseColor.z * 255 * (0.1f + 0.7f * intensity));
                     color = IM_COL32(r, g, b, 255);
                 } else {
-                    color = IM_COL32((int)(30 + 150 * intensity), (int)(60 + 155 * intensity), 255, 255);
+                    color = IM_COL32((int)(20 + 180 * intensity), (int)(40 + 175 * intensity), 255, 255);
                 }
             } else {
                 if (octave == 6 && YM2163::g_enableSlot3_2MHz)
@@ -867,7 +873,21 @@ void RenderControls() {
 
     ImGui::Separator();
     ImGui::Text("YM2163 Chips");
-    // Hardware connection is now managed by the SPFM tab
+    // Connect / Disconnect buttons
+    {
+        bool isYM = (SPFMManager::GetActiveChipType() == SPFMManager::CHIP_YM2163);
+        if (isYM) {
+            if (ImGui::Button("Disconnect##ym", ImVec2(-1, 0))) {
+                SPFMManager::SwitchToChipType(SPFMManager::CHIP_NONE);
+            }
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Set chip type to None, send SPFM reset");
+        } else {
+            if (ImGui::Button("Connect##ym", ImVec2(-1, 0))) {
+                SPFMManager::SwitchToChipType(SPFMManager::CHIP_YM2163);
+            }
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Switch all slots to YM2163 mode");
+        }
+    }
     // Slot0 always on
     { bool alwaysOn = true; ImGui::BeginDisabled(); ImGui::Checkbox("Slot0 (1st @1MHz)", &alwaysOn); ImGui::EndDisabled(); }
 

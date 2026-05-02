@@ -371,6 +371,13 @@ static bool ApplyPeriodicNoiseFix(void) {
     return true;
 }
 
+void MuteAll() {
+    if (!SPFMManager::IsConnected()) return;
+    sn76489_mute_all();
+    if (s_connected2) sn76489_mute_all2();
+    safe_flush();
+}
+
 static void InitHardware(void) {
     sn76489_mute_all();
     sn76489_set_noise(0, 0);
@@ -1443,7 +1450,7 @@ static ImU32 getChColor(int ch, int noiseType = -1) {
 }
 
 static ImU32 blendKey(ImU32 col, float lv, bool isBlack) {
-    float blendLv = 0.55f + lv * 0.45f;
+    float blendLv = 0.3f + 0.7f * powf(lv, 0.5f);
     int r = (col >>  0) & 0xFF;
     int g = (col >>  8) & 0xFF;
     int b = (col >> 16) & 0xFF;
@@ -1826,15 +1833,30 @@ static void RenderSidebar(void) {
     if (!ImGui::CollapsingHeader("SN76489 Hardware##sn", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         return;
 
-    // Connection status (managed by SPFM window)
+    // Connection status
     if (SPFMManager::IsConnected()) {
         const char* desc = (SPFMManager::GetActiveChipType() == SPFMManager::CHIP_SN76489)
-            ? "SN76489" : SPFMManager::GetActiveChipType() == SPFMManager::CHIP_YM2163 ? "YM2163" : "---";
+            ? "SN76489" : SPFMManager::GetActiveChipType() == SPFMManager::CHIP_YM2163 ? "YM2163" : "None";
         ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "Connected (%s)", desc);
     } else {
         ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Disconnected");
     }
-    ImGui::TextDisabled("Use SPFM tab to manage device");
+
+    // Connect / Disconnect buttons
+    {
+        bool isSN = (SPFMManager::GetActiveChipType() == SPFMManager::CHIP_SN76489);
+        if (isSN) {
+            if (ImGui::Button("Disconnect##sn", ImVec2(-1, 0))) {
+                SPFMManager::SwitchToChipType(SPFMManager::CHIP_NONE);
+            }
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Set chip type to None, send SPFM reset");
+        } else {
+            if (ImGui::Button("Connect##sn", ImVec2(-1, 0))) {
+                SPFMManager::SwitchToChipType(SPFMManager::CHIP_SN76489);
+            }
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("Switch all slots to SN76489 mode");
+        }
+    }
 
     ImGui::Spacing(); ImGui::Separator();
 

@@ -2,6 +2,8 @@
 
 #include "spfm_manager.h"
 #include "sn76489/spfm.h"
+#include "chip_control.h"
+#include "sn76489_window.h"
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
@@ -128,8 +130,18 @@ bool ConnectDevice(int idx) {
 void DisconnectDevice(int idx) {
     if (!g_device.connected || idx != 0) return;
 
-    // Flush any pending SN76489 buffer
+    // Full chip mute before disconnecting
+    if (g_device.activeChipType == CHIP_YM2163) {
+        YM2163::stop_all_notes();
+        YM2163::ResetAllYM2163Chips();
+    }
+    if (g_device.activeChipType == CHIP_SN76489) {
+        SN76489Window::MuteAll();
+    }
+
+    // Flush any pending SN76489 buffer and wait for hardware
     ::spfm_flush();
+    Sleep(100);
 
     // Send reset before closing
     uint8_t reset = 0xFE;
@@ -212,6 +224,40 @@ void SetAllSlots(ChipType type) {
     }
     g_device.activeChipType = type;
     SaveConfig();
+}
+
+// ===== Chip Switching =====
+
+void SwitchToChipType(ChipType type) {
+    if (g_device.activeChipType == type) return;
+
+    if (g_device.connected) {
+        // Full mute before switching away from current chip
+        if (g_device.activeChipType == CHIP_YM2163) {
+            YM2163::stop_all_notes();
+            YM2163::ResetAllYM2163Chips();
+        }
+        if (g_device.activeChipType == CHIP_SN76489) {
+            SN76489Window::MuteAll();
+        }
+        FlushSN76489();
+        Sleep(100);
+    }
+
+    SetAllSlots(type);
+
+    if (g_device.connected) {
+        SendReset();
+        Sleep(200);
+
+        if (type == CHIP_YM2163) {
+            YM2163::g_hardwareConnected = true;
+            YM2163::g_manualDisconnect = false;
+            YM2163::ym2163_init();
+        }
+        // SN76489 auto-picks via SyncConnectionState in SN76489Window::Update()
+        // CHIP_NONE: reset sent above, YM2163/SN76489 modules will sync on next Update
+    }
 }
 
 // ===== State Query =====

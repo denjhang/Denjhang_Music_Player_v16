@@ -72,6 +72,9 @@ void SetAllSlots(ChipType type);
 bool IsConnected();
 ChipType GetActiveChipType();
 
+// ===== Chip Switching (called from any window or SPFM tab) =====
+void SwitchToChipType(ChipType type);
+
 // ===== Config =====
 void LoadConfig();
 void SaveConfig();
