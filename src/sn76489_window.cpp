@@ -623,6 +623,8 @@ static void UpdateChannelLevels(void) {
         s_channelLevel[ch] += (target - s_channelLevel[ch]) * 0.3f;
         if (s_channelLevel[ch] < 0.001f) s_channelLevel[ch] = 0.0f;
 
+        if (s_chMuted[ch]) continue;  // muted channel: no piano display
+
         if (ch < 3 && s_channelLevel[ch] > 0.01f) {
             int midi = period_to_midi_note(s_fullPeriod[ch]);
             if (midi >= SN_PIANO_LOW && midi <= SN_PIANO_HIGH) {
@@ -664,6 +666,8 @@ static void UpdateChannelLevels(void) {
         float target = (15.0f - (float)s2_vol[ch]) / 15.0f;
         s2_channelLevel[ch] += (target - s2_channelLevel[ch]) * 0.3f;
         if (s2_channelLevel[ch] < 0.001f) s2_channelLevel[ch] = 0.0f;
+
+        if (s_chMuted[4 + ch]) continue;  // muted channel: no piano display
 
         if (ch < 3 && s2_channelLevel[ch] > 0.01f) {
             int midi = period_to_midi_note(s2_fullPeriod[ch]);
