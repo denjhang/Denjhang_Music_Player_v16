@@ -80,6 +80,8 @@ set(APP_SOURCES
     src/gigatron/winmm.c
     src/sn76489_window.cpp
     src/sn76489/spfm_lite.c
+    src/spfm_manager.cpp
+    src/spfm_window.cpp
 )
 
 add_executable(denjhang_music_player WIN32 ${APP_SOURCES})

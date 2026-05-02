@@ -6,6 +6,7 @@
 #include "gui_renderer.h"
 #include "midi_player.h"
 #include "config_manager.h"
+#include "spfm_manager.h"
 
 #include "imgui/imgui.h"
 
@@ -18,7 +19,12 @@ static bool s_midiAutoPaused = false;
 
 void Init() {
     YM2163::InitializeAllChannels();
-    YM2163::ConnectHardware();
+    // Hardware connection is managed by SPFMManager
+    // If chip type is YM2163 and device is connected, initialize chips
+    if (SPFMManager::IsConnected() && SPFMManager::GetActiveChipType() == SPFMManager::CHIP_YM2163) {
+        YM2163::g_hardwareConnected = true;
+        YM2163::ym2163_init();
+    }
 }
 
 void Shutdown() {
@@ -28,7 +34,9 @@ void Shutdown() {
 // ===== Per-Frame Update =====
 
 void Update() {
-    YM2163::CheckHardwareAutoConnect();
+    // Sync connection state from SPFMManager
+    YM2163::g_hardwareConnected = SPFMManager::IsConnected() &&
+                                  SPFMManager::GetActiveChipType() == SPFMManager::CHIP_YM2163;
     YM2163::UpdateDrumStates();
     YM2163::CleanupStuckChannels();
     YM2163::UpdateChannelLevels();

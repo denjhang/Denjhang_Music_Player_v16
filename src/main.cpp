@@ -19,6 +19,8 @@
 #include "opl3_window.h"
 #include "gigatron_window.h"
 #include "sn76489_window.h"
+#include "spfm_manager.h"
+#include "spfm_window.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
@@ -143,7 +145,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Initialize channel states before hardware connection
     YM2163::InitializeAllChannels();
 
-    YM2163::ConnectHardware();
+    // SPFM Manager: auto-connect FTDI device, load chip type config
+    SPFMManager::Init();
+    SPFMWindow::Init();
+
     GigatronWindow::Init();
     SN76489Window::Init();
     if (MidiPlayer::g_enableGlobalMediaKeys)
@@ -177,6 +182,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
 
         // ===== Update all windows every frame =====
+        SPFMManager::Update();
+        SPFMWindow::Update();
         YM2163Window::Update();
         OPL3Window::Update();
         GigatronWindow::Update();
@@ -223,12 +230,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             ImGui::DockBuilderDockWindow("libvgm", dockSpaceID);
             ImGui::DockBuilderDockWindow("Gigatron", dockSpaceID);
             ImGui::DockBuilderDockWindow("SN76489(DCSG)", dockSpaceID);
+            ImGui::DockBuilderDockWindow("SPFM", dockSpaceID);
             ImGui::DockBuilderFinish(dockSpaceID);
         }
 
         ImGui::End();
 
         // ===== Render all dockable windows =====
+        SPFMWindow::Render();
         YM2163Window::Render();
         OPL3Window::Render();
         VgmWindow::RenderTab();
@@ -260,6 +269,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Cleanup (hardware disconnect already done in WM_DESTROY)
     VgmWindow::Shutdown();
     GigatronWindow::Shutdown();
+    SPFMWindow::Shutdown();
+    SPFMManager::Shutdown();
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();

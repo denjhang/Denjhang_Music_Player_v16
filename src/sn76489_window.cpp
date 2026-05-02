@@ -7,6 +7,7 @@
 #include "sn76489/sn76489.h"
 #include "chip_control.h"
 #include "chip_window_ym2163.h"
+#include "spfm_manager.h"
 #include "midi_player.h"
 #include "modizer_viz.h"
 #include "libvgm-modizer/emu/cores/ModizerVoicesData.h"
@@ -47,10 +48,12 @@ static ImU32 kCh2Colors[5] = {
 static const char* kChNames[4] = { "Tone0", "Tone1", "Tone2", "Noise" };
 
 // ============ Connection State ============
+// s_connected is now driven by SPFMManager
 static bool s_connected = false;
 static bool s_connected2 = true; // 2nd SN76489 (slot 1, T6W28 noise chip)
-static bool s_manualDisconnect = false;
 static ImU32 kChColorsCustom[10] = {}; // 0=use default
+
+static inline bool IsConnected() { return s_connected; }
 
 // ============ Test State ============
 static bool s_testRunning = false;
@@ -384,35 +387,20 @@ static void ResetState(void) {
     s_fullPeriod[0] = s_fullPeriod[1] = s_fullPeriod[2] = 0;
 }
 
-// ============ Connection ============
-static void ConnectHardware(void) {
-    if (s_connected) return;
-    StopTest();
-    if (s_vgmPlaying) { s_vgmPlaying = false; }
-    if (YM2163::g_hardwareConnected) YM2163::DisconnectHardware();
-    YM2163::g_manualDisconnect = true;
-    if (spfm_init(0) == 0) {
-        s_connected = true; s_manualDisconnect = false;
-        ResetState(); InitHardware();
-        DcLog("[SN] Hardware connected\n");
-    } else {
-        YM2163::g_manualDisconnect = false;
-        DcLog("[SN] Hardware connection failed\n");
-    }
-}
-
-static void DisconnectHardware(void) {
-    if (s_testRunning) s_testRunning = false;
-    if (s_vgmPlaying) s_vgmPlaying = false;
-    if (s_connected) {
+// ============ Connection (managed by SPFMManager) ============
+static void SyncConnectionState(void) {
+    bool wasConnected = s_connected;
+    s_connected = SPFMManager::IsConnected() &&
+                  SPFMManager::GetActiveChipType() == SPFMManager::CHIP_SN76489;
+    if (s_connected && !wasConnected) {
+        ResetState();
         InitHardware();
-        safe_flush();
-        Sleep(50);
-        spfm_cleanup();
-        s_connected = false; s_connected2 = false; s_manualDisconnect = true;
+        DcLog("[SN] Hardware connected via SPFMManager\n");
     }
-    YM2163::g_manualDisconnect = false;
-    DcLog("[SN] Hardware disconnected\n");
+    if (!s_connected && wasConnected) {
+        s_connected2 = false;
+        DcLog("[SN] Hardware disconnected\n");
+    }
 }
 
 // ============ Config Persistence ============
@@ -1397,24 +1385,14 @@ void Shutdown() {
         s_vgmThread = nullptr;
     }
     SaveConfig();
-    DisconnectHardware();
+    s_connected = false;
 }
 
 void Update() {
-    // Detect device removal when connected
-    if (s_connected) {
-        static int disconnectCheckCounter = 0;
-        if (++disconnectCheckCounter >= 120) { // every ~2 seconds
-            disconnectCheckCounter = 0;
-            DWORD numDevs = 0;
-            if (FT_CreateDeviceInfoList(&numDevs) != FT_OK || numDevs == 0) {
-                DcLog("[SN] Device removed, disconnecting\n");
-                s_vgmPlaying = false; s_vgmPaused = false;
-                s_connected = false; s_manualDisconnect = false;
-                ::spfm_cleanup();
-                YM2163::g_manualDisconnect = false;
-            }
-        }
+    // Sync connection state from SPFMManager
+    SyncConnectionState();
+    if (!s_connected) {
+        s_vgmPlaying = false; s_vgmPaused = false;
     }
     UpdateChannelLevels();
     if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
@@ -1848,18 +1826,15 @@ static void RenderSidebar(void) {
     if (!ImGui::CollapsingHeader("SN76489 Hardware##sn", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
         return;
 
-    if (s_connected) {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-        if (ImGui::Button("Disconnect##sn", ImVec2(-1, 0))) DisconnectHardware();
-        ImGui::PopStyleColor(2);
+    // Connection status (managed by SPFM window)
+    if (SPFMManager::IsConnected()) {
+        const char* desc = (SPFMManager::GetActiveChipType() == SPFMManager::CHIP_SN76489)
+            ? "SN76489" : SPFMManager::GetActiveChipType() == SPFMManager::CHIP_YM2163 ? "YM2163" : "---";
+        ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "Connected (%s)", desc);
     } else {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.5f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
-        if (ImGui::Button("Connect##sn", ImVec2(-1, 0))) { s_manualDisconnect = false; ConnectHardware(); }
-        ImGui::PopStyleColor(2);
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Disconnected");
     }
-    if (s_connected) ImGui::TextColored(ImVec4(0.3f, 1.0f, 0.3f, 1.0f), "Connected");
+    ImGui::TextDisabled("Use SPFM tab to manage device");
 
     ImGui::Spacing(); ImGui::Separator();
 

@@ -867,27 +867,7 @@ void RenderControls() {
 
     ImGui::Separator();
     ImGui::Text("YM2163 Chips");
-
-    if (YM2163::g_hardwareConnected) {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-        if (ImGui::Button("Disconnect Hardware", ImVec2(-1, 0))) {
-            YM2163::g_manualDisconnect = true;
-            YM2163::DisconnectHardware();
-        }
-        ImGui::PopStyleColor(2);
-    } else {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
-        if (ImGui::Button("Connect Hardware", ImVec2(-1, 0))) {
-            YM2163::g_manualDisconnect = false;
-            YM2163::ConnectHardware();
-        }
-        ImGui::PopStyleColor(2);
-    }
-    if (ImGui::IsItemHovered()) ImGui::SetTooltip(YM2163::g_hardwareConnected ?
-        "Disconnect from FTDI hardware\nHardware will auto-disconnect if removed" :
-        "Connect to FTDI hardware\nHardware will auto-connect when plugged in");
+    // Hardware connection is now managed by the SPFM tab
     // Slot0 always on
     { bool alwaysOn = true; ImGui::BeginDisabled(); ImGui::Checkbox("Slot0 (1st @1MHz)", &alwaysOn); ImGui::EndDisabled(); }
 

@@ -25,6 +25,7 @@ extern "C" {
 int spfm_init(int dev_idx);
 void spfm_cleanup(void);
 SPFM_HANDLE spfm_get_handle(void);
+void spfm_set_handle(SPFM_HANDLE h);
 void spfm_reset(void);
 void spfm_chip_reset(void);
 void spfm_write_reg(uint8_t slot, uint8_t port, uint8_t addr, uint8_t data);

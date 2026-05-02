@@ -63,8 +63,8 @@ struct VelocityAnalysis {
 };
 
 // ===== Global State Accessors =====
-extern FT_HANDLE g_ftHandle;
-extern bool g_hardwareConnected;
+extern FT_HANDLE g_ftHandle;       // deprecated: use SPFMManager
+extern bool g_hardwareConnected;   // deprecated: use SPFMManager::IsConnected()
 extern ChannelState g_channels[MAX_CHANNELS];
 
 // ===== Settings Accessors =====
@@ -90,12 +90,12 @@ extern int g_fnum_b2;
 extern int g_fnums_c7[12];
 
 // ===== FTDI Communication =====
-int ftdi_init(int dev_idx);
-bool CheckHardwarePresent();
-bool CheckHardwareReady();
-void ConnectHardware();
-void DisconnectHardware();
-void CheckHardwareAutoConnect();
+int ftdi_init(int dev_idx);         // deprecated: use SPFMManager::ConnectDevice()
+bool CheckHardwarePresent();        // deprecated: use SPFMManager
+bool CheckHardwareReady();          // deprecated: use SPFMManager
+void ConnectHardware();             // deprecated: use SPFMManager
+void DisconnectHardware();          // deprecated: use SPFMManager
+void CheckHardwareAutoConnect();    // deprecated: use SPFMManager::Update()
 void write_melody_cmd_chip(uint8_t data, int chipIndex);
 void write_melody_cmd(uint8_t data);
 

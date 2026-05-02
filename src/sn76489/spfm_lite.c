@@ -148,3 +148,8 @@ void spfm_reset(void) {
 void spfm_chip_reset(void) { spfm_reset(); }
 
 SPFM_HANDLE spfm_get_handle(void) { return s_handle; }
+
+void spfm_set_handle(SPFM_HANDLE h) {
+    s_handle = h;
+    s_buf_ptr = 0;
+}

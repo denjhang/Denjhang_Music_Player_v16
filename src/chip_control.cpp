@@ -4,6 +4,7 @@
 #include "chip_control.h"
 #include "chip_window_ym2163.h"
 #include "gui_renderer.h"  // For piano key state
+#include "spfm_manager.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -175,66 +176,33 @@ bool CheckHardwareReady() {
 
 void ConnectHardware() {
     if (g_hardwareConnected) return;
-    if (ftdi_init(0) == 0) {
-        g_hardwareConnected = true;
+    // SPFMManager handles connection now
+    g_hardwareConnected = SPFMManager::IsConnected();
+    if (g_hardwareConnected) {
         g_manualDisconnect = false;
         ym2163_init();
-        log_command("Hardware connected");
-    } else {
-        log_command("Hardware connection failed");
+        log_command("Hardware connected via SPFMManager");
     }
 }
 
 void DisconnectHardware() {
-    if (g_ftHandle) {
-        stop_all_notes();
-        FT_Close(g_ftHandle);
-        g_ftHandle = NULL;
-    }
+    stop_all_notes();
     g_hardwareConnected = false;
     g_manualDisconnect = true;
+    g_ftHandle = NULL;
     log_command("Hardware disconnected");
 }
 
 void CheckHardwareAutoConnect() {
-    if (g_manualDisconnect) return;
-    if (g_hardwareConnected) return;
-    if (!YM2163Window::IsVisible()) return;
-
-    auto now = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - g_lastHardwareCheck);
-    if (elapsed.count() < HARDWARE_CHECK_INTERVAL_MS) return;
-    g_lastHardwareCheck = now;
-
-    bool present = CheckHardwarePresent();
-    if (present) {
-        if (CheckHardwareReady()) {
-            if (ftdi_init(0) == 0) {
-                g_hardwareConnected = true;
-                ym2163_init();
-                g_hardwareConnectRetries = 0;
-                log_command("Hardware auto connected");
-            } else {
-                g_hardwareConnectRetries++;
-                if (g_hardwareConnectRetries >= HARDWARE_MAX_RETRIES)
-                    g_hardwareConnectRetries = 0;
-            }
-        } else {
-            g_hardwareConnectRetries++;
-            if (g_hardwareConnectRetries >= HARDWARE_MAX_RETRIES)
-                g_hardwareConnectRetries = 0;
-        }
-    } else {
-        g_hardwareConnectRetries = 0;
+    // SPFMManager::Update() handles device detection now
+    g_hardwareConnected = SPFMManager::IsConnected();
+    if (g_hardwareConnected && g_manualDisconnect) {
+        g_manualDisconnect = false;
     }
 }
 
 void write_melody_cmd_chip(uint8_t data, int chipIndex) {
-    if (!g_ftHandle) return;
-    uint8_t cmd[3] = {(uint8_t)chipIndex, 0x80, data};
-    DWORD written;
-    FT_Write(g_ftHandle, cmd, 3, &written);
-    FT_Purge(g_ftHandle, FT_PURGE_TX);
+    SPFMManager::WriteYM2163((uint8_t)chipIndex, data);
 
     if (!g_expectingData) {
         g_lastRegAddr = data;
@@ -280,9 +248,7 @@ void init_single_ym2163(int chipIndex) {
 
 void ym2163_init() {
     uint8_t reset_cmd[4] = {0, 0, 0xFE, 0};
-    DWORD written;
-    FT_Write(g_ftHandle, reset_cmd, 4, &written);
-    FT_Purge(g_ftHandle, FT_PURGE_TX);
+    SPFMManager::RawWrite(reset_cmd, 4);
     Sleep(200);
 
     log_command("=== YM2163 Initialization ===");
@@ -673,7 +639,7 @@ void AnalyzeVelocityDistribution(void* midiFilePtr) {
 }
 
 void ResetYM2163Chip(int chipIndex) {
-    if (!g_ftHandle) return;
+    if (!SPFMManager::IsConnected()) return;
     log_command("Resetting YM2163 Chip %d...", chipIndex);
     for (int ch = 0; ch < 4; ch++) {
         write_melody_cmd_chip(0x88 + ch, chipIndex);
