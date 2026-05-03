@@ -110,6 +110,9 @@ static ImU32 kChColors[14] = {
     IM_COL32(140, 140, 220, 255), // CYM: indigo
 };
 
+// Custom channel colors (0 = use default from kChColors)
+static ImU32 kChColorsCustom[14] = {};
+
 // Rhythm channel VGM register mapping
 // BD=0x10(bd), SD=0x10(sd), TOM=0x10(tom), HH=0x10(hh), CYM=0x10(cym)
 // The rhythm bits share register 0x0E (rhythm enable) and freq/vol use ch6-ch10 of 0x10-0x18/0x30-0x38
@@ -181,6 +184,12 @@ static const int YM_PIANO_KEYS = YM_PIANO_HIGH - YM_PIANO_LOW + 1;
 static bool s_pianoKeyOn[YM_PIANO_KEYS] = {};
 static float s_pianoKeyLevel[YM_PIANO_KEYS] = {};
 static int s_pianoKeyChannel[YM_PIANO_KEYS] = {};
+static float s_pianoVibrato[YM_PIANO_KEYS] = {}; // VIB pitch offset in semitones
+static float s_pianoTremolo[YM_PIANO_KEYS] = {}; // AM tremolo [-1, 1]
+static float s_pianoPortamento[YM_PIANO_KEYS] = {}; // portamento offset in semitones
+static float s_visualNote[9] = {}; // smoothed visual note per channel
+static float s_startNote[9] = {}; // note at key-on (portamento anchor)
+static bool  s_chKeyOnEdge[9] = {}; // key-on rising edge flag
 static const bool s_isBlackNote[12] = {false, true, false, true, false, false, true, false, true, false, true, false};
 
 // ============ Level Meter State ============
@@ -493,6 +502,18 @@ static void LoadConfig(void) {
         if (s_fadeoutDuration < 0.0f) s_fadeoutDuration = 0.0f;
     }
 
+    // Channel colors
+    for (int i = 0; i < 14; i++) {
+        char key[64];
+        snprintf(key, sizeof(key), "ChColor%d", i);
+        char val[32] = "";
+        GetPrivateProfileStringA("Colors", key, "", val, sizeof(val), s_configPath);
+        if (val[0]) {
+            unsigned int c = (unsigned int)strtoul(val, NULL, 16);
+            if (c > 0) kChColorsCustom[i] = (ImU32)c;
+        }
+    }
+
     DcLog("[YM2413] Config loaded\n");
 }
 
@@ -516,6 +537,17 @@ static void SaveConfig(void) {
         char val[32];
         snprintf(val, sizeof(val), "%.1f", s_fadeoutDuration);
         WritePrivateProfileStringA("Settings", "FadeoutDuration", val, s_configPath);
+    }
+
+    // Channel colors
+    WritePrivateProfileStringA("Colors", NULL, NULL, s_configPath);
+    for (int i = 0; i < 14; i++) {
+        char key[64], val[32];
+        snprintf(key, sizeof(key), "ChColor%d", i);
+        if (kChColorsCustom[i] != 0) {
+            snprintf(val, sizeof(val), "%08X", kChColorsCustom[i]);
+            WritePrivateProfileStringA("Colors", key, val, s_configPath);
+        }
     }
 }
 
@@ -637,23 +669,30 @@ static void UpdateChannelLevels(void) {
         s_pianoKeyOn[i] = false;
         s_pianoKeyLevel[i] = 0.0f;
         s_pianoKeyChannel[i] = -1;
+        s_pianoVibrato[i] = 0.0f;
+        s_pianoTremolo[i] = 0.0f;
+        s_pianoPortamento[i] = 0.0f;
     }
 
+    // YM2413 LFO: fixed ~3.98Hz, used for AM (tremolo) and VIB (vibrato)
+    const float kOPLLLfoHz = 3.98f;
+    float lfo_time = (float)ImGui::GetTime();
+    float lfo_sin = sinf(lfo_time * 2.0f * 3.14159265f * kOPLLLfoHz);
+    float lfo_tri = 2.0f * fabsf(2.0f * fmodf(lfo_time * kOPLLLfoHz, 1.0f) - 1.0f) - 1.0f;
+
     // Melodic channels (0-8)
-    // YM2413 register 0x20-0x28: bit 4 = KEY ON, bit 3-1 = BLOCK, bit 0 = F-number bit 8
     for (int ch = 0; ch < YM_NUM_MELODIC; ch++) {
         uint8_t vol = s_instVol[ch] & 0x0F;
         bool keyoff = s_chKeyOff[ch];
-        bool sus = (s_blockFnHi[ch] >> 5) & 1; // SUS bit: sustain after keyoff
+        bool sus = (s_blockFnHi[ch] >> 5) & 1;
 
-        // Decay envelope (edge detection done in VGMProcessCommand)
         if (keyoff && !sus) {
-            s_chDecay[ch] = 0.0f;          // no SUS: immediate kill
+            s_chDecay[ch] = 0.0f;
         } else if (keyoff) {
-            s_chDecay[ch] *= 0.85f;         // SUS: slow release
+            s_chDecay[ch] *= 0.85f;
             if (s_chDecay[ch] < 0.01f) s_chDecay[ch] = 0.0f;
         } else {
-            s_chDecay[ch] *= 0.98f;         // sustain: near-full
+            s_chDecay[ch] *= 0.98f;
             if (s_chDecay[ch] < 0.01f) s_chDecay[ch] = 0.0f;
         }
 
@@ -673,7 +712,54 @@ static void UpdateChannelLevels(void) {
                     s_pianoKeyLevel[idx] = s_channelLevel[ch];
                     s_pianoKeyChannel[idx] = ch;
                 }
+                // Read patch AM/VIB from ROM or custom regs
+                int patch = (s_instVol[ch] >> 4) & 0x0F;
+                bool has_vib = false, has_am = false;
+                if (patch == 0) {
+                    // Custom: read from regs 0x00-0x07
+                    // mod1: reg0[7]=AM, reg0[5]=VIB; mod2: reg1[7]=AM, reg1[5]=VIB
+                    has_vib = ((s_regShadow[0x00] >> 5) & 1) || ((s_regShadow[0x01] >> 5) & 1);
+                    has_am = ((s_regShadow[0x00] >> 7) & 1) || ((s_regShadow[0x01] >> 7) & 1);
+                } else {
+                    has_vib = kOPLLRom[patch][0][9] || kOPLLRom[patch][1][9];
+                    has_am  = kOPLLRom[patch][0][8] || kOPLLRom[patch][1][8];
+                }
+                // VIB: small pitch wobble (YM2413 depth is ~14 cent, visual ±0.14 semitones)
+                float vib = has_vib ? lfo_sin * 0.14f : 0.0f;
+                // AM: small tremolo (YM2413 depth is ~4.8dB, visual scaled down)
+                float trem = has_am ? lfo_tri * 0.3f : 0.0f;
+                if (fabsf(vib) > fabsf(s_pianoVibrato[idx]))
+                    s_pianoVibrato[idx] = vib;
+                if (fabsf(trem) > fabsf(s_pianoTremolo[idx]))
+                    s_pianoTremolo[idx] = trem;
+                // Portamento: track frequency changes within a single key-on
+                float fnt = (float)midi;
+                // key-on rising edge: snap start/visual to current note (no false slide)
+                if (s_chKeyOnEdge[ch]) {
+                    s_startNote[ch] = fnt;
+                    s_visualNote[ch] = fnt;
+                    s_chKeyOnEdge[ch] = false;
+                } else if (s_visualNote[ch] > 0.0f && fabsf(fnt - s_visualNote[ch]) > 1.0f) {
+                    // Frequency jumped >1 semitone: not portamento, reset anchor
+                    s_startNote[ch] = fnt;
+                    s_visualNote[ch] = fnt;
+                } else if (s_visualNote[ch] > 0.0f) {
+                    // Smooth track within same key-on, poff reveals slide
+                    s_visualNote[ch] += (fnt - s_visualNote[ch]) * 0.5f;
+                } else {
+                    s_startNote[ch] = fnt;
+                    s_visualNote[ch] = fnt;
+                }
+                float poff = s_visualNote[ch] - s_startNote[ch];
+                if (poff > 1.0f) poff = 1.0f;
+                if (poff < -1.0f) poff = -1.0f;
+                s_pianoPortamento[idx] = poff;
             }
+        }
+        // Clear portamento state when channel off
+        if (!kon) {
+            s_visualNote[ch] = 0.0f;
+            s_startNote[ch] = 0.0f;
         }
     }
 
@@ -894,6 +980,7 @@ static int VGMProcessCommand(void) {
                     // Rising edge: fresh keyon, reset decay
                     s_chDecay[ch] = 1.0f;
                     s_chKeyOff[ch] = false;
+                    s_chKeyOnEdge[ch] = true;
                 } else if (!newKon && prevKon) {
                     // Falling edge: keyoff
                     s_chKeyOff[ch] = true;
@@ -1334,7 +1421,10 @@ void Update() {
 
 // ============ Piano Keyboard ============
 static ImU32 getChColor(int ch) {
-    if (ch >= 0 && ch < YM_NUM_CHANNELS) return kChColors[ch];
+    if (ch >= 0 && ch < YM_NUM_CHANNELS) {
+        if (kChColorsCustom[ch] != 0) return kChColorsCustom[ch];
+        return kChColors[ch];
+    }
     return IM_COL32(160, 200, 160, 255);
 }
 
@@ -1408,6 +1498,58 @@ static void RenderPianoKeyboard(void) {
             ? getKeyColorBlack(idx, s_pianoKeyLevel[idx]) : IM_COL32(0, 0, 0, 255);
         dl->AddRectFilled(ImVec2(x, p.y), ImVec2(x + blackKeyW, p.y + blackKeyH), fillCol);
         dl->AddRect(ImVec2(x, p.y), ImVec2(x + blackKeyW, p.y + blackKeyH), IM_COL32(128, 128, 128, 255));
+    }
+
+    // Pass 3: portamento / vibrato / tremolo indicators
+    float hl_w = whiteKeyW * 0.3f;
+    wkIdx = 0;
+    for (int n = kMinNote; n <= kMaxNote; n++) {
+        int idx = n - YM_PIANO_LOW;
+        float poff = s_pianoPortamento[idx];
+        float vib = s_pianoVibrato[idx];
+        float trem = s_pianoTremolo[idx];
+        bool hasPoff = fabsf(poff) >= 0.02f;
+        bool hasVib = fabsf(vib) >= 0.02f;
+        bool hasTrem = fabsf(trem) >= 0.02f;
+        if (!hasPoff && !hasVib && !hasTrem) {
+            if (!s_isBlackNote[n % 12]) wkIdx++;
+            continue;
+        }
+
+        int ch = s_pianoKeyChannel[idx];
+        ImU32 rawCol = (ch >= 0) ? getChColor(ch) : IM_COL32(160, 200, 160, 255);
+        ImVec4 cv = ImGui::ColorConvertU32ToFloat4(rawCol);
+        cv.w = fmaxf(0.5f, s_pianoKeyLevel[idx]);
+        ImU32 col = ImGui::ColorConvertFloat4ToU32(cv);
+        float keyX = p.x + wkIdx * whiteKeyW + whiteKeyW * 0.5f;
+        float kh = whiteKeyH;
+
+        // Portamento: full-height bar at current pitch position
+        if (hasPoff) {
+            float fnote = (float)n + poff;
+            int wki = 0;
+            for (int m = kMinNote; m < (int)fnote; m++) if (!s_isBlackNote[m % 12]) wki++;
+            float hlX = p.x + wki * whiteKeyW + whiteKeyW * 0.5f;
+            dl->AddRectFilled(
+                ImVec2(hlX - hl_w * 0.5f, p.y),
+                ImVec2(hlX + hl_w * 0.5f, p.y + kh), col);
+        }
+        // VIB: full-height bar shifting left/right from note center (like libvgm PMS)
+        if (hasVib) {
+            float hlX = keyX + vib * whiteKeyW * 0.5f;
+            dl->AddRectFilled(
+                ImVec2(hlX - hl_w * 0.5f, p.y),
+                ImVec2(hlX + hl_w * 0.5f, p.y + kh), col);
+        }
+        // AM/Tremolo: vertical pulse at top of key (like libvgm AMS)
+        if (hasTrem) {
+            float pulseH = kh * 0.15f * fabsf(trem);
+            dl->AddRectFilled(
+                ImVec2(keyX - hl_w * 0.5f, p.y),
+                ImVec2(keyX + hl_w * 0.5f, p.y + pulseH + 2.0f), col);
+        }
+
+        if (!s_isBlackNote[n % 12]) wkIdx++;
     }
 
     ImGui::EndChild();
@@ -1798,6 +1940,53 @@ static void RenderSidebar(void) {
             ImGui::SliderFloat("Height##ym", &s_scopeHeight, 20, 300);
             ImGui::SliderFloat("Amplitude##ym", &s_scopeAmplitude, 0.5f, 10.0f);
             ImGui::SliderInt("Samples##ym", &s_scopeSamples, 100, 1000);
+        }
+    }
+
+    // Channel Colors
+    if (ImGui::CollapsingHeader("Channel Colors##ymchcolors")) {
+        static const char* kChLabels[14] = {
+            "Ch0", "Ch1", "Ch2", "Ch3", "Ch4", "Ch5", "Ch6", "Ch7", "Ch8",
+            "BD", "SD", "TOM", "HH", "CYM"
+        };
+        for (int i = 0; i < 14; i++) {
+            ImGui::PushID(i);
+            float colF[4];
+            ImU32 curCol = kChColorsCustom[i];
+            ImU32 defCol = kChColors[i];
+            if (curCol != 0) {
+                colF[0] = ((curCol >> 0) & 0xFF) / 255.0f;
+                colF[1] = ((curCol >> 8) & 0xFF) / 255.0f;
+                colF[2] = ((curCol >> 16) & 0xFF) / 255.0f;
+                colF[3] = ((curCol >> 24) & 0xFF) / 255.0f;
+            } else {
+                colF[0] = ((defCol >> 0) & 0xFF) / 255.0f;
+                colF[1] = ((defCol >> 8) & 0xFF) / 255.0f;
+                colF[2] = ((defCol >> 16) & 0xFF) / 255.0f;
+                colF[3] = 1.0f;
+            }
+            if (ImGui::ColorEdit4(("##ymclredit" + std::to_string(i)).c_str(), colF, ImGuiColorEditFlags_NoInputs)) {
+                kChColorsCustom[i] = IM_COL32(
+                    (int)(colF[0] * 255 + 0.5f), (int)(colF[1] * 255 + 0.5f),
+                    (int)(colF[2] * 255 + 0.5f), (int)(colF[3] * 255 + 0.5f));
+                SaveConfig();
+            }
+            ImGui::SameLine();
+            ImGui::TextUnformatted(kChLabels[i]);
+            if (kChColorsCustom[i] == 0) {
+                ImGui::SameLine();
+                ImGui::TextDisabled("(auto)");
+            }
+            ImGui::SameLine();
+            if (ImGui::SmallButton(("Reset##rclr" + std::to_string(i)).c_str())) {
+                kChColorsCustom[i] = 0;
+                SaveConfig();
+            }
+            ImGui::PopID();
+        }
+        if (ImGui::SmallButton("Reset All Colors##ymrclrall")) {
+            memset(kChColorsCustom, 0, sizeof(kChColorsCustom));
+            SaveConfig();
         }
     }
 
