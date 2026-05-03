@@ -31,6 +31,10 @@
 // ===== Visibility-based auto-pause =====
 bool g_midiUserPaused = false;
 
+// ===== Active tab persistence =====
+static char g_lastActiveTab[64] = "";
+static bool g_tabSwitched = false;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     (void)hInstance; (void)hPrevInstance; (void)lpCmdLine; (void)nCmdShow;
 
@@ -57,6 +61,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Initialize config
     Config::InitConfigPaths();
+
+    // Load last active tab
+    {
+        wchar_t wbuf[MAX_PATH];
+        GetModuleFileNameW(NULL, wbuf, MAX_PATH);
+        wchar_t* lastSlash = wcsrchr(wbuf, L'\\');
+        if (lastSlash) { wcscpy(lastSlash + 1, L"active_tab.ini"); }
+        char tabIniPath[MAX_PATH];
+        snprintf(tabIniPath, sizeof(tabIniPath), "%S", wbuf);
+        GetPrivateProfileStringA("Tab", "Last", "", g_lastActiveTab, sizeof(g_lastActiveTab), tabIniPath);
+    }
     Config::LoadFrequenciesFromINI();
     Config::LoadSlotConfigFromINI();
     Config::LoadMIDIConfig();
@@ -166,27 +181,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (MidiPlayer::g_enableGlobalMediaKeys)
         MidiPlayer::RegisterGlobalMediaKeys();
 
-    // Check if imgui.ini contains all expected windows (if not, apply default dock layout)
-    bool s_dockLayoutInit = false;
-    {
-        FILE* fini = fopen(io.IniFilename, "r");
-        if (fini) {
-            char buf[4096];
-            size_t len = fread(buf, 1, sizeof(buf) - 1, fini);
-            fclose(fini);
-            buf[len] = '\0';
-            // All expected dockable window names
-            const char* kWindows[] = {"YM2163(DSG)", "YMF262(OPL3)", "libvgm",
-                "Gigatron", "SN76489(DCSG)", "YM2413(OPLL)", "SPFM"};
-            bool allFound = true;
-            for (int i = 0; i < 7 && allFound; i++)
-                if (!strstr(buf, kWindows[i])) allFound = false;
-            s_dockLayoutInit = allFound;
-        }
-    }
-
     // Main loop
     bool done = false;
+    static bool s_dockLayoutInit = false;
     while (!done) {
         MSG msg;
         while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
@@ -249,22 +246,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
 
         ImGuiID dockSpaceID = ImGui::GetID("MainDockSpace");
-        ImGui::DockSpace(dockSpaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        // Initial layout: dock all windows as tabs (only on first launch, when imgui.ini doesn't exist yet)
+        // Default layout on first launch only (imgui.ini doesn't exist yet)
         if (!s_dockLayoutInit) {
             s_dockLayoutInit = true;
-            ImGui::DockBuilderRemoveNode(dockSpaceID);
-            ImGui::DockBuilderAddNode(dockSpaceID, ImGuiDockNodeFlags_DockSpace);
-            ImGui::DockBuilderDockWindow("YM2163(DSG)", dockSpaceID);
-            ImGui::DockBuilderDockWindow("YMF262(OPL3)", dockSpaceID);
-            ImGui::DockBuilderDockWindow("libvgm", dockSpaceID);
-            ImGui::DockBuilderDockWindow("Gigatron", dockSpaceID);
-            ImGui::DockBuilderDockWindow("SN76489(DCSG)", dockSpaceID);
-    ImGui::DockBuilderDockWindow("YM2413(OPLL)", dockSpaceID);
-            ImGui::DockBuilderDockWindow("SPFM", dockSpaceID);
-            ImGui::DockBuilderFinish(dockSpaceID);
+            DWORD attrib = GetFileAttributesA(io.IniFilename);
+            if (attrib == INVALID_FILE_ATTRIBUTES) {
+                ImGui::DockBuilderRemoveNode(dockSpaceID);
+                ImGui::DockBuilderAddNode(dockSpaceID, ImGuiDockNodeFlags_DockSpace);
+                ImGui::DockBuilderDockWindow("YM2163(DSG)", dockSpaceID);
+                ImGui::DockBuilderDockWindow("YMF262(OPL3)", dockSpaceID);
+                ImGui::DockBuilderDockWindow("libvgm", dockSpaceID);
+                ImGui::DockBuilderDockWindow("Gigatron", dockSpaceID);
+                ImGui::DockBuilderDockWindow("SN76489(DCSG)", dockSpaceID);
+                ImGui::DockBuilderDockWindow("YM2413(OPLL)", dockSpaceID);
+                ImGui::DockBuilderDockWindow("SPFM", dockSpaceID);
+                ImGui::DockBuilderFinish(dockSpaceID);
+            }
         }
+
+        // Restore last active tab BEFORE DockSpace() processes tabs
+        // NavWindow overrides SelectedTabId in DockNodeUpdateTabBar,
+        // so we must also set NavWindow to our target window to prevent overwrite.
+        if (!g_tabSwitched && g_lastActiveTab[0] && ImGui::GetFrameCount() > 2) {
+            ImGuiDockNode* node = ImGui::DockBuilderGetNode(dockSpaceID);
+            if (node && node->TabBar) {
+                ImGuiWindow* tw = ImGui::FindWindowByName(g_lastActiveTab);
+                if (tw && tw->DockNode == node) {
+                    node->SelectedTabId = tw->TabId;
+                    if (node->TabBar)
+                        node->TabBar->NextSelectedTabId = tw->TabId;
+                    ImGuiContext* g = ImGui::GetCurrentContext();
+                    g->NavWindow = tw;
+                    g_tabSwitched = true;
+                }
+            }
+        }
+
+        ImGui::DockSpace(dockSpaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
         ImGui::End();
 
@@ -275,7 +294,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         VgmWindow::RenderTab();
         GigatronWindow::Render();
         SN76489Window::Render();
-    YM2413Window::Render();
+        YM2413Window::Render();
+
+        // Track selected tab via dock node's VisibleWindow
+        {
+            ImGuiDockNode* node = ImGui::DockBuilderGetNode(dockSpaceID);
+            if (node && node->VisibleWindow && node->VisibleWindow->Name) {
+                snprintf(g_lastActiveTab, sizeof(g_lastActiveTab), "%s", node->VisibleWindow->Name);
+            }
+        }
 
         // Update keyboard capture state from active window
         MidiPlayer::g_isInputActive = YM2163Window::WantsKeyboardCapture();
@@ -300,6 +327,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // Cleanup (hardware disconnect already done in WM_DESTROY)
+    // Save last active tab
+    {
+        wchar_t wbuf[MAX_PATH];
+        GetModuleFileNameW(NULL, wbuf, MAX_PATH);
+        wchar_t* lastSlash = wcsrchr(wbuf, L'\\');
+        if (lastSlash) { wcscpy(lastSlash + 1, L"active_tab.ini"); }
+        char tabIniPath[MAX_PATH];
+        snprintf(tabIniPath, sizeof(tabIniPath), "%S", wbuf);
+        WritePrivateProfileStringA("Tab", "Last", g_lastActiveTab, tabIniPath);
+    }
     VgmWindow::Shutdown();
     GigatronWindow::Shutdown();
     SPFMWindow::Shutdown();
