@@ -86,6 +86,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    // Save imgui.ini next to executable for reliable layout persistence
+    {
+        wchar_t wbuf[MAX_PATH];
+        GetModuleFileNameW(NULL, wbuf, MAX_PATH);
+        wchar_t* lastSlash = wcsrchr(wbuf, L'\\');
+        if (lastSlash) { wcscpy(lastSlash + 1, L"imgui.ini"); }
+        char inipath[MAX_PATH];
+        snprintf(inipath, sizeof(inipath), "%S", wbuf);
+        io.IniFilename = strdup(inipath);
+    }
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
                     | ImGuiConfigFlags_DockingEnable
                     | ImGuiConfigFlags_ViewportsEnable;
@@ -156,9 +166,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (MidiPlayer::g_enableGlobalMediaKeys)
         MidiPlayer::RegisterGlobalMediaKeys();
 
+    // Check if imgui.ini exists (if not, this is first launch → apply default dock layout)
+    DWORD attrib = GetFileAttributesA(io.IniFilename);
+    bool s_dockLayoutInit = (attrib != INVALID_FILE_ATTRIBUTES);
+
     // Main loop
     bool done = false;
-    static bool s_dockLayoutInit = false;
     while (!done) {
         MSG msg;
         while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
@@ -223,7 +236,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         ImGuiID dockSpaceID = ImGui::GetID("MainDockSpace");
         ImGui::DockSpace(dockSpaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        // Initial layout: dock all three windows as tabs (only once)
+        // Initial layout: dock all windows as tabs (only on first launch, when imgui.ini doesn't exist yet)
         if (!s_dockLayoutInit) {
             s_dockLayoutInit = true;
             ImGui::DockBuilderRemoveNode(dockSpaceID);

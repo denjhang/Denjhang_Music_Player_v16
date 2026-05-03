@@ -127,6 +127,11 @@ static int s_pianoKeyNoiseType[SN_PIANO_KEYS] = {}; // -1=not noise, 0=periodic,
 static const bool s_isBlackNote[12] = {false, true, false, true, false, false, true, false, true, false, true, false};
 static int s_shiftNoteMap[3] = {96, 84, 72}; // sf0→C7, sf1→C6, sf2→C5
 
+// Portamento visualization state (per tone channel, 2 slots × 3 ch = 6)
+static float s_psgVisualNote[2][3] = {};
+static float s_psgStartNote[2][3] = {};
+static float s_psgPitchOffset[SN_PIANO_KEYS] = {};
+
 // ============ Level Meter State ============
 static float s_channelLevel[4] = {};
 static float s2_channelLevel[4] = {};
@@ -645,6 +650,7 @@ static void UpdateChannelLevels(void) {
         s_pianoKeyLevel[i] = 0.0f;
         s_pianoKeyChannel[i] = -1;
         s_pianoKeyNoiseType[i] = -1;
+        s_psgPitchOffset[i] = 0.0f;
     }
 
     // Slot 0 (main SN76489)
@@ -670,7 +676,23 @@ static void UpdateChannelLevels(void) {
                     s_pianoKeyLevel[idx] = s_channelLevel[ch];
                     s_pianoKeyChannel[idx] = ch; // 0-2
                 }
+                // Portamento tracking (ref: libvgm updateVizPSG)
+                float fnt = (float)midi;
+                if (s_psgVisualNote[0][ch] == 0.0f || fabsf(fnt - s_psgVisualNote[0][ch]) > 0.5f) {
+                    s_psgStartNote[0][ch] = fnt;
+                }
+                s_psgVisualNote[0][ch] += (fnt - s_psgVisualNote[0][ch]) * 0.5f;
+                float poff = s_psgVisualNote[0][ch] - s_psgStartNote[0][ch];
+                if (poff > 1.0f) poff = 1.0f;
+                if (poff < -1.0f) poff = -1.0f;
+                s_psgPitchOffset[idx] = poff;
+            } else {
+                s_psgVisualNote[0][ch] = 0.0f;
+                s_psgStartNote[0][ch] = 0.0f;
             }
+        } else if (ch < 3) {
+            s_psgVisualNote[0][ch] = 0.0f;
+            s_psgStartNote[0][ch] = 0.0f;
         } else if (ch == 3 && s_channelLevel[3] > 0.01f) {
             // Noise channel piano (参考 VGM: white noise→固定音高, periodic→ch2 period)
             int midi = -1;
@@ -719,7 +741,23 @@ static void UpdateChannelLevels(void) {
                     s_pianoKeyLevel[idx] = s2_channelLevel[ch];
                     s_pianoKeyChannel[idx] = ch + 4; // 4-6
                 }
+                // Portamento tracking (ref: libvgm updateVizPSG)
+                float fnt = (float)midi;
+                if (s_psgVisualNote[1][ch] == 0.0f || fabsf(fnt - s_psgVisualNote[1][ch]) > 0.5f) {
+                    s_psgStartNote[1][ch] = fnt;
+                }
+                s_psgVisualNote[1][ch] += (fnt - s_psgVisualNote[1][ch]) * 0.5f;
+                float poff = s_psgVisualNote[1][ch] - s_psgStartNote[1][ch];
+                if (poff > 1.0f) poff = 1.0f;
+                if (poff < -1.0f) poff = -1.0f;
+                s_psgPitchOffset[idx] = poff;
+            } else {
+                s_psgVisualNote[1][ch] = 0.0f;
+                s_psgStartNote[1][ch] = 0.0f;
             }
+        } else if (ch < 3) {
+            s_psgVisualNote[1][ch] = 0.0f;
+            s_psgStartNote[1][ch] = 0.0f;
         } else if (ch == 3 && s2_channelLevel[3] > 0.01f) {
             // Slot1 noise (参考 VGM: white→固定, periodic→ch2 period)
             int midi = -1;
@@ -1519,6 +1557,43 @@ static void RenderPianoKeyboard(void) {
             ? getKeyColorBlack(idx, s_pianoKeyLevel[idx]) : IM_COL32(0, 0, 0, 255);
         dl->AddRectFilled(ImVec2(x, p.y), ImVec2(x + blackKeyW, p.y + blackKeyH), fillCol);
         dl->AddRect(ImVec2(x, p.y), ImVec2(x + blackKeyW, p.y + blackKeyH), IM_COL32(128, 128, 128, 255));
+    }
+
+    // Pass 3: Portamento indicator (horizontal shift bar, ref: libvgm updateVizPSG)
+    {
+        float keyX[128] = {};
+        int wi = 0;
+        for (int n = kMinNote; n <= kMaxNote; n++) {
+            if (!s_isBlackNote[n % 12]) {
+                keyX[n] = p.x + wi * whiteKeyW + whiteKeyW * 0.5f;
+                wi++;
+            } else {
+                keyX[n] = p.x + (wi - 1) * whiteKeyW + whiteKeyW;
+            }
+        }
+        auto noteToX = [&](float fnote) -> float {
+            int n0 = (int)floorf(fnote);
+            int n1 = n0 + 1;
+            float frac = fnote - (float)n0;
+            float x0 = (n0 >= kMinNote && n0 <= kMaxNote) ? keyX[n0] : keyX[kMinNote];
+            float x1 = (n1 >= kMinNote && n1 <= kMaxNote) ? keyX[n1] : keyX[kMaxNote];
+            return x0 + (x1 - x0) * frac;
+        };
+        for (int n = kMinNote; n <= kMaxNote; n++) {
+            int idx = n - SN_PIANO_LOW;
+            if (!s_pianoKeyOn[idx]) continue;
+            float poff = s_psgPitchOffset[idx];
+            if (fabsf(poff) < 0.02f) continue;
+            ImU32 col = getKeyColor(idx, s_pianoKeyLevel[idx]);
+            float hl_w = whiteKeyW * 0.3f;
+            float kh = s_isBlackNote[n % 12] ? blackKeyH : whiteKeyH;
+            float fnote_target = (float)n + poff;
+            float hx = noteToX(fnote_target);
+            dl->AddRectFilled(
+                ImVec2(hx - hl_w * 0.5f, p.y),
+                ImVec2(hx + hl_w * 0.5f, p.y + kh),
+                col);
+        }
     }
 
     ImGui::EndChild();
