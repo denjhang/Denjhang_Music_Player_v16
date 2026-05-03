@@ -360,15 +360,21 @@ static void ym2413_mute_all(void) {
     safe_flush();
 }
 
-// Write all shadow state registers to hardware (used after seek)
-static void ApplyShadowState(void) {
-    // First: rhythm off, key off all melodic channels (clear bit 4)
+// Mute hardware without touching shadow state (used before ApplyShadowState)
+static void MuteHardwareOnly(void) {
     ym2413_write_reg(0x0E, 0x00);
     for (int i = 0; i < 9; i++) {
-        // Key off: clear bit 4 (KEY ON), preserve block/fnum bits
-        ym2413_write_reg(0x20 + i, s_regShadow[0x20 + i] & ~0x10);
+        ym2413_write_reg(0x20 + i, 0x00);
+    }
+    for (int i = 0; i < 9; i++) {
+        ym2413_write_reg(0x30 + i, 0xF0);
     }
     safe_flush();
+}
+
+// Write all shadow state registers to hardware (used after seek)
+static void ApplyShadowState(void) {
+    MuteHardwareOnly();
 
     // User custom instruments (0x00-0x07)
     for (int i = 0; i < 8; i++) {
@@ -2035,10 +2041,7 @@ static void RenderPlayerBar(void) {
                     s_vgmCurrentSamples = targetSample;
                     s_connected = wasConn;
                     if (s_connected) {
-                        ym2413_mute_all();
-                        safe_flush();
                         ApplyShadowState();
-                        safe_flush();
                     }
                     // Restart playback
                     s_vgmPlaying = true;
