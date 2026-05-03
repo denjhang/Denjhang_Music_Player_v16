@@ -339,36 +339,38 @@ static void safe_flush(void) {
 }
 
 static void ym2413_mute_all(void) {
-    // Rhythm off
-    ym2413_write_reg(0x0E, 0x00);
-    s_regShadow[0x0E] = 0x00;
-    // Key off all 9 melodic channels
+    // Key off all melodic channels first
     for (int i = 0; i < 9; i++) {
         ym2413_write_reg(0x20 + i, 0x00);
         s_regShadow[0x20 + i] = 0x00;
     }
-    // Volume = 0 (max attenuation) for all 9 channels
+    // Rhythm off
+    ym2413_write_reg(0x0E, 0x00);
+    s_regShadow[0x0E] = 0x00;
+    // TL=max attenuation for melodic channels (low nibble = TL)
     for (int i = 0; i < 9; i++) {
-        ym2413_write_reg(0x30 + i, 0xF0);
-        s_regShadow[0x30 + i] = 0xF0;
+        ym2413_write_reg(0x30 + i, 0x0F);
+        s_regShadow[0x30 + i] = 0x0F;
     }
-    // Clear user instrument registers
-    for (int i = 0; i < 8; i++) {
-        ym2413_write_reg(i, 0x00);
-        s_regShadow[i] = 0x00;
-    }
+    // Rhythm channel silence (per MDPlayer softResetYM2413)
+    ym2413_write_reg(0x36, 0x0F);
+    ym2413_write_reg(0x37, 0xFF);
+    ym2413_write_reg(0x38, 0xFF);
     safe_flush();
 }
 
 // Mute hardware without touching shadow state (used before ApplyShadowState)
 static void MuteHardwareOnly(void) {
-    ym2413_write_reg(0x0E, 0x00);
     for (int i = 0; i < 9; i++) {
         ym2413_write_reg(0x20 + i, 0x00);
     }
+    ym2413_write_reg(0x0E, 0x00);
     for (int i = 0; i < 9; i++) {
-        ym2413_write_reg(0x30 + i, 0xF0);
+        ym2413_write_reg(0x30 + i, 0x0F);
     }
+    ym2413_write_reg(0x36, 0x0F);
+    ym2413_write_reg(0x37, 0xFF);
+    ym2413_write_reg(0x38, 0xFF);
     safe_flush();
 }
 
