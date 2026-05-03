@@ -166,9 +166,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (MidiPlayer::g_enableGlobalMediaKeys)
         MidiPlayer::RegisterGlobalMediaKeys();
 
-    // Check if imgui.ini exists (if not, this is first launch → apply default dock layout)
-    DWORD attrib = GetFileAttributesA(io.IniFilename);
-    bool s_dockLayoutInit = (attrib != INVALID_FILE_ATTRIBUTES);
+    // Check if imgui.ini contains all expected windows (if not, apply default dock layout)
+    bool s_dockLayoutInit = false;
+    {
+        FILE* fini = fopen(io.IniFilename, "r");
+        if (fini) {
+            char buf[4096];
+            size_t len = fread(buf, 1, sizeof(buf) - 1, fini);
+            fclose(fini);
+            buf[len] = '\0';
+            // All expected dockable window names
+            const char* kWindows[] = {"YM2163(DSG)", "YMF262(OPL3)", "libvgm",
+                "Gigatron", "SN76489(DCSG)", "YM2413(OPLL)", "SPFM"};
+            bool allFound = true;
+            for (int i = 0; i < 7 && allFound; i++)
+                if (!strstr(buf, kWindows[i])) allFound = false;
+            s_dockLayoutInit = allFound;
+        }
+    }
 
     // Main loop
     bool done = false;
