@@ -681,8 +681,9 @@ static void UpdateChannelLevels(void) {
     //   TOM vol = (reg_0x38 >> 4) & 0x0F
     //   CYM vol = reg_0x38 & 0x0F
     // Display order: BD(0), SD(1), TOM(2), HH(3), CYM(4)
+    // Volume sources per MDPlayer: BD=0x36&0x0F, SD=0x37&0x0F, TOM=0x38>>4, HH=0x37>>4, CYM=0x38&0x0F
     static const int kRhythmVolReg[5] = { 0x36, 0x37, 0x38, 0x37, 0x38 };
-    static const int kRhythmVolShift[5] = { 4, 0, 4, 4, 0 }; // high or low nibble
+    static const int kRhythmVolShift[5] = { 0, 0, 4, 4, 0 }; // low or high nibble
 
     for (int r = 0; r < YM_NUM_RHYTHM; r++) {
         int chIdx = YM_NUM_MELODIC + r;
@@ -1577,13 +1578,13 @@ static void RenderLevelMeters(void) {
             snprintf(volStr, sizeof(volStr), "%d", vol);
         } else {
             // Rhythm: show volume from correct registers
-            // BD: reg 0x36 high nibble, HH: reg 0x37 high nibble,
-            // SD: reg 0x37 low nibble, TOM: reg 0x38 high nibble, CYM: reg 0x38 low nibble
+            // BD: reg 0x36 low nibble, SD: reg 0x37 low nibble, TOM: reg 0x38 high nibble,
+            // HH: reg 0x37 high nibble, CYM: reg 0x38 low nibble
             static const int kRVolReg[5] = { 0x36, 0x37, 0x38, 0x37, 0x38 };
-            static const int kRVolShift[5] = { 4, 0, 4, 4, 0 };
+            static const int kRVolShift[5] = { 0, 0, 4, 4, 0 };
             int ri = i - YM_NUM_MELODIC;
             uint8_t rhyVol = (s_regShadow[kRVolReg[ri]] >> kRVolShift[ri]) & 0x0F;
-            if (s_rhythmOn[ri]) {
+            if (s_rhyDecay[ri] > 0.01f) {
                 snprintf(volStr, sizeof(volStr), "%d", rhyVol);
             } else {
                 snprintf(volStr, sizeof(volStr), "--");
@@ -2189,17 +2190,20 @@ static void RenderRegisterTable(void) {
 
     // Rhythm channels table
     if (rhythmMode) {
+        // Table display order: BD, HH, SD, TM, CY
+        // Volume per MDPlayer: BD=0x36&0x0F, HH=0x37>>4, SD=0x37&0x0F, TOM=0x38>>4, CYM=0x38&0x0F
         static const char* kRhName[5] = {"BD","HH","SD","TM","CY"};
-        // Register bit positions: BD=bit4, SD=bit3, TOM=bit2, CYM=bit1, HH=bit0
         static const int kRhBit[5] = {4, 0, 3, 2, 1};
         ImGui::Spacing();
         ImGui::TextDisabled("-- Rhythm --");
-        UINT8 bdVol  = (s_regShadow[0x36] >> 4) & 0x0F;
+        UINT8 bdVol  =  s_regShadow[0x36] & 0x0F;
         UINT8 hhVol  = (s_regShadow[0x37] >> 4) & 0x0F;
         UINT8 sdVol  =  s_regShadow[0x37] & 0x0F;
         UINT8 tomVol = (s_regShadow[0x38] >> 4) & 0x0F;
         UINT8 cymVol =  s_regShadow[0x38] & 0x0F;
         UINT8 rhVols[5] = {bdVol, hhVol, sdVol, tomVol, cymVol};
+        // Map table order to decay array order (BD,SD,TOM,HH,CYM)
+        static const int kRhDecayIdx[5] = {0, 3, 1, 2, 4};
         if (ImGui::BeginTable("##ym2413rhythm", 3, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit)) {
             ImGui::TableSetupColumn("Inst", ImGuiTableColumnFlags_WidthFixed, 32.f);
             ImGui::TableSetupColumn("Stat", ImGuiTableColumnFlags_WidthFixed, 32.f);
@@ -2207,10 +2211,11 @@ static void RenderRegisterTable(void) {
             ImGui::TableHeadersRow();
             for (int i = 0; i < 5; i++) {
                 bool kon = (rhythmReg >> kRhBit[i]) & 1;
-                ImVec4 col = kon ? ImVec4(1.0f,0.8f,0.4f,1.0f) : ImVec4(0.5f,0.5f,0.5f,1.0f);
+                bool decay = s_rhyDecay[kRhDecayIdx[i]] > 0.01f;
+                ImVec4 col = decay ? ImVec4(1.0f,0.8f,0.4f,1.0f) : ImVec4(0.5f,0.5f,0.5f,1.0f);
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0); ImGui::TextColored(col, "%s", kRhName[i]);
-                ImGui::TableSetColumnIndex(1); ImGui::TextColored(col, "%s", kon ? "[ON]" : "[--]");
+                ImGui::TableSetColumnIndex(1); ImGui::TextColored(col, "%s", decay ? "[ON]" : "[--]");
                 ImGui::TableSetColumnIndex(2); ImGui::TextColored(col, "%d", rhVols[i]);
             }
             ImGui::EndTable();
