@@ -15,6 +15,7 @@ enum ChipType {
     CHIP_YM2163  = 1,
     CHIP_SN76489 = 2,
     CHIP_YM2413  = 3,
+    CHIP_AY8910  = 4,
 };
 
 static constexpr int MAX_SLOTS = 4;
@@ -62,6 +63,8 @@ void WriteSN76489Data(uint8_t slot, uint8_t data);
 void FlushSN76489();
 // YM2413: {slot&1, (port&7)<<1, addr, data} buffered write
 void WriteYM2413(uint8_t reg, uint8_t data);
+// AY8910: address latch + data write
+void WriteAY8910(uint8_t reg, uint8_t data);
 // Generic raw write
 void RawWrite(const uint8_t* data, DWORD len);
 // SPFM reset

@@ -28,6 +28,7 @@ set(COMMON_INCLUDES
     ${CMAKE_SOURCE_DIR}/src/windows/sn76489
     ${CMAKE_SOURCE_DIR}/src/windows/ym2413
     ${CMAKE_SOURCE_DIR}/src/windows/spfm
+    ${CMAKE_SOURCE_DIR}/src/windows/ay8910
     ${CMAKE_SOURCE_DIR}
     ${FTDI_DIR}
     ${CMAKE_SOURCE_DIR}/imgui
@@ -97,6 +98,8 @@ set(APP_SOURCES
     src/windows/sn76489/sn76489_window.cpp
     # windows/ym2413
     src/windows/ym2413/ym2413_window.cpp
+    # windows/ay8910
+    src/windows/ay8910/ay8910_window.cpp
     # windows/spfm
     src/windows/spfm/spfm_manager.cpp
     src/windows/spfm/spfm_window.cpp

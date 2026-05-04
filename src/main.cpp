@@ -20,6 +20,7 @@
 #include "windows/gigatron/gigatron_window.h"
 #include "windows/sn76489/sn76489_window.h"
 #include "windows/ym2413/ym2413_window.h"
+#include "windows/ay8910/ay8910_window.h"
 #include "windows/spfm/spfm_manager.h"
 #include "windows/spfm/spfm_window.h"
 
@@ -178,6 +179,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     GigatronWindow::Init();
     SN76489Window::Init();
     YM2413Window::Init();
+    AY8910Window::Init();
     if (MidiPlayer::g_enableGlobalMediaKeys)
         MidiPlayer::RegisterGlobalMediaKeys();
 
@@ -216,6 +218,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         GigatronWindow::Update();
         SN76489Window::Update();
     YM2413Window::Update();
+    AY8910Window::Update();
         // VgmWindow handles its own updates internally (via RenderInline)
         // But we still need to run MIDI playback updates
         MidiPlayer::UpdateMIDIPlayback();
@@ -260,6 +263,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 ImGui::DockBuilderDockWindow("Gigatron", dockSpaceID);
                 ImGui::DockBuilderDockWindow("SN76489(DCSG)", dockSpaceID);
                 ImGui::DockBuilderDockWindow("YM2413(OPLL)", dockSpaceID);
+                ImGui::DockBuilderDockWindow("AY8910(PSG)", dockSpaceID);
                 ImGui::DockBuilderDockWindow("SPFM", dockSpaceID);
                 ImGui::DockBuilderFinish(dockSpaceID);
             }
@@ -295,6 +299,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         GigatronWindow::Render();
         SN76489Window::Render();
         YM2413Window::Render();
+        AY8910Window::Render();
 
         // Track selected tab via dock node's VisibleWindow
         {
@@ -341,6 +346,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     GigatronWindow::Shutdown();
     SPFMWindow::Shutdown();
     YM2413Window::Shutdown();
+    AY8910Window::Shutdown();
     SPFMManager::Shutdown();
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();

@@ -67,13 +67,14 @@ void Render() {
             ImGui::TableSetColumnIndex(1);
             int current = static_cast<int>(SPFMManager::GetSlotType(i));
             ImGui::PushID(i);
-            const char* items[] = { "YM2163", "SN76489", "YM2413", "Disabled" };
-            if (ImGui::Combo("##chiptype", &current, items, 4)) {
+            const char* items[] = { "YM2163", "SN76489", "YM2413", "AY8910", "Disabled" };
+            if (ImGui::Combo("##chiptype", &current, items, 5)) {
                 SPFMManager::ChipType newType;
                 switch (current) {
                     case 0: newType = SPFMManager::CHIP_YM2163; break;
                     case 1: newType = SPFMManager::CHIP_SN76489; break;
                     case 2: newType = SPFMManager::CHIP_YM2413; break;
+                    case 3: newType = SPFMManager::CHIP_AY8910; break;
                     default: newType = SPFMManager::CHIP_NONE; break;
                 }
                 if (newType != activeType) {
@@ -98,7 +99,7 @@ void Render() {
 
     // Connect / Disconnect buttons
     {
-        float w = (ImGui::GetContentRegionAvail().x - 10.0f) / 3.0f;
+        float w = (ImGui::GetContentRegionAvail().x - 15.0f) / 4.0f;
         if (ImGui::Button("YM2163##spfm", ImVec2(w, 0))) {
             SwitchToChipType(SPFMManager::CHIP_YM2163);
         }
@@ -109,6 +110,10 @@ void Render() {
         ImGui::SameLine();
         if (ImGui::Button("YM2413##spfm", ImVec2(w, 0))) {
             SwitchToChipType(SPFMManager::CHIP_YM2413);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("AY8910##spfm", ImVec2(w, 0))) {
+            SwitchToChipType(SPFMManager::CHIP_AY8910);
         }
     }
     {

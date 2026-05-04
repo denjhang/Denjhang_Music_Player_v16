@@ -5,6 +5,7 @@
 #include "windows/ym2163/chip_control.h"
 #include "windows/sn76489/sn76489_window.h"
 #include "windows/ym2413/ym2413_window.h"
+#include "windows/ay8910/ay8910_window.h"
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
@@ -142,6 +143,9 @@ void DisconnectDevice(int idx) {
     if (g_device.activeChipType == CHIP_YM2413) {
         YM2413Window::MuteAll();
     }
+    if (g_device.activeChipType == CHIP_AY8910) {
+        AY8910Window::MuteAll();
+    }
 
     // Flush any pending SN76489 buffer and wait for hardware
     ::spfm_flush();
@@ -192,6 +196,12 @@ void FlushSN76489() {
 }
 
 void WriteYM2413(uint8_t reg, uint8_t data) {
+    if (!g_device.connected) return;
+    s_sn76489BufDirty = true;
+    ::spfm_write_reg(0, 0, reg, data);
+}
+
+void WriteAY8910(uint8_t reg, uint8_t data) {
     if (!g_device.connected) return;
     s_sn76489BufDirty = true;
     ::spfm_write_reg(0, 0, reg, data);
@@ -253,6 +263,9 @@ void SwitchToChipType(ChipType type) {
         if (g_device.activeChipType == CHIP_YM2413) {
             YM2413Window::MuteAll();
         }
+        if (g_device.activeChipType == CHIP_AY8910) {
+            AY8910Window::MuteAll();
+        }
         FlushSN76489();
         Sleep(100);
     }
@@ -290,6 +303,7 @@ static const char* ChipTypeToString(ChipType t) {
         case CHIP_YM2163:  return "YM2163";
         case CHIP_SN76489: return "SN76489";
         case CHIP_YM2413:  return "YM2413";
+        case CHIP_AY8910:  return "AY8910";
         default:           return "NONE";
     }
 }
@@ -298,6 +312,7 @@ static ChipType StringToChipType(const char* s) {
     if (strcmp(s, "YM2163") == 0)  return CHIP_YM2163;
     if (strcmp(s, "SN76489") == 0) return CHIP_SN76489;
     if (strcmp(s, "YM2413") == 0)  return CHIP_YM2413;
+    if (strcmp(s, "AY8910") == 0)  return CHIP_AY8910;
     return CHIP_NONE;
 }
 
