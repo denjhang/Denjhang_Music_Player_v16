@@ -2,11 +2,11 @@
 // Layout mirrors VGM window: LeftPane(controls) | PianoArea + LevelMeter/Scope + StatusArea | FileBrowser + Log
 
 #include "gigatron_window.h"
-#include "gigatron/gigatron_emu.h"
-#include "gigatron/winmm.h"
-#include "gigatron/audio_output.h"
-#include "gigatron/fnum_table.h"
-#include "midi_player.h"  // for UTF8ToWide, SplitPath
+#include "gigatron_emu.h"
+#include "winmm.h"
+#include "audio_output.h"
+#include "fnum_table.h"
+#include "midi/midi_player.h"  // for UTF8ToWide, SplitPath
 
 #include "imgui/imgui.h"
 

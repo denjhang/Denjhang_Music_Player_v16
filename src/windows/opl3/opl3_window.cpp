@@ -3,8 +3,8 @@
 
 #include "opl3_window.h"
 #include "opl3_renderer.h"
-#include "gui_renderer.h"
-#include "midi_player.h"
+#include "core/gui_renderer.h"
+#include "midi/midi_player.h"
 
 #include "imgui/imgui.h"
 

@@ -2,8 +2,8 @@
 // Ported from YM2163 Piano v12. Hardware not yet connected - UI placeholders only.
 
 #include "opl3_renderer.h"
-#include "gui_renderer.h"
-#include "midi_player.h"
+#include "core/gui_renderer.h"
+#include "midi/midi_player.h"
 #include "imgui/imgui.h"
 
 #include <windows.h>

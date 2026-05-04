@@ -2,7 +2,7 @@
 // Included by gui_renderer.cpp via #include
 // Extracted from ym2163_piano_gui_v11.cpp lines 2772-4594
 
-#include "spfm_manager.h"
+#include "windows/spfm/spfm_manager.h"
 
 // ===== RenderMIDIPlayer =====
 

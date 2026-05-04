@@ -4,9 +4,9 @@
 
 #include "vgm_window.h"
 #include "vgm_parser.h"
-#include "gui_renderer.h"
-#include "midi_player.h"
-#include "modizer_viz.h"
+#include "core/gui_renderer.h"
+#include "midi/midi_player.h"
+#include "core/modizer_viz.h"
 #include "libvgm-modizer/emu/cores/ModizerVoicesData.h"
 
 #include "imgui/imgui.h"

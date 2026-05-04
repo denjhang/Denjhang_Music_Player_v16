@@ -19,7 +19,15 @@ set(FTDI_DIR    ${CMAKE_SOURCE_DIR}/ftdi_driver)
 # -------------------------------------------------------
 set(COMMON_INCLUDES
     ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/gigatron
+    ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/midi
+    ${CMAKE_SOURCE_DIR}/src/windows/ym2163
+    ${CMAKE_SOURCE_DIR}/src/windows/opl3
+    ${CMAKE_SOURCE_DIR}/src/windows/vgm
+    ${CMAKE_SOURCE_DIR}/src/windows/gigatron
+    ${CMAKE_SOURCE_DIR}/src/windows/sn76489
+    ${CMAKE_SOURCE_DIR}/src/windows/ym2413
+    ${CMAKE_SOURCE_DIR}/src/windows/spfm
     ${CMAKE_SOURCE_DIR}
     ${FTDI_DIR}
     ${CMAKE_SOURCE_DIR}/imgui
@@ -63,26 +71,35 @@ target_compile_options(midifile_lib PRIVATE -O2)
 # Application sources (the parts you change frequently)
 # -------------------------------------------------------
 set(APP_SOURCES
-    src/chip_control.cpp
-    src/config_manager.cpp
-    src/midi_player.cpp
-    src/gui_renderer.cpp
-    src/opl3_renderer.cpp
-    src/vgm_parser.cpp
-    src/vgm_window.cpp
-    src/modizer_viz.cpp
-    src/chip_window_ym2163.cpp
-    src/opl3_window.cpp
-    src/gigatron_window.cpp
     src/main.cpp
     src/app_icon.rc
-    src/gigatron/gigatron_emu.c
-    src/gigatron/winmm.c
-    src/sn76489_window.cpp
-    src/sn76489/spfm_lite.c
-    src/spfm_manager.cpp
-    src/spfm_window.cpp
-    src/ym2413_window.cpp
+    # core
+    src/core/config_manager.cpp
+    src/core/gui_renderer.cpp
+    src/core/modizer_viz.cpp
+    # midi
+    src/midi/midi_player.cpp
+    # windows/ym2163
+    src/windows/ym2163/chip_control.cpp
+    src/windows/ym2163/chip_window_ym2163.cpp
+    # windows/opl3
+    src/windows/opl3/opl3_renderer.cpp
+    src/windows/opl3/opl3_window.cpp
+    # windows/vgm
+    src/windows/vgm/vgm_parser.cpp
+    src/windows/vgm/vgm_window.cpp
+    # windows/gigatron
+    src/windows/gigatron/gigatron_emu.c
+    src/windows/gigatron/winmm.c
+    src/windows/gigatron/gigatron_window.cpp
+    # windows/sn76489
+    src/windows/sn76489/spfm_lite.c
+    src/windows/sn76489/sn76489_window.cpp
+    # windows/ym2413
+    src/windows/ym2413/ym2413_window.cpp
+    # windows/spfm
+    src/windows/spfm/spfm_manager.cpp
+    src/windows/spfm/spfm_window.cpp
 )
 
 add_executable(denjhang_music_player WIN32 ${APP_SOURCES})

@@ -2,7 +2,7 @@
 
 #include "spfm_window.h"
 #include "spfm_manager.h"
-#include "chip_control.h"
+#include "windows/ym2163/chip_control.h"
 #include "imgui/imgui.h"
 
 namespace SPFMWindow {

@@ -3,10 +3,10 @@
 
 #include "chip_window_ym2163.h"
 #include "chip_control.h"
-#include "gui_renderer.h"
-#include "midi_player.h"
-#include "config_manager.h"
-#include "spfm_manager.h"
+#include "core/gui_renderer.h"
+#include "midi/midi_player.h"
+#include "core/config_manager.h"
+#include "windows/spfm/spfm_manager.h"
 
 #include "imgui/imgui.h"
 

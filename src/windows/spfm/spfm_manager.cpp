@@ -1,10 +1,10 @@
 // spfm_manager.cpp - Unified FTDI/SPFM Hardware Manager
 
 #include "spfm_manager.h"
-#include "sn76489/spfm.h"
-#include "chip_control.h"
-#include "sn76489_window.h"
-#include "ym2413_window.h"
+#include "windows/sn76489/spfm.h"
+#include "windows/ym2163/chip_control.h"
+#include "windows/sn76489/sn76489_window.h"
+#include "windows/ym2413/ym2413_window.h"
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>

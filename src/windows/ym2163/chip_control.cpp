@@ -3,8 +3,8 @@
 
 #include "chip_control.h"
 #include "chip_window_ym2163.h"
-#include "gui_renderer.h"  // For piano key state
-#include "spfm_manager.h"
+#include "core/gui_renderer.h"  // For piano key state
+#include "windows/spfm/spfm_manager.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

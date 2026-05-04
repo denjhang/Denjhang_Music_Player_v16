@@ -1,10 +1,10 @@
 // gui_renderer.cpp - ImGui UI Rendering Module Implementation
 
 #include "gui_renderer.h"
-#include "chip_control.h"
+#include "windows/ym2163/chip_control.h"
 #include "config_manager.h"
-#include "midi_player.h"
-#include "sn76489_window.h"
+#include "midi/midi_player.h"
+#include "windows/sn76489/sn76489_window.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>

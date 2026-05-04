@@ -3,12 +3,12 @@
 // VGM hardware playback + debug test functions + file browser
 
 #include "ym2413_window.h"
-#include "sn76489/spfm.h"
-#include "chip_control.h"
-#include "chip_window_ym2163.h"
-#include "spfm_manager.h"
-#include "midi_player.h"
-#include "modizer_viz.h"
+#include "windows/sn76489/spfm.h"
+#include "windows/ym2163/chip_control.h"
+#include "windows/ym2163/chip_window_ym2163.h"
+#include "windows/spfm/spfm_manager.h"
+#include "midi/midi_player.h"
+#include "core/modizer_viz.h"
 #include "libvgm-modizer/emu/cores/ModizerVoicesData.h"
 #include "imgui/imgui.h"
 

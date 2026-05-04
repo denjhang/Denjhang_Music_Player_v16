@@ -1,8 +1,8 @@
 // midi_player.cpp - MIDI Parsing and Playback Module Implementation
 
 #include "midi_player.h"
-#include "chip_control.h"
-#include "config_manager.h"
+#include "windows/ym2163/chip_control.h"
+#include "core/config_manager.h"
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
