@@ -199,6 +199,68 @@
 | `src/sn76489/spfm_lite.c` | 新建 - SPFM Light FTDI 驱动实现 |
 | `src/sn76489/sn76489.h` | 新建 - SN76489 寄存器/频率辅助函数 |
 
+### YM2413 (OPLL) VGM 播放器模块（2026-05-03 ~ 2026-05-04）
+
+#### VGM 硬件播放
+- ✨ YM2413 寄存器影子跟踪（0x00-0x38）
+- ✨ Key-on/bit4 上升沿/下降沿检测（影子寄存器直接读取）
+- ✨ 节奏通道（BD/SD/TOM/HH/CYM）key-on 独立检测与音量提取
+- ✨ GD3 标签显示（曲名、游戏、系统、作者）
+- ✨ 循环播放 + 可配置最大循环次数
+- ✨ 快进模式：逐命令重放到目标位置，完整保留音色信息
+- ✨ 循环淡出 + 无循环自动切曲
+
+#### 快进/Seek 实现
+- ✨ `MuteHardwareOnly()`: 仅静音硬件，不清影子寄存器
+- ✨ `ApplyShadowState()`: 快进完成后从影子恢复完整芯片状态
+- ✨ 快进过程逐命令重放，保持硬件时序连续
+- ✨ 参考 MDPlayer seek 实现模式
+
+#### 曲目切换静音
+- ✨ 静音顺序：key-off → rhythm off → TL=0x0F → rhythm silence
+- ✨ TL 写入 0x0F（低 nibble），非 0xF0（避免修改 patch 高 nibble）
+- ✨ Rhythm silence: 0x36=0x0F, 0x37=0xFF, 0x38=0xFF
+- ✨ 参考 MDPlayer/MegaGRRL 切歌寄存器写入顺序
+
+#### 钢琴键盘
+- ✨ 9 旋律通道 + 5 节奏通道钢琴显示
+- ✨ 节奏通道固定映射音符：BD=C2, SD=D#2, TOM=F#2, HH=C#3, CYM=D#3
+- ✨ VIB 指示器：整条键高度左右摆动，±0.14 半音（硬件 14 cent）
+- ✨ AM 指示器：键顶部上下脉冲条，±0.3（硬件 4.8dB）
+- ✨ 滑音指示器：key-on 期间连续频率变化，>1 半音跳变不算滑音
+- ✨ 指示器使用纯通道颜色（比键面更深更饱和），便于视觉区分
+- ✨ Key-on 上升沿立即同步 startNote/visualNote，避免假滑音
+
+#### 颜色系统
+- ✨ 14 通道独立颜色（9 旋律 + 5 节奏：BD/SD/TOM/HH/CYM）
+- ✨ 通道颜色自定义 UI（ColorEdit4 选择器 + 逐通道 Reset + Reset All）
+- ✨ 颜色持久化到 `ym2413_config.ini` [Colors] 段
+
+#### 节奏通道音量提取
+- ✨ BD = reg 0x36 & 0x0F（低 nibble）
+- ✨ SD = reg 0x37 & 0x0F（低 nibble）
+- ✨ TOM = reg 0x38 >> 4（高 nibble）
+- ✨ HH = reg 0x37 >> 4（高 nibble）
+- ✨ CYM = reg 0x38 & 0x0F（低 nibble）
+- ✨ 参考 MDPlayer 节奏通道音量位读取
+
+#### 可视化
+- ✨ 14 通道音量条（9 旋律 + 5 节奏）
+- ✨ 寄存器表格（0x00-0x38 完整显示）
+- ✨ 示波器波形显示（依赖 libvgm YM2413 核心）
+- ✨ LFO 指示器：从 patch ROM 读取 AM/VIB 位（bit8/9），固定 3.98Hz
+
+#### 参考源码
+- 📄 MDPlayer: 节奏通道 key-on/volume、切歌静音顺序、seek 实现、patch ROM AM/VIB
+- 📄 MegaGRRL: 切歌寄存器写入顺序
+- 📄 libvgm: 钢琴键盘指示器动画效果（PMS/AMS 渲染方式）
+
+#### 修改文件清单
+| 文件 | 操作 |
+|------|------|
+| `src/ym2413_window.cpp/h` | 新建 - YM2413 OPLL VGM 播放器窗口 |
+| `src/main.cpp` | 修改 - 添加 YM2413 初始化/更新/渲染/清理 |
+
 ---
 
 ## v15.0 (2026-04-05 ~ 2026-04-20)
@@ -498,5 +560,5 @@
 
 **Project Start**: January 17, 2026
 **Current Version**: v16.0
-**Last Updated**: April 29, 2026
+**Last Updated**: May 4, 2026
 **Status**: Active Development

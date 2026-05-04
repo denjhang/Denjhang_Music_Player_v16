@@ -25,6 +25,7 @@
 #include <set>
 #include <algorithm>
 #include <chrono>
+#include <zlib.h>
 
 namespace SN76489Window {
 
@@ -76,6 +77,58 @@ static UINT32 s_vgmTotalSamples = 0;
 static UINT32 s_vgmCurrentSamples = 0;
 static UINT32 s_vgmDataOffset = 0;
 static UINT32 s_vgmLoopOffset = 0;
+
+// VGZ support
+static std::vector<UINT8> s_memData;
+static size_t s_memPos = 0;
+
+static size_t vgmfread(void* buf, size_t sz, size_t cnt, FILE* f) {
+    if (!s_memData.empty()) {
+        size_t total = sz * cnt;
+        if (s_memPos + total > s_memData.size()) {
+            size_t avail = s_memData.size() - s_memPos;
+            if (avail < sz) return 0;
+            cnt = avail / sz;
+            total = cnt * sz;
+        }
+        memcpy(buf, &s_memData[s_memPos], total);
+        s_memPos += total;
+        return cnt;
+    }
+    return fread(buf, sz, cnt, f);
+}
+
+static int vgmfseek(FILE* f, long off, int whence) {
+    if (!s_memData.empty()) {
+        switch (whence) {
+            case SEEK_SET: s_memPos = (size_t)off; break;
+            case SEEK_CUR: s_memPos += off; break;
+            case SEEK_END: s_memPos = s_memData.size() + off; break;
+        }
+        if (s_memPos > s_memData.size()) s_memPos = s_memData.size();
+        return 0;
+    }
+    return fseek(f, off, whence);
+}
+
+static std::vector<UINT8> InflateGzip(const UINT8* data, size_t size) {
+    std::vector<UINT8> out;
+    z_stream strm = {};
+    strm.avail_in = (uInt)size;
+    strm.next_in = (Bytef*)data;
+    if (inflateInit2(&strm, 15 + 32) != Z_OK) return out;
+    UINT8 chunk[16384];
+    int ret;
+    do {
+        strm.avail_out = sizeof(chunk);
+        strm.next_out = chunk;
+        ret = inflate(&strm, Z_NO_FLUSH);
+        if (ret != Z_OK && ret != Z_STREAM_END) { inflateEnd(&strm); return std::vector<UINT8>(); }
+        out.insert(out.end(), chunk, chunk + sizeof(chunk) - strm.avail_out);
+    } while (strm.avail_out == 0);
+    inflateEnd(&strm);
+    return out;
+}
 static UINT32 s_vgmLoopSamples = 0;
 static int s_vgmLoopCount = 0;
 static int s_vgmMaxLoops = 2;  // max internal loop count (0=infinite)
@@ -784,7 +837,7 @@ static void UpdateChannelLevels(void) {
 
 // ============ VGM Player ============
 static UINT32 ReadLE32(FILE* f) {
-    UINT8 b[4]; fread(b, 1, 4, f);
+    UINT8 b[4]; vgmfread(b, 1, 4, f);
     return b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
 }
 
@@ -803,15 +856,15 @@ static std::string ReadGD3String(const UINT8*& ptr, const UINT8* end) {
 
 static void ParseGD3Tags(FILE* f, UINT32 offset) {
     if (offset == 0) return;
-    fseek(f, offset, SEEK_SET);
-    char sig[4]; fread(sig, 1, 4, f);
+    vgmfseek(f, offset, SEEK_SET);
+    char sig[4]; vgmfread(sig, 1, 4, f);
     if (memcmp(sig, "gd3", 3) != 0) return;
-    fseek(f, offset + 4, SEEK_SET);
+    vgmfseek(f, offset + 4, SEEK_SET);
     UINT32 strLen = ReadLE32(f);
     UINT32 dataOff = offset + 12;
-    fseek(f, dataOff, SEEK_SET);
+    vgmfseek(f, dataOff, SEEK_SET);
     std::vector<UINT8> buf(strLen);
-    fread(buf.data(), 1, strLen, f);
+    vgmfread(buf.data(), 1, strLen, f);
     const UINT8* ptr = buf.data();
     const UINT8* end = buf.data() + strLen;
     s_trackName = ReadGD3String(ptr, end);
@@ -832,6 +885,9 @@ static bool LoadVGMFile(const char* path) {
     StopTest();
     if (s_vgmPlaying) { s_vgmPlaying = false; s_vgmPaused = false; }
     if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = nullptr; }
+    s_memData.clear();
+    s_memData.shrink_to_fit();
+    s_memPos = 0;
     s_vgmLoaded = false;
     s_trackName.clear(); s_gameName.clear(); s_systemName.clear(); s_artistName.clear();
     s_vgmTotalSamples = 0; s_vgmCurrentSamples = 0;
@@ -847,25 +903,45 @@ static bool LoadVGMFile(const char* path) {
     FILE* f = sn_fopen(path, "rb");
     if (!f) { DcLog("[VGM] Cannot open: %s\n", path); return false; }
 
-    char sig[4]; fread(sig, 1, 4, f);
-    if (memcmp(sig, "Vgm ", 4) != 0) { fclose(f); DcLog("[VGM] Not a VGM file\n"); return false; }
+    // Detect gzip header (VGZ)
+    UINT8 hdr[2];
+    if (fread(hdr, 1, 2, f) != 2) { fclose(f); return false; }
+    if (hdr[0] == 0x1F && hdr[1] == 0x8B) {
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        std::vector<UINT8> compressed(fsize);
+        if ((long)fread(compressed.data(), 1, fsize, f) != fsize) { fclose(f); DcLog("[VGM] VGZ read failed\n"); return false; }
+        fclose(f); f = nullptr;
+        s_memData = InflateGzip(compressed.data(), compressed.size());
+        if (s_memData.empty()) { DcLog("[VGM] VGZ decompress failed\n"); return false; }
+        DcLog("[VGM] VGZ decompressed: %ld -> %u bytes\n", fsize, (unsigned)s_memData.size());
+    } else {
+        fseek(f, 0, SEEK_SET);
+    }
 
-    fseek(f, 0x08, SEEK_SET);
+    char sig[4]; vgmfread(sig, 1, 4, f);
+    if (memcmp(sig, "Vgm ", 4) != 0) {
+        if (f) fclose(f);
+        s_memData.clear(); DcLog("[VGM] Not a VGM file\n"); return false;
+    }
+
+    vgmfseek(f, 0x08, SEEK_SET);
     s_vgmVersion = ReadLE32(f);
     UINT32 snClock = ReadLE32(f);
     s_isT6W28 = (snClock & 0x80000000) != 0;
     snClock &= ~0x80000000;
-    fseek(f, 0x14, SEEK_SET);
+    vgmfseek(f, 0x14, SEEK_SET);
     UINT32 gd3RelOff = ReadLE32(f);
-    UINT32 gd3Off = gd3RelOff ? (gd3RelOff + 0x14) : 0;  // relative offset from 0x14
+    UINT32 gd3Off = gd3RelOff ? (gd3RelOff + 0x14) : 0;
     s_vgmTotalSamples = ReadLE32(f);
     UINT32 loopRelOff = ReadLE32(f);
-    s_vgmLoopOffset = loopRelOff ? (loopRelOff + 0x1C) : 0;  // relative offset from 0x1C
+    s_vgmLoopOffset = loopRelOff ? (loopRelOff + 0x1C) : 0;
     s_vgmLoopSamples = ReadLE32(f);
 
     UINT32 dataOff = 0x40;
     if (s_vgmVersion >= 0x150) {
-        fseek(f, 0x34, SEEK_SET);
+        vgmfseek(f, 0x34, SEEK_SET);
         UINT32 hdrDataOff = ReadLE32(f);
         if (hdrDataOff > 0) dataOff = hdrDataOff + 0x34;
     }
@@ -876,9 +952,13 @@ static bool LoadVGMFile(const char* path) {
 
     ParseGD3Tags(f, gd3Off);
 
-    fclose(f);
-    s_vgmFile = sn_fopen(path, "rb");
-    if (!s_vgmFile) { DcLog("[VGM] Reopen failed\n"); return false; }
+    if (s_memData.empty()) {
+        fclose(f);
+        s_vgmFile = sn_fopen(path, "rb");
+        if (!s_vgmFile) { DcLog("[VGM] Reopen failed\n"); return false; }
+    } else {
+        s_memPos = 0;
+    }
 
     snprintf(s_vgmPath, MAX_PATH, "%s", path);
     s_vgmLoaded = true;
@@ -938,7 +1018,7 @@ static const UINT8 VGM_CMD_LEN[0x100] = {
 // Returns: wait samples (>0), 0 = no wait, -1 = EOF/error
 static int VGMProcessCommand(void) {
     UINT8 cmd;
-    if (fread(&cmd, 1, 1, s_vgmFile) != 1) return -1;
+    if (vgmfread(&cmd, 1, 1, s_vgmFile) != 1) return -1;
 
     if (s_vgmCmdCount < 50) {
         DcLog("[VGM] cmd=0x%02X at %ld\n", cmd, ftell(s_vgmFile) - 1);
@@ -948,7 +1028,7 @@ static int VGMProcessCommand(void) {
     switch (cmd) {
         case 0x30: { // 2nd SN76489 write (T6W28 noise chip)
             if (!s_isT6W28) break;
-            UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
+            UINT8 data; if (vgmfread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
             // 始终提取 shadow state（不管模式）
             if (data & 0x80) {
@@ -1053,7 +1133,7 @@ static int VGMProcessCommand(void) {
             return 0;
         }
         case 0x50: { // SN76489 write (libvgm: Cmd_SN76489, 2 bytes)
-            UINT8 data; if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
+            UINT8 data; if (vgmfread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
             bool tone2Updated = false;
             bool noiseCtrlUpdated = false;
@@ -1114,7 +1194,7 @@ static int VGMProcessCommand(void) {
             return 0;
         }
         case 0x61: { // Wait N samples (libvgm: Cmd_DelaySamples2B, 3 bytes)
-            UINT16 wait; if (fread(&wait, 1, 2, s_vgmFile) != 2) return -1;
+            UINT16 wait; if (vgmfread(&wait, 1, 2, s_vgmFile) != 2) return -1;
             return wait;
         }
         case 0x62: return 735;  // Wait 735 samples (libvgm: Cmd_Delay60Hz)
@@ -1138,18 +1218,18 @@ static int VGMProcessCommand(void) {
                         fadeoutSamples = s_vgmLoopSamples;
                     s_fadeoutEndSample = s_vgmCurrentSamples + fadeoutSamples;
                 }
-                fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
+                vgmfseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
                 s_vgmLoopCount++;
                 return 0;
             }
             return -1;
         }
         case 0x67: { // Data block (libvgm: Cmd_DataBlock, variable length)
-            UINT8 compat; if (fread(&compat, 1, 1, s_vgmFile) != 1) return -1;
+            UINT8 compat; if (vgmfread(&compat, 1, 1, s_vgmFile) != 1) return -1;
             if (compat != 0x66) return -1;
-            UINT8 type; if (fread(&type, 1, 1, s_vgmFile) != 1) return -1;
-            UINT32 size; if (fread(&size, 4, 1, s_vgmFile) != 1) return -1;
-            fseek(s_vgmFile, size, SEEK_CUR);
+            UINT8 type; if (vgmfread(&type, 1, 1, s_vgmFile) != 1) return -1;
+            UINT32 size; if (vgmfread(&size, 4, 1, s_vgmFile) != 1) return -1;
+            vgmfseek(s_vgmFile, size, SEEK_CUR);
             return 0;
         }
     }
@@ -1158,7 +1238,7 @@ static int VGMProcessCommand(void) {
     UINT8 cmdLen = VGM_CMD_LEN[cmd];
     if (cmdLen <= 1) return 0; // 0=invalid/1=opcode only, nothing to skip
     UINT8 skip = cmdLen - 1;
-    if (fseek(s_vgmFile, skip, SEEK_CUR) != 0) return -1;
+    if (vgmfseek(s_vgmFile, skip, SEEK_CUR) != 0) return -1;
     return 0;
 }
 
@@ -1251,9 +1331,13 @@ static void StartVGMPlayback(void) {
         CloseHandle(s_vgmThread);
         s_vgmThread = nullptr;
     }
-    if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
-    if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
-    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    if (s_memData.empty()) {
+        if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
+        if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
+        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    } else {
+        s_memPos = s_vgmDataOffset;
+    }
     if (s_connected) InitHardware();
     s_vgmPlaying = true; s_vgmPaused = false; s_vgmTrackEnded = false;
     s_vgmCmdCount = 0;
@@ -1293,13 +1377,17 @@ static void OpenVGMFileDialog(void) {
 }
 
 static void SeekVGMToStart(void) {
-    if (!s_vgmLoaded || !s_vgmFile) return;
+    if (!s_vgmLoaded) return;
     if (s_vgmPlaying) { s_vgmPlaying = false; s_vgmPaused = false; }
     if (s_connected) InitHardware();
-    fclose(s_vgmFile);
-    s_vgmFile = sn_fopen(s_vgmPath, "rb");
-    if (!s_vgmFile) return;
-    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    if (s_memData.empty()) {
+        if (s_vgmFile) fclose(s_vgmFile);
+        s_vgmFile = sn_fopen(s_vgmPath, "rb");
+        if (!s_vgmFile) return;
+        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    } else {
+        s_memPos = s_vgmDataOffset;
+    }
     s_vgmCurrentSamples = 0; s_vgmLoopCount = 0;
     s_vgmTrackEnded = false;
     s_fadeoutActive = false; s_fadeoutLevel = 1.0f;
@@ -2311,11 +2399,17 @@ static void RenderPlayerBar(void) {
                 // Stop thread temporarily for seek
                 s_vgmThreadRunning = false; s_vgmPlaying = false;
                 if (s_vgmThread) { WaitForSingleObject(s_vgmThread, 2000); CloseHandle(s_vgmThread); s_vgmThread = nullptr; }
-                if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
-                if (s_vgmFile) {
+                if (s_memData.empty()) {
+                    if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
+                }
+                if (!s_memData.empty() || s_vgmFile) {
                     if (s_seekMode == 0) {
-                        // 快进模式：断开硬件快进（仅解析 shadow state），到达后恢复寄存器
-                        fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                        // 快进模式
+                        if (s_memData.empty()) {
+                            vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                        } else {
+                            s_memPos = s_vgmDataOffset;
+                        }
                         bool wasConn = s_connected, wasConn2 = s_connected2;
                         s_connected = false; s_connected2 = false;
                         UINT32 skipSamples = 0;
@@ -2339,7 +2433,7 @@ static void RenderPlayerBar(void) {
                         }
                     } else {
                         // 直接跳转模式：纯解析到目标，从 shadow state 恢复寄存器
-                        fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
                         bool wasConn = s_connected, wasConn2 = s_connected2;
                         s_connected = false; s_connected2 = false;
                         UINT32 skipSamples = 0;

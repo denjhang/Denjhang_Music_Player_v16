@@ -24,6 +24,7 @@
 #include <set>
 #include <algorithm>
 #include <chrono>
+#include <zlib.h>
 
 namespace YM2413Window {
 
@@ -146,6 +147,58 @@ static UINT32 s_vgmCurrentSamples = 0;
 static UINT32 s_vgmDataOffset = 0;
 static UINT32 s_vgmLoopOffset = 0;
 static UINT32 s_vgmLoopSamples = 0;
+
+// VGZ support: memory buffer for decompressed data
+static std::vector<UINT8> s_memData;
+static size_t s_memPos = 0;
+
+static size_t vgmfread(void* buf, size_t sz, size_t cnt, FILE* f) {
+    if (!s_memData.empty()) {
+        size_t total = sz * cnt;
+        if (s_memPos + total > s_memData.size()) {
+            size_t avail = s_memData.size() - s_memPos;
+            if (avail < sz) return 0;
+            cnt = avail / sz;
+            total = cnt * sz;
+        }
+        memcpy(buf, &s_memData[s_memPos], total);
+        s_memPos += total;
+        return cnt;
+    }
+    return fread(buf, sz, cnt, f);
+}
+
+static int vgmfseek(FILE* f, long off, int whence) {
+    if (!s_memData.empty()) {
+        switch (whence) {
+            case SEEK_SET: s_memPos = (size_t)off; break;
+            case SEEK_CUR: s_memPos += off; break;
+            case SEEK_END: s_memPos = s_memData.size() + off; break;
+        }
+        if (s_memPos > s_memData.size()) s_memPos = s_memData.size();
+        return 0;
+    }
+    return fseek(f, off, whence);
+}
+
+static std::vector<UINT8> InflateGzip(const UINT8* data, size_t size) {
+    std::vector<UINT8> out;
+    z_stream strm = {};
+    strm.avail_in = (uInt)size;
+    strm.next_in = (Bytef*)data;
+    if (inflateInit2(&strm, 15 + 32) != Z_OK) return out;
+    UINT8 chunk[16384];
+    int ret;
+    do {
+        strm.avail_out = sizeof(chunk);
+        strm.next_out = chunk;
+        ret = inflate(&strm, Z_NO_FLUSH);
+        if (ret != Z_OK && ret != Z_STREAM_END) { inflateEnd(&strm); return std::vector<UINT8>(); }
+        out.insert(out.end(), chunk, chunk + sizeof(chunk) - strm.avail_out);
+    } while (strm.avail_out == 0);
+    inflateEnd(&strm);
+    return out;
+}
 static int s_vgmLoopCount = 0;
 static int s_vgmMaxLoops = 2;
 
@@ -799,7 +852,7 @@ static void UpdateChannelLevels(void) {
 
 // ============ VGM Player ============
 static UINT32 ReadLE32(FILE* f) {
-    UINT8 b[4]; fread(b, 1, 4, f);
+    UINT8 b[4]; vgmfread(b, 1, 4, f);
     return b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24);
 }
 
@@ -818,15 +871,15 @@ static std::string ReadGD3String(const UINT8*& ptr, const UINT8* end) {
 
 static void ParseGD3Tags(FILE* f, UINT32 offset) {
     if (offset == 0) return;
-    fseek(f, offset, SEEK_SET);
-    char sig[4]; fread(sig, 1, 4, f);
+    vgmfseek(f, offset, SEEK_SET);
+    char sig[4]; vgmfread(sig, 1, 4, f);
     if (memcmp(sig, "gd3", 3) != 0) return;
-    fseek(f, offset + 4, SEEK_SET);
+    vgmfseek(f, offset + 4, SEEK_SET);
     UINT32 strLen = ReadLE32(f);
     UINT32 dataOff = offset + 12;
-    fseek(f, dataOff, SEEK_SET);
+    vgmfseek(f, dataOff, SEEK_SET);
     std::vector<UINT8> buf(strLen);
-    fread(buf.data(), 1, strLen, f);
+    vgmfread(buf.data(), 1, strLen, f);
     const UINT8* ptr = buf.data();
     const UINT8* end = buf.data() + strLen;
     s_trackName = ReadGD3String(ptr, end);
@@ -847,6 +900,9 @@ static bool LoadVGMFile(const char* path) {
     StopTest();
     if (s_vgmPlaying) { s_vgmPlaying = false; s_vgmPaused = false; }
     if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = nullptr; }
+    s_memData.clear();
+    s_memData.shrink_to_fit();
+    s_memPos = 0;
     s_vgmLoaded = false;
     s_trackName.clear(); s_gameName.clear(); s_systemName.clear(); s_artistName.clear();
     s_vgmTotalSamples = 0; s_vgmCurrentSamples = 0;
@@ -855,18 +911,40 @@ static bool LoadVGMFile(const char* path) {
     FILE* f = ym_fopen(path, "rb");
     if (!f) { DcLog("[VGM] Cannot open: %s\n", path); return false; }
 
-    char sig[4]; fread(sig, 1, 4, f);
-    if (memcmp(sig, "Vgm ", 4) != 0) { fclose(f); DcLog("[VGM] Not a VGM file\n"); return false; }
+    // Detect gzip header (VGZ)
+    UINT8 hdr[2];
+    if (fread(hdr, 1, 2, f) != 2) { fclose(f); return false; }
+    if (hdr[0] == 0x1F && hdr[1] == 0x8B) {
+        // VGZ: read entire file, decompress to memory
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        std::vector<UINT8> compressed(fsize);
+        if ((long)fread(compressed.data(), 1, fsize, f) != fsize) { fclose(f); DcLog("[VGM] VGZ read failed\n"); return false; }
+        fclose(f); f = nullptr;
+        s_memData = InflateGzip(compressed.data(), compressed.size());
+        if (s_memData.empty()) { DcLog("[VGM] VGZ decompress failed\n"); return false; }
+        DcLog("[VGM] VGZ decompressed: %ld -> %u bytes\n", fsize, (unsigned)s_memData.size());
+    } else {
+        // Plain VGM: use FILE* directly
+        fseek(f, 0, SEEK_SET);
+    }
 
-    fseek(f, 0x08, SEEK_SET);
+    char sig[4]; vgmfread(sig, 1, 4, f);
+    if (memcmp(sig, "Vgm ", 4) != 0) {
+        if (f) fclose(f);
+        s_memData.clear(); DcLog("[VGM] Not a VGM file\n"); return false;
+    }
+
+    vgmfseek(f, 0x08, SEEK_SET);
     s_vgmVersion = ReadLE32(f);
 
     // YM2413 clock at offset 0x10
-    fseek(f, 0x10, SEEK_SET);
+    vgmfseek(f, 0x10, SEEK_SET);
     UINT32 ym2413Clock = ReadLE32(f);
 
     // GD3 tags at 0x14
-    fseek(f, 0x14, SEEK_SET);
+    vgmfseek(f, 0x14, SEEK_SET);
     UINT32 gd3RelOff = ReadLE32(f);
     UINT32 gd3Off = gd3RelOff ? (gd3RelOff + 0x14) : 0;
     s_vgmTotalSamples = ReadLE32(f);
@@ -876,7 +954,7 @@ static bool LoadVGMFile(const char* path) {
 
     UINT32 dataOff = 0x40;
     if (s_vgmVersion >= 0x150) {
-        fseek(f, 0x34, SEEK_SET);
+        vgmfseek(f, 0x34, SEEK_SET);
         UINT32 hdrDataOff = ReadLE32(f);
         if (hdrDataOff > 0) dataOff = hdrDataOff + 0x34;
     }
@@ -887,9 +965,14 @@ static bool LoadVGMFile(const char* path) {
 
     ParseGD3Tags(f, gd3Off);
 
-    fclose(f);
-    s_vgmFile = ym_fopen(path, "rb");
-    if (!s_vgmFile) { DcLog("[VGM] Reopen failed\n"); return false; }
+    if (s_memData.empty()) {
+        fclose(f);
+        s_vgmFile = ym_fopen(path, "rb");
+        if (!s_vgmFile) { DcLog("[VGM] Reopen failed\n"); return false; }
+    } else {
+        // VGZ: data already in memory, reset position for playback
+        s_memPos = 0;
+    }
 
     snprintf(s_vgmPath, MAX_PATH, "%s", path);
     s_vgmLoaded = true;
@@ -949,7 +1032,7 @@ static const UINT8 VGM_CMD_LEN[0x100] = {
 // Returns: wait samples (>0), 0 = no wait, -1 = EOF/error
 static int VGMProcessCommand(void) {
     UINT8 cmd;
-    if (fread(&cmd, 1, 1, s_vgmFile) != 1) return -1;
+    if (vgmfread(&cmd, 1, 1, s_vgmFile) != 1) return -1;
 
     if (s_vgmCmdCount < 50) {
         DcLog("[VGM] cmd=0x%02X at %ld\n", cmd, ftell(s_vgmFile) - 1);
@@ -959,8 +1042,8 @@ static int VGMProcessCommand(void) {
     switch (cmd) {
         case 0x51: { // YM2413 register write: [0x51, register, data]  (3 bytes)
             UINT8 reg, data;
-            if (fread(&reg, 1, 1, s_vgmFile) != 1) return -1;
-            if (fread(&data, 1, 1, s_vgmFile) != 1) return -1;
+            if (vgmfread(&reg, 1, 1, s_vgmFile) != 1) return -1;
+            if (vgmfread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
 
             // Update shadow state
@@ -1038,7 +1121,7 @@ static int VGMProcessCommand(void) {
             return 0;
         }
         case 0x61: { // Wait N samples (3 bytes)
-            UINT16 wait; if (fread(&wait, 1, 2, s_vgmFile) != 2) return -1;
+            UINT16 wait; if (vgmfread(&wait, 1, 2, s_vgmFile) != 2) return -1;
             return wait;
         }
         case 0x62: return 735;  // Wait 735 samples
@@ -1061,18 +1144,18 @@ static int VGMProcessCommand(void) {
                         fadeoutSamples = s_vgmLoopSamples;
                     s_fadeoutEndSample = s_vgmCurrentSamples + fadeoutSamples;
                 }
-                fseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
+                vgmfseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
                 s_vgmLoopCount++;
                 return 0;
             }
             return -1;
         }
         case 0x67: { // Data block (variable length)
-            UINT8 compat; if (fread(&compat, 1, 1, s_vgmFile) != 1) return -1;
+            UINT8 compat; if (vgmfread(&compat, 1, 1, s_vgmFile) != 1) return -1;
             if (compat != 0x66) return -1;
-            UINT8 type; if (fread(&type, 1, 1, s_vgmFile) != 1) return -1;
-            UINT32 size; if (fread(&size, 4, 1, s_vgmFile) != 1) return -1;
-            fseek(s_vgmFile, size, SEEK_CUR);
+            UINT8 type; if (vgmfread(&type, 1, 1, s_vgmFile) != 1) return -1;
+            UINT32 size; if (vgmfread(&size, 4, 1, s_vgmFile) != 1) return -1;
+            vgmfseek(s_vgmFile, size, SEEK_CUR);
             return 0;
         }
     }
@@ -1081,7 +1164,7 @@ static int VGMProcessCommand(void) {
     UINT8 cmdLen = VGM_CMD_LEN[cmd];
     if (cmdLen <= 1) return 0;
     UINT8 skip = cmdLen - 1;
-    if (fseek(s_vgmFile, skip, SEEK_CUR) != 0) return -1;
+    if (vgmfseek(s_vgmFile, skip, SEEK_CUR) != 0) return -1;
     return 0;
 }
 
@@ -1166,9 +1249,13 @@ static void StartVGMPlayback(void) {
         CloseHandle(s_vgmThread);
         s_vgmThread = nullptr;
     }
-    if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = ym_fopen(s_vgmPath, "rb"); }
-    if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
-    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    if (s_memData.empty()) {
+        if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = ym_fopen(s_vgmPath, "rb"); }
+        if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
+        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    } else {
+        s_memPos = s_vgmDataOffset;
+    }
     if (s_connected) InitHardware();
     s_vgmPlaying = true; s_vgmPaused = false; s_vgmTrackEnded = false;
     s_vgmCmdCount = 0;
@@ -1208,13 +1295,17 @@ static void OpenVGMFileDialog(void) {
 }
 
 static void SeekVGMToStart(void) {
-    if (!s_vgmLoaded || !s_vgmFile) return;
+    if (!s_vgmLoaded) return;
     if (s_vgmPlaying) { s_vgmPlaying = false; s_vgmPaused = false; }
     if (s_connected) InitHardware();
-    fclose(s_vgmFile);
-    s_vgmFile = ym_fopen(s_vgmPath, "rb");
-    if (!s_vgmFile) return;
-    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    if (s_memData.empty()) {
+        if (s_vgmFile) fclose(s_vgmFile);
+        s_vgmFile = ym_fopen(s_vgmPath, "rb");
+        if (!s_vgmFile) return;
+        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+    } else {
+        s_memPos = s_vgmDataOffset;
+    }
     s_vgmCurrentSamples = 0; s_vgmLoopCount = 0;
     s_vgmTrackEnded = false;
     s_fadeoutActive = false; s_fadeoutLevel = 1.0f;
@@ -1501,6 +1592,29 @@ static void RenderPianoKeyboard(void) {
     }
 
     // Pass 3: portamento / vibrato / tremolo indicators
+    // Build key center-x table for smooth interpolation (like libvgm)
+    float keyCenterX[128] = {};
+    {
+        int wi = 0;
+        for (int n = kMinNote; n <= kMaxNote; n++) {
+            if (!s_isBlackNote[n % 12]) {
+                keyCenterX[n] = p.x + wi * whiteKeyW + whiteKeyW * 0.5f;
+                wi++;
+            } else {
+                float bkLeft = p.x + (wi - 1) * whiteKeyW + whiteKeyW - blackKeyW * 0.5f;
+                keyCenterX[n] = bkLeft + blackKeyW * 0.5f;
+            }
+        }
+    }
+    auto noteToX = [&](float fnote) -> float {
+        int n0 = (int)floorf(fnote);
+        int n1 = n0 + 1;
+        float frac = fnote - (float)n0;
+        float x0 = (n0 >= kMinNote && n0 <= kMaxNote) ? keyCenterX[n0] : keyCenterX[kMinNote];
+        float x1 = (n1 >= kMinNote && n1 <= kMaxNote) ? keyCenterX[n1] : keyCenterX[kMaxNote];
+        return x0 + (x1 - x0) * frac;
+    };
+
     float hl_w = whiteKeyW * 0.3f;
     wkIdx = 0;
     for (int n = kMinNote; n <= kMaxNote; n++) {
@@ -1518,30 +1632,46 @@ static void RenderPianoKeyboard(void) {
 
         int ch = s_pianoKeyChannel[idx];
         ImU32 rawCol = (ch >= 0) ? getChColor(ch) : IM_COL32(160, 200, 160, 255);
-        ImVec4 cv = ImGui::ColorConvertU32ToFloat4(rawCol);
-        cv.w = fmaxf(0.5f, s_pianoKeyLevel[idx]);
+        // Darken channel color significantly for indicator visibility
+        int cr = (rawCol >> 0) & 0xFF;
+        int cg = (rawCol >> 8) & 0xFF;
+        int cb = (rawCol >> 16) & 0xFF;
+        int dr = (int)(cr * 0.55f);
+        int dg = (int)(cg * 0.55f);
+        int db = (int)(cb * 0.55f);
+        ImVec4 cv = ImGui::ColorConvertU32ToFloat4(IM_COL32(dr, dg, db, 255));
+        cv.w = fmaxf(0.6f, s_pianoKeyLevel[idx]);
         ImU32 col = ImGui::ColorConvertFloat4ToU32(cv);
-        float keyX = p.x + wkIdx * whiteKeyW + whiteKeyW * 0.5f;
-        float kh = whiteKeyH;
 
-        // Portamento: full-height bar at current pitch position
+        bool isBlack = s_isBlackNote[n % 12];
+        float keyX, kh;
+        if (isBlack) {
+            // Match black key drawing center exactly
+            float bkLeft = p.x + (wkIdx - 1) * whiteKeyW + whiteKeyW - blackKeyW * 0.5f;
+            keyX = bkLeft + blackKeyW * 0.5f;
+            kh = blackKeyH;
+            hl_w = blackKeyW * 0.5f;
+        } else {
+            keyX = p.x + wkIdx * whiteKeyW + whiteKeyW * 0.5f;
+            kh = whiteKeyH;
+        }
+
+        // Portamento: full-height bar at current pitch position (smooth interpolation)
         if (hasPoff) {
             float fnote = (float)n + poff;
-            int wki = 0;
-            for (int m = kMinNote; m < (int)fnote; m++) if (!s_isBlackNote[m % 12]) wki++;
-            float hlX = p.x + wki * whiteKeyW + whiteKeyW * 0.5f;
+            float hlX = noteToX(fnote);
             dl->AddRectFilled(
                 ImVec2(hlX - hl_w * 0.5f, p.y),
                 ImVec2(hlX + hl_w * 0.5f, p.y + kh), col);
         }
-        // VIB: full-height bar shifting left/right from note center (like libvgm PMS)
+        // VIB: full-height bar shifting left/right from note center (smooth interpolation)
         if (hasVib) {
-            float hlX = keyX + vib * whiteKeyW * 0.5f;
+            float hlX = noteToX((float)n + vib);
             dl->AddRectFilled(
                 ImVec2(hlX - hl_w * 0.5f, p.y),
                 ImVec2(hlX + hl_w * 0.5f, p.y + kh), col);
         }
-        // AM/Tremolo: vertical pulse at top of key (like libvgm AMS)
+        // AM/Tremolo: vertical pulse at top of key
         if (hasTrem) {
             float pulseH = kh * 0.15f * fabsf(trem);
             dl->AddRectFilled(
@@ -1549,7 +1679,7 @@ static void RenderPianoKeyboard(void) {
                 ImVec2(keyX + hl_w * 0.5f, p.y + pulseH + 2.0f), col);
         }
 
-        if (!s_isBlackNote[n % 12]) wkIdx++;
+        if (!isBlack) wkIdx++;
     }
 
     ImGui::EndChild();
@@ -2214,10 +2344,16 @@ static void RenderPlayerBar(void) {
                 // Stop thread
                 s_vgmThreadRunning = false; s_vgmPlaying = false;
                 if (s_vgmThread) { WaitForSingleObject(s_vgmThread, 2000); CloseHandle(s_vgmThread); s_vgmThread = nullptr; }
-                if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = ym_fopen(s_vgmPath, "rb"); }
-                if (s_vgmFile) {
+                if (s_memData.empty()) {
+                    if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = ym_fopen(s_vgmPath, "rb"); }
+                }
+                if (!s_memData.empty() || s_vgmFile) {
                     // Parse commands to target without HW writes
-                    fseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                    if (s_memData.empty()) {
+                        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
+                    } else {
+                        s_memPos = s_vgmDataOffset;
+                    }
                     bool wasConn = s_connected;
                     s_connected = false;
                     UINT32 skipSamples = 0;

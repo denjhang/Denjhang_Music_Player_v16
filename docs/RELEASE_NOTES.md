@@ -1,10 +1,10 @@
 # Denjhang's Music Player v16 Release Notes
 
 ## Release Date
-April 28, 2026 (Updated May 2, 2026)
+April 28, 2026 (Updated May 4, 2026)
 
 ## Version
-v16.0 (Build 2026-05-02)
+v16.0 (Build 2026-05-04)
 
 ## Major Improvements
 
@@ -57,6 +57,18 @@ v16.0 (Build 2026-05-02)
 - `.c` / `.gbas.c` 文件解析，文件浏览器 + 文件夹历史
 - 播放控制：速度调节、段落选择、自动跳过静音
 
+### YM2413 (OPLL) VGM Player Module (NEW)
+- YM2413 寄存器影子跟踪 + key-on/bit4 上升沿/下降沿检测
+- 节奏通道（BD/SD/TOM/HH/CYM）独立 key-on 检测与音量提取
+- 钢琴键盘：9 旋律通道 + 5 节奏通道，VIB/AM/滑音指示器
+  - VIB: 整条键高度左右摆动（±0.14 半音，硬件 14 cent）
+  - AM: 键顶部上下脉冲条（±0.3，硬件 4.8dB）
+  - 滑音: key-on 期间连续频率变化，>1 半音跳变不算滑音
+- 14 通道颜色自定义（ColorEdit4 UI），INI 持久化
+- 快进模式：逐命令重放，`MuteHardwareOnly` 保留影子状态
+- 曲目切换静音：key-off → rhythm off → TL=0x0F → rhythm silence
+- 示波器波形显示、寄存器表格、GD3 标签
+
 ## Bug Fixes
 - Fixed MIDI resume progress bar jump (lastPerfCounter not reset)
 - Fixed piano key residual after track switch (ResetPianoKeyStates was empty)
@@ -72,6 +84,10 @@ v16.0 (Build 2026-05-02)
 - Fixed Gigatron wavA volume mapping: actual range 64-127 (64=max, 127=mute)
 - Fixed custom wave table silence on all bit depths: mod instead of clamp for wavA offset
 - Fixed Gigatron audio clipping: volume scaling + saturation limiting
+- Fixed YM2413 tab not persisting on startup (DockBuilder overriding imgui.ini layout)
+- Fixed YM2413 rhythm channel key-on detection and volume extraction (wrong nibble)
+- Fixed YM2413 fast-forward losing instrument info (mute clearing shadow state)
+- Fixed YM2413 song transition click sound (TL 0xF0 modifying patch, wrong silence sequence)
 
 ## Project Reorganization (April 29, 2026)
 - 程序正式改名为 **Denjhang's Music Player** v16
