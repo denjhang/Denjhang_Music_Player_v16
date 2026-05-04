@@ -65,6 +65,14 @@ v16.0 (Build 2026-05-04)
   - AM: 键顶部上下脉冲条（±0.3，硬件 4.8dB）
   - 滑音: key-on 期间连续频率变化，>1 半音跳变不算滑音
 - 14 通道颜色自定义（ColorEdit4 UI），INI 持久化
+- 指令刷新模式（Flush Mode）：Register-Level（每次寄存器写后 flush）/ Command-Level（每条 VGM 命令后 flush）
+- 定时器模式（Timer Mode）：H-Prec Sleep / Hybrid Sleep / MM-Timer / VGMPlay / Optimized VGMPlay
+  - H-Prec: waitable timer + spin-wait 高精度定时
+  - Hybrid: Sleep + spin-wait 混合，减少 CPU 占用
+  - MM-Timer: timeSetEvent 多媒体定时器
+  - VGMPlay: 1ms periodic multimedia timer + QPC sample counting
+  - Optimized VGMPlay: VGMPlay + lookahead 批量预读连续寄存器写入，减少 USB 事务
+  - **推荐 VGMPlay 模式**：使用 timeSetEvent 周期定时器，系统保证回调优先级，即使 CPU 满载也能被调度；QPC sample counting 自动补偿被抢占的延迟，不会丢拍。模式 0/1/2 的 sleep 精度依赖 CPU 空闲，忙时 Sleep(1) 可能变为 ~15ms 导致音频断续。Optimized VGMPlay 与 VGMPlay 定时精度相同，密集寄存器写入场景（快速琶音等）下更高效，一般场景用 VGMPlay 即可
 - 快进模式：逐命令重放，`MuteHardwareOnly` 保留影子状态
 - 曲目切换静音：key-off → rhythm off → TL=0x0F → rhythm silence
 - 示波器波形显示、寄存器表格、GD3 标签

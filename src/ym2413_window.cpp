@@ -202,6 +202,10 @@ static std::vector<UINT8> InflateGzip(const UINT8* data, size_t size) {
 static int s_vgmLoopCount = 0;
 static int s_vgmMaxLoops = 2;
 
+// Flush Mode & Timer Mode
+static int s_flushMode = 2;   // 1=Register-Level, 2=Command-Level (default)
+static int s_timerMode = 0;   // 0=H-Prec, 1=Hybrid, 2=MM-Timer, 3=VGMPlay, 7=OptVGMPlay
+
 // Seek & Fadeout
 static int s_seekMode = 0;
 static float s_fadeoutDuration = 3.0f;
@@ -393,11 +397,123 @@ static FILE* ym_fopen(const char* path, const char* mode) {
 
 static void ym2413_write_reg(uint8_t reg, uint8_t data) {
     ::spfm_write_reg(0, 0, reg, data);
-    ::spfm_hw_wait(1);
+    if (s_flushMode == 1) {
+        ::spfm_hw_wait(1);
+    }
 }
 
 static void safe_flush(void) {
     ::spfm_flush();
+}
+
+// Update YM2413 shadow state and UI state for a register write
+// Returns the (possibly modified) data byte after fadeout/mute interception
+static UINT8 UpdateYM2413State(UINT8 reg, UINT8 data) {
+    if (reg < 0x40) s_regShadow[reg] = data;
+
+    if (reg >= 0x10 && reg <= 0x18) {
+        s_freqLo[reg - 0x10] = data;
+    } else if (reg >= 0x20 && reg <= 0x28) {
+        int ch = reg - 0x20;
+        bool prevKon = (s_prevKeyOn[ch] != 0);
+        bool newKon  = (data >> 4) & 1;
+        if (newKon && !prevKon) {
+            s_chDecay[ch] = 1.0f;
+            s_chKeyOff[ch] = false;
+            s_chKeyOnEdge[ch] = true;
+        } else if (!newKon && prevKon) {
+            s_chKeyOff[ch] = true;
+        }
+        s_prevKeyOn[ch] = newKon ? 1 : 0;
+        s_blockFnHi[ch] = data;
+    } else if (reg >= 0x30 && reg <= 0x38) {
+        s_instVol[reg - 0x30] = data;
+    } else if (reg == 0x0E) {
+        s_rhythmMode = (data & 0x20) != 0;
+        s_rhythmOn[0] = s_rhythmMode && (data & 0x10);
+        s_rhythmOn[1] = s_rhythmMode && (data & 0x08);
+        s_rhythmOn[2] = s_rhythmMode && (data & 0x04);
+        s_rhythmOn[3] = s_rhythmMode && (data & 0x01);
+        s_rhythmOn[4] = s_rhythmMode && (data & 0x02);
+        static const int kRhBit[5] = {4, 3, 2, 0, 1};
+        for (int i = 0; i < 5; i++) {
+            bool prev = (s_rhyPrevKon >> kRhBit[i]) & 1;
+            bool cur  = (data >> kRhBit[i]) & 1;
+            if (cur && !prev) s_rhyDecay[i] = 1.0f;
+        }
+        s_rhyPrevKon = data & 0x1F;
+    }
+
+    // Fadeout: intercept 0x30-0x38 volume writes
+    if (reg >= 0x30 && reg <= 0x38 && s_fadeoutActive && s_fadeoutLevel < 1.0f) {
+        int ch = reg - 0x30;
+        uint8_t origVol = data & 0x0F;
+        uint8_t fadedVol = (uint8_t)(origVol + (15 - origVol) * (1.0f - s_fadeoutLevel));
+        data = (data & 0xF0) | (fadedVol & 0x0F);
+        s_regShadow[reg] = data;
+        s_instVol[ch] = data;
+    }
+
+    // Channel mute: intercept 0x30-0x38
+    if (reg >= 0x30 && reg <= 0x38) {
+        int ch = reg - 0x30;
+        if (s_chMuted[ch]) data = (data & 0xF0) | 0x0F;
+    }
+
+    return data;
+}
+
+// ============ Timer Mode Sleep Helpers ============
+
+static void sleep_precise_us(unsigned int usec) {
+    if (usec < 100) {
+        LARGE_INTEGER start, cur;
+        QueryPerformanceCounter(&start);
+        LONGLONG target = start.QuadPart + (s_perfFreq.QuadPart * usec) / 1000000;
+        do { QueryPerformanceCounter(&cur); } while (cur.QuadPart < target);
+    } else {
+        HANDLE h = CreateWaitableTimer(NULL, TRUE, NULL);
+        if (h) {
+            LARGE_INTEGER due;
+            due.QuadPart = -((LONGLONG)usec * 10);
+            SetWaitableTimer(h, &due, 0, NULL, NULL, 0);
+            WaitForSingleObject(h, INFINITE);
+            CloseHandle(h);
+        }
+    }
+}
+
+static void sleep_hybrid_us(unsigned int usec) {
+    LARGE_INTEGER start, cur;
+    QueryPerformanceCounter(&start);
+    LONGLONG target = start.QuadPart + (s_perfFreq.QuadPart * usec) / 1000000;
+    if (usec > 1000) Sleep((usec - 1000) / 1000);
+    do { QueryPerformanceCounter(&cur); } while (cur.QuadPart < target);
+}
+
+static void mm_timer_callback(UINT uTimerID, UINT uMsg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2) {
+    (void)uTimerID; (void)uMsg; (void)dwUser; (void)dw1; (void)dw2;
+}
+
+static void sleep_mm_timer_us(unsigned int usec) {
+    unsigned int ms = usec / 1000;
+    if (ms == 0) ms = 1;
+    MMRESULT id = timeSetEvent(ms, 1, (LPTIMECALLBACK)mm_timer_callback, 0,
+                               TIME_ONESHOT);
+    if (id) {
+        Sleep(ms + 5);
+        timeKillEvent(id);
+    } else {
+        sleep_hybrid_us(usec);
+    }
+}
+
+static void timer_sleep_1ms(void) {
+    switch (s_timerMode) {
+        case 1: sleep_hybrid_us(1000); break;
+        case 2: sleep_mm_timer_us(1000); break;
+        default: Sleep(1); break;
+    }
 }
 
 static void ym2413_mute_all(void) {
@@ -548,6 +664,11 @@ static void LoadConfig(void) {
     // Seek & fadeout
     s_seekMode = GetPrivateProfileIntA("Settings", "SeekMode", 0, s_configPath);
     if (s_seekMode < 0 || s_seekMode > 1) s_seekMode = 0;
+    s_flushMode = GetPrivateProfileIntA("Settings", "FlushMode", 2, s_configPath);
+    if (s_flushMode != 1 && s_flushMode != 2) s_flushMode = 2;
+    s_timerMode = GetPrivateProfileIntA("Settings", "TimerMode", 0, s_configPath);
+    if (s_timerMode != 0 && s_timerMode != 1 && s_timerMode != 2
+        && s_timerMode != 3 && s_timerMode != 7) s_timerMode = 0;
     {
         char val[32] = "";
         GetPrivateProfileStringA("Settings", "FadeoutDuration", "3.0", val, sizeof(val), s_configPath);
@@ -586,6 +707,8 @@ static void SaveConfig(void) {
 
     // Seek & fadeout
     WritePrivateProfileStringA("Settings", "SeekMode", std::to_string(s_seekMode).c_str(), s_configPath);
+    WritePrivateProfileStringA("Settings", "FlushMode", std::to_string(s_flushMode).c_str(), s_configPath);
+    WritePrivateProfileStringA("Settings", "TimerMode", std::to_string(s_timerMode).c_str(), s_configPath);
     {
         char val[32];
         snprintf(val, sizeof(val), "%.1f", s_fadeoutDuration);
@@ -1046,77 +1169,14 @@ static int VGMProcessCommand(void) {
             if (vgmfread(&data, 1, 1, s_vgmFile) != 1) return -1;
             s_vgmCmdCount++;
 
-            // Update shadow state
-            if (reg < 0x40) {
-                s_regShadow[reg] = data;
-            }
-
-            // Update individual channel state for UI
-            if (reg >= 0x10 && reg <= 0x18) {
-                s_freqLo[reg - 0x10] = data;
-            } else if (reg >= 0x20 && reg <= 0x28) {
-                int ch = reg - 0x20;
-                // Key-on edge detection (rising/falling edge on bit4)
-                bool prevKon = (s_prevKeyOn[ch] != 0);
-                bool newKon  = (data >> 4) & 1;
-                if (newKon && !prevKon) {
-                    // Rising edge: fresh keyon, reset decay
-                    s_chDecay[ch] = 1.0f;
-                    s_chKeyOff[ch] = false;
-                    s_chKeyOnEdge[ch] = true;
-                } else if (!newKon && prevKon) {
-                    // Falling edge: keyoff
-                    s_chKeyOff[ch] = true;
-                }
-                s_prevKeyOn[ch] = newKon ? 1 : 0;
-                s_blockFnHi[ch] = data;
-            } else if (reg >= 0x30 && reg <= 0x38) {
-                s_instVol[reg - 0x30] = data;
-            } else if (reg == 0x0E) {
-                s_rhythmMode = (data & 0x20) != 0;
-                // Rhythm on/off bits (register 0x0E)
-                // bit 4: BD, bit 3: SD, bit 2: TOM, bit 1: CYM, bit 0: HH
-                s_rhythmOn[0] = s_rhythmMode && (data & 0x10); // BD
-                s_rhythmOn[1] = s_rhythmMode && (data & 0x08); // SD
-                s_rhythmOn[2] = s_rhythmMode && (data & 0x04); // TOM
-                s_rhythmOn[3] = s_rhythmMode && (data & 0x01); // HH (bit 0)
-                s_rhythmOn[4] = s_rhythmMode && (data & 0x02); // CYM (bit 1)
-                // Rhythm key-on edge detection
-                // Display order: BD=0, SD=1, TOM=2, HH=3, CYM=4
-                // Register bits: BD=bit4, SD=bit3, TOM=bit2, HH=bit0, CYM=bit1
-                static const int kRhBit[5] = {4, 3, 2, 0, 1};
-                for (int i = 0; i < 5; i++) {
-                    bool prev = (s_rhyPrevKon >> kRhBit[i]) & 1;
-                    bool cur  = (data >> kRhBit[i]) & 1;
-                    if (cur && !prev) {
-                        s_rhyDecay[i] = 1.0f;
-                    }
-                }
-                s_rhyPrevKon = data & 0x1F;
-            }
-
-            // Fadeout: intercept 0x30-0x38 volume writes
-            if (reg >= 0x30 && reg <= 0x38 && s_fadeoutActive && s_fadeoutLevel < 1.0f) {
-                int ch = reg - 0x30;
-                uint8_t origVol = data & 0x0F;
-                uint8_t fadedVol = (uint8_t)(origVol + (15 - origVol) * (1.0f - s_fadeoutLevel));
-                data = (data & 0xF0) | (fadedVol & 0x0F);
-                s_regShadow[reg] = data;
-                s_instVol[ch] = data;
-            }
-
-            // Channel mute: intercept 0x30-0x38, replace volume bits with 0xF if muted
-            if (reg >= 0x30 && reg <= 0x38) {
-                int ch = reg - 0x30;
-                if (s_chMuted[ch]) {
-                    data = (data & 0xF0) | 0x0F;
-                }
-            }
+            data = UpdateYM2413State(reg, data);
 
             // Hardware write
             if (s_connected) {
                 ym2413_write_reg(reg, data);
-                safe_flush();
+                if (s_flushMode == 2) {
+                    safe_flush();
+                }
             }
             return 0;
         }
@@ -1168,70 +1228,213 @@ static int VGMProcessCommand(void) {
     return 0;
 }
 
-static DWORD WINAPI VGMPlaybackThread(LPVOID) {
-    LARGE_INTEGER freq, last;
-    QueryPerformanceFrequency(&freq);
-    QueryPerformanceCounter(&last);
-    double samplesPerTick = 44100.0 / freq.QuadPart;
-    double samplesToProcess = 0.0;
+// Optimized VGMPlay: lookahead batch — reads consecutive 0x51 writes,
+// updates shadow/UI state, sends in one batch via spfm_write_regs.
+// Returns number of register writes processed.
+// *outWait: wait samples (>0), -1 = EOF, -2 = need fallback to VGMProcessCommand.
+static int VGMProcessBatch(int* outWait) {
+    *outWait = 0;
+    const int MAX_BATCH = 64;
+    spfm_reg_t batch[MAX_BATCH];
+    int count = 0;
 
-    while (s_vgmThreadRunning && s_vgmPlaying) {
-        if (s_vgmPaused) { Sleep(10); QueryPerformanceCounter(&last); continue; }
+    while (count < MAX_BATCH && s_vgmThreadRunning && s_vgmPlaying && !s_vgmPaused) {
+        UINT8 cmd;
+        if (vgmfread(&cmd, 1, 1, s_vgmFile) != 1) { *outWait = -1; break; }
 
-        LARGE_INTEGER now; QueryPerformanceCounter(&now);
-        samplesToProcess += (now.QuadPart - last.QuadPart) * samplesPerTick;
-        last = now;
-
-        int run = (int)samplesToProcess;
-        if (run > 0) {
-            int processed = 0;
-            while (processed < run && s_vgmThreadRunning && s_vgmPlaying && !s_vgmPaused) {
-                int s = VGMProcessCommand();
-                if (s < 0) {
-                    s_vgmTrackEnded = true;
-                    s_vgmPlaying = false;
-                    break;
+        if (cmd == 0x51) {
+            UINT8 reg, data;
+            if (vgmfread(&reg, 1, 1, s_vgmFile) != 1) { *outWait = -1; break; }
+            if (vgmfread(&data, 1, 1, s_vgmFile) != 1) { *outWait = -1; break; }
+            s_vgmCmdCount++;
+            data = UpdateYM2413State(reg, data);
+            batch[count].port = 0;
+            batch[count].addr = reg;
+            batch[count].data = data;
+            count++;
+        } else if (cmd == 0x62) {
+            *outWait = 735; break;
+        } else if (cmd == 0x63) {
+            *outWait = 882; break;
+        } else if (cmd >= 0x70 && cmd <= 0x7F) {
+            *outWait = (cmd & 0x0F) + 1; break;
+        } else if (cmd == 0x61) {
+            UINT16 wait;
+            if (vgmfread(&wait, 1, 2, s_vgmFile) != 2) { *outWait = -1; break; }
+            *outWait = wait; break;
+        } else if (cmd == 0x66) {
+            if (s_vgmLoopOffset > 0 && (s_vgmMaxLoops == 0 || s_vgmLoopCount < s_vgmMaxLoops)) {
+                if (s_vgmMaxLoops > 0 && s_vgmLoopCount >= s_vgmMaxLoops - 1
+                    && s_fadeoutDuration > 0 && !s_fadeoutActive) {
+                    s_fadeoutActive = true;
+                    s_fadeoutLevel = 1.0f;
+                    s_fadeoutStartSample = s_vgmCurrentSamples;
+                    UINT32 fadeoutSamples = (UINT32)(s_fadeoutDuration * 44100.0);
+                    if (s_vgmLoopSamples > 0 && fadeoutSamples > s_vgmLoopSamples)
+                        fadeoutSamples = s_vgmLoopSamples;
+                    s_fadeoutEndSample = s_vgmCurrentSamples + fadeoutSamples;
                 }
-                if (s > 0) processed += s;
+                vgmfseek(s_vgmFile, s_vgmLoopOffset, SEEK_SET);
+                s_vgmLoopCount++;
+                // Loop jump produces no wait, continue reading
+                continue;
+            } else {
+                *outWait = -1;
             }
-            samplesToProcess -= processed;
-            s_vgmCurrentSamples += processed;
+            break;
+        } else if (cmd == 0x67) {
+            UINT8 compat; if (vgmfread(&compat, 1, 1, s_vgmFile) != 1) { *outWait = -1; break; }
+            if (compat != 0x66) { *outWait = -1; break; }
+            UINT8 type; if (vgmfread(&type, 1, 1, s_vgmFile) != 1) { *outWait = -1; break; }
+            UINT32 size; if (vgmfread(&size, 4, 1, s_vgmFile) != 1) { *outWait = -1; break; }
+            vgmfseek(s_vgmFile, size, SEEK_CUR);
+            // Data block produces no wait, continue reading
+            continue;
+        } else {
+            // Unknown or non-batchable command: put back, signal fallback
+            vgmfseek(s_vgmFile, -1, SEEK_CUR);
+            *outWait = -2;
+            break;
+        }
+    }
 
-            // Fadeout volume override
-            if (s_fadeoutActive && s_fadeoutDuration > 0) {
-                UINT32 fadeRange = s_fadeoutEndSample - s_fadeoutStartSample;
-                if (fadeRange == 0) fadeRange = 1;
-                float progress = (float)(s_vgmCurrentSamples - s_fadeoutStartSample) / (float)fadeRange;
-                if (s_vgmCurrentSamples >= s_fadeoutEndSample) {
-                    s_fadeoutLevel = 0.0f;
-                    s_fadeoutActive = false;
-                } else {
-                    s_fadeoutLevel = 1.0f - progress;
-                }
-                // Send fadeout volume every ~10ms
-                static UINT32 lastFadeSample = 0;
-                if (s_vgmCurrentSamples - lastFadeSample >= 441 || s_fadeoutLevel <= 0.0f) {
-                    lastFadeSample = s_vgmCurrentSamples;
-                    if (s_connected) {
-                        for (int ch = 0; ch < 9; ch++) {
-                            uint8_t origVol = s_instVol[ch] & 0x0F;
-                            uint8_t fadedVol = (uint8_t)(origVol + (15 - origVol) * (1.0f - s_fadeoutLevel));
-                            uint8_t regData = (s_instVol[ch] & 0xF0) | (fadedVol & 0x0F);
-                            ym2413_write_reg(0x30 + ch, regData);
-                        }
-                        safe_flush();
-                    }
-                }
-                // End playback when fadeout completes
-                if (s_fadeoutLevel <= 0.0f) {
-                    s_vgmTrackEnded = true;
-                    s_vgmPlaying = false;
-                }
+    // Batch write to hardware
+    if (count > 0 && s_connected) {
+        ::spfm_write_regs(0, batch, (uint32_t)count, 0);
+        safe_flush();
+    }
+    return count;
+}
+
+// Fadeout helper: shared logic for volume ramp
+static bool DoFadeoutUpdate(void) {
+    if (!s_fadeoutActive || s_fadeoutDuration <= 0) return false;
+    UINT32 fadeRange = s_fadeoutEndSample - s_fadeoutStartSample;
+    if (fadeRange == 0) fadeRange = 1;
+    float progress = (float)(s_vgmCurrentSamples - s_fadeoutStartSample) / (float)fadeRange;
+    if (s_vgmCurrentSamples >= s_fadeoutEndSample) {
+        s_fadeoutLevel = 0.0f;
+        s_fadeoutActive = false;
+    } else {
+        s_fadeoutLevel = 1.0f - progress;
+    }
+    static UINT32 lastFadeSample = 0;
+    if (s_vgmCurrentSamples - lastFadeSample >= 441 || s_fadeoutLevel <= 0.0f) {
+        lastFadeSample = s_vgmCurrentSamples;
+        if (s_connected) {
+            for (int ch = 0; ch < 9; ch++) {
+                uint8_t origVol = s_instVol[ch] & 0x0F;
+                uint8_t fadedVol = (uint8_t)(origVol + (15 - origVol) * (1.0f - s_fadeoutLevel));
+                uint8_t regData = (s_instVol[ch] & 0xF0) | (fadedVol & 0x0F);
+                ym2413_write_reg(0x30 + ch, regData);
             }
-
             safe_flush();
         }
-        Sleep(1);
+    }
+    if (s_fadeoutLevel <= 0.0f) {
+        s_vgmTrackEnded = true;
+        s_vgmPlaying = false;
+        return true;
+    }
+    return false;
+}
+
+static DWORD WINAPI VGMPlaybackThread(LPVOID) {
+    QueryPerformanceFrequency(&s_perfFreq);
+    double samplesPerTick = 44100.0 / s_perfFreq.QuadPart;
+
+    if (s_timerMode == 3 || s_timerMode == 7) {
+        // VGMPlay / OptVGMPlay: 1ms periodic multimedia timer + QPC
+        HANDLE mmEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+        MMRESULT timerId = timeSetEvent(1, 1, (LPTIMECALLBACK)mmEvent, 0,
+                                        TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+        if (!timerId) { CloseHandle(mmEvent); s_vgmThreadRunning = false; return 0; }
+
+        LARGE_INTEGER last;
+        QueryPerformanceCounter(&last);
+        double samplesToProcess = 0.0;
+
+        while (s_vgmThreadRunning && s_vgmPlaying) {
+            if (s_vgmPaused) { Sleep(10); QueryPerformanceCounter(&last); continue; }
+            WaitForSingleObject(mmEvent, INFINITE);
+
+            LARGE_INTEGER now;
+            QueryPerformanceCounter(&now);
+            samplesToProcess += (now.QuadPart - last.QuadPart) * samplesPerTick;
+            last = now;
+
+            int run = (int)samplesToProcess;
+            if (run > 0) {
+                int processed = 0;
+                while (processed < run && s_vgmThreadRunning && s_vgmPlaying && !s_vgmPaused) {
+                    int s;
+                    if (s_timerMode == 7) {
+                        // Optimized: lookahead batch
+                        int batchWait;
+                        VGMProcessBatch(&batchWait);
+                        if (batchWait == -2) {
+                            // Non-batchable command encountered, fallback
+                            s = VGMProcessCommand();
+                        } else if (batchWait < 0) {
+                            s_vgmTrackEnded = true;
+                            s_vgmPlaying = false;
+                            break;
+                        } else {
+                            s = batchWait;
+                        }
+                    } else {
+                        s = VGMProcessCommand();
+                        if (s < 0) {
+                            s_vgmTrackEnded = true;
+                            s_vgmPlaying = false;
+                            break;
+                        }
+                    }
+                    if (s > 0) processed += s;
+                }
+                samplesToProcess -= processed;
+                s_vgmCurrentSamples += processed;
+
+                if (DoFadeoutUpdate()) break;
+                safe_flush();
+            }
+        }
+        timeKillEvent(timerId);
+        CloseHandle(mmEvent);
+    } else {
+        // Modes 0/1/2: QPC + periodic sleep
+        LARGE_INTEGER last;
+        QueryPerformanceCounter(&last);
+        double samplesToProcess = 0.0;
+
+        while (s_vgmThreadRunning && s_vgmPlaying) {
+            if (s_vgmPaused) { Sleep(10); QueryPerformanceCounter(&last); continue; }
+
+            LARGE_INTEGER now;
+            QueryPerformanceCounter(&now);
+            samplesToProcess += (now.QuadPart - last.QuadPart) * samplesPerTick;
+            last = now;
+
+            int run = (int)samplesToProcess;
+            if (run > 0) {
+                int processed = 0;
+                while (processed < run && s_vgmThreadRunning && s_vgmPlaying && !s_vgmPaused) {
+                    int s = VGMProcessCommand();
+                    if (s < 0) {
+                        s_vgmTrackEnded = true;
+                        s_vgmPlaying = false;
+                        break;
+                    }
+                    if (s > 0) processed += s;
+                }
+                samplesToProcess -= processed;
+                s_vgmCurrentSamples += processed;
+
+                if (DoFadeoutUpdate()) break;
+                safe_flush();
+            }
+            timer_sleep_1ms();
+        }
     }
     safe_flush();
     s_vgmThreadRunning = false;
@@ -2060,6 +2263,27 @@ static void RenderSidebar(void) {
     if (ImGui::DragFloat("##ymfadeout", &s_fadeoutDuration, 0.1f, 0.0f, 30.0f, "%.1f sec")) {
         if (s_fadeoutDuration < 0.0f) s_fadeoutDuration = 0.0f;
     }
+
+    ImGui::Spacing(); ImGui::Separator();
+
+    // Flush Mode
+    ImGui::TextDisabled("Flush Mode");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Register: flush after each reg write\nCommand: flush after each VGM command");
+    if (ImGui::RadioButton("Register##ymflush", &s_flushMode, 1)) SaveConfig();
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Command##ymflush", &s_flushMode, 2)) SaveConfig();
+
+    // Timer Mode
+    ImGui::TextDisabled("Timer Mode");
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("H-Prec: waitable timer+spin\nHybrid: Sleep+spin\nMM-Timer: timeSetEvent\nVGMPlay: 1ms periodic timer\nOptVGMPlay: periodic+batch lookahead");
+    if (ImGui::RadioButton("H-Prec##ymtimer", &s_timerMode, 0)) SaveConfig();
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Hybrid##ymtimer", &s_timerMode, 1)) SaveConfig();
+    ImGui::SameLine();
+    if (ImGui::RadioButton("MM-Timer##ymtimer", &s_timerMode, 2)) SaveConfig();
+    if (ImGui::RadioButton("VGMPlay##ymtimer", &s_timerMode, 3)) SaveConfig();
+    ImGui::SameLine();
+    if (ImGui::RadioButton("OptVGMPlay##ymtimer", &s_timerMode, 7)) SaveConfig();
 
     ImGui::Spacing(); ImGui::Separator();
 
