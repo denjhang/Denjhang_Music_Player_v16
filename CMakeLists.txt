@@ -75,6 +75,7 @@ set(APP_SOURCES
     src/main.cpp
     src/app_icon.rc
     # core
+    src/core/vgm_sync.cpp
     src/core/config_manager.cpp
     src/core/gui_renderer.cpp
     src/core/modizer_viz.cpp

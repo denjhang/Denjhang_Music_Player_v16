@@ -35,7 +35,7 @@ bool spfm_flush(void) {
 void spfm_write_reg(uint8_t slot, uint8_t port, uint8_t addr, uint8_t data) {
     if (!s_handle) return;
     uint8_t cmd[4];
-    cmd[0] = slot & 1;
+    cmd[0] = slot;
     cmd[1] = (port & 7) << 1;
     cmd[2] = addr;
     cmd[3] = data;
@@ -87,7 +87,7 @@ void spfm_write_regs(uint8_t slot, const spfm_reg_t* regs, uint32_t count, uint3
 void spfm_write_data(uint8_t slot, uint8_t data) {
     if (!s_handle) return;
     if (s_buf_ptr + 3 > SPFM_LITE_BUF_SIZE) spfm_flush();
-    s_buf[s_buf_ptr++] = slot & 1;
+    s_buf[s_buf_ptr++] = slot;
     s_buf[s_buf_ptr++] = 0x20;
     s_buf[s_buf_ptr++] = data;
 }

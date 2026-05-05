@@ -9,6 +9,7 @@
 #include "windows/ym2163/chip_window_ym2163.h"
 #include "windows/spfm/spfm_manager.h"
 #include "midi/midi_player.h"
+#include "core/vgm_sync.h"
 #include "core/modizer_viz.h"
 #include "libvgm-modizer/emu/cores/ModizerVoicesData.h"
 #include "imgui/imgui.h"
@@ -319,7 +320,9 @@ static FILE* sn_fopen(const char* path, const char* mode) {
 }
 
 static void sn76489_write(uint8_t data) {
-    ::spfm_write_data(0, data);
+    int slot = VGMSync::FindChipSlot(VGMSync::CHIP_SN76489);
+    if (slot < 0) return;
+    ::spfm_write_data(slot, data);
     ::spfm_hw_wait(3);
 }
 
@@ -638,6 +641,11 @@ static void RefreshFileList(void) {
     std::sort(files.begin(), files.end(), [](const MidiPlayer::FileEntry& a, const MidiPlayer::FileEntry& b) { return a.name < b.name; });
     for (auto& d : dirs) s_fileList.push_back(d);
     for (auto& f : files) s_fileList.push_back(f);
+
+    // Preview: auto-assign slots from first VGM in folder
+    if (!s_playlist.empty()) {
+        VGMSync::PreviewAssignSlots(s_playlist[0].c_str());
+    }
 }
 
 static void NavigateTo(const char* rawPath) {
@@ -1346,6 +1354,7 @@ static void StartVGMPlayback(void) {
     s_vgmThreadRunning = true;
     s_vgmThread = CreateThread(NULL, 0, VGMPlaybackThread, NULL, 0, NULL);
     DcLog("[VGM] Playing\n");
+    VGMSync::NotifyPlay();
 }
 
 static void StopVGMPlayback(void) {
@@ -1359,11 +1368,13 @@ static void StopVGMPlayback(void) {
     }
     if (s_connected) InitHardware();
     DcLog("[VGM] Stopped at %.1fs\n", (double)s_vgmCurrentSamples / 44100.0);
+    VGMSync::NotifyStop();
 }
 
 static void PauseVGMPlayback(void) {
     if (!s_vgmPlaying) return;
     s_vgmPaused = !s_vgmPaused;
+    VGMSync::NotifyPause();
 }
 
 static void OpenVGMFileDialog(void) {
@@ -1373,7 +1384,11 @@ static void OpenVGMFileDialog(void) {
     ofn.lpstrFilter = "VGM Files\0*.vgm;*.vgz\0All Files\0*.*\0";
     ofn.lpstrFile = path; ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-    if (GetOpenFileNameA(&ofn)) LoadVGMFile(path);
+    if (GetOpenFileNameA(&ofn)) {
+        LoadVGMFile(path);
+        VGMSync::AutoAssignSlots(path);
+        VGMSync::NotifyFileOpened(path);
+    }
 }
 
 static void SeekVGMToStart(void) {
@@ -1395,13 +1410,18 @@ static void SeekVGMToStart(void) {
 
 static void PlayPlaylistNext(void) {
     if (s_playlist.empty()) return;
+    const char* nextPath;
     if (s_isSequentialPlayback) {
         int next = s_playlistIndex + 1;
         if (next >= (int)s_playlist.size()) next = 0;
-        if (LoadVGMFile(s_playlist[next].c_str())) StartVGMPlayback();
+        nextPath = s_playlist[next].c_str();
     } else {
         int next = rand() % (int)s_playlist.size();
-        if (LoadVGMFile(s_playlist[next].c_str())) StartVGMPlayback();
+        nextPath = s_playlist[next].c_str();
+    }
+    if (LoadVGMFile(nextPath)) {
+        VGMSync::AutoAssignSlots(nextPath);
+        StartVGMPlayback();
     }
 }
 
@@ -1409,7 +1429,11 @@ static void PlayPlaylistPrev(void) {
     if (s_playlist.empty()) return;
     int prev = s_playlistIndex - 1;
     if (prev < 0) prev = (int)s_playlist.size() - 1;
-    if (LoadVGMFile(s_playlist[prev].c_str())) StartVGMPlayback();
+    const char* prevPath = s_playlist[prev].c_str();
+    if (LoadVGMFile(prevPath)) {
+        VGMSync::AutoAssignSlots(prevPath);
+        StartVGMPlayback();
+    }
 }
 
 // ============ Test Functions ============
@@ -1498,6 +1522,7 @@ static void StartTest(int type) {
 
 // ============ Public API ============
 void Init() {
+    VGMSync::Init();
     QueryPerformanceFrequency(&s_perfFreq);
     s_scope.Init();
     LoadConfig();
@@ -1527,6 +1552,22 @@ void Update() {
     if (!s_connected) {
         s_vgmPlaying = false; s_vgmPaused = false;
     }
+
+    // Check for shared VGM file path changes from other windows
+    {
+        const char* shared = VGMSync::GetSharedFilePath();
+        if (shared[0] && strcmp(shared, s_vgmPath) != 0) {
+            LoadVGMFile(shared);
+        }
+    }
+    // Sync playback state from other windows
+    if (VGMSync::IsPlaying() && s_vgmLoaded && !s_vgmPlaying) {
+        StartVGMPlayback();
+    }
+    if (!VGMSync::IsPlaying() && !VGMSync::IsPaused() && s_vgmPlaying) {
+        StopVGMPlayback();
+    }
+
     UpdateChannelLevels();
     if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
         s_vgmTrackEnded = false;
@@ -2018,6 +2059,18 @@ static void RenderSidebar(void) {
                 SPFMManager::SwitchToChipType(SPFMManager::CHIP_SN76489);
             }
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("Switch all slots to SN76489 mode");
+        }
+    }
+
+    // Slot assignment UI
+    {
+        static const char* chipLabels[] = {"(none)","YM2413","AY8910","SN76489"};
+        for (int s = 0; s < 4; s++) {
+            int cur = VGMSync::GetSlotChip(s);
+            ImGui::Text("Slot %d:", s); ImGui::SameLine();
+            if (ImGui::Combo(("##slot_sn_"+std::to_string(s)).c_str(), &cur, chipLabels, 4)) {
+                VGMSync::SetSlotChip(s, cur);
+            }
         }
     }
 
@@ -2763,7 +2816,10 @@ static void RenderFileBrowser(void) {
                 for (int pi = 0; pi < (int)s_playlist.size(); pi++) {
                     if (s_playlist[pi] == entry.fullPath) { s_playlistIndex = pi; break; }
                 }
-                if (LoadVGMFile(entry.fullPath.c_str())) StartVGMPlayback();
+                if (LoadVGMFile(entry.fullPath.c_str())) {
+                    VGMSync::AutoAssignSlots(entry.fullPath.c_str());
+                    StartVGMPlayback();
+                }
             }
         }
 
