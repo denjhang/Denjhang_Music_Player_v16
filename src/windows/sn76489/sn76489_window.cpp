@@ -458,8 +458,7 @@ static void ResetState(void) {
 // ============ Connection (managed by SPFMManager) ============
 static void SyncConnectionState(void) {
     bool wasConnected = s_connected;
-    s_connected = SPFMManager::IsConnected() &&
-                  SPFMManager::GetActiveChipType() == SPFMManager::CHIP_SN76489;
+    s_connected = SPFMManager::IsConnected();
     if (s_connected && !wasConnected) {
         ResetState();
         InitHardware();
@@ -1421,6 +1420,7 @@ static void PlayPlaylistNext(void) {
     }
     if (LoadVGMFile(nextPath)) {
         VGMSync::AutoAssignSlots(nextPath);
+        VGMSync::NotifyFileOpened(nextPath);
         StartVGMPlayback();
     }
 }
@@ -1432,6 +1432,7 @@ static void PlayPlaylistPrev(void) {
     const char* prevPath = s_playlist[prev].c_str();
     if (LoadVGMFile(prevPath)) {
         VGMSync::AutoAssignSlots(prevPath);
+        VGMSync::NotifyFileOpened(prevPath);
         StartVGMPlayback();
     }
 }
@@ -1549,9 +1550,6 @@ void Shutdown() {
 void Update() {
     // Sync connection state from SPFMManager
     SyncConnectionState();
-    if (!s_connected) {
-        s_vgmPlaying = false; s_vgmPaused = false;
-    }
 
     // Check for shared VGM file path changes from other windows
     {
@@ -2818,6 +2816,7 @@ static void RenderFileBrowser(void) {
                 }
                 if (LoadVGMFile(entry.fullPath.c_str())) {
                     VGMSync::AutoAssignSlots(entry.fullPath.c_str());
+                    VGMSync::NotifyFileOpened(entry.fullPath.c_str());
                     StartVGMPlayback();
                 }
             }

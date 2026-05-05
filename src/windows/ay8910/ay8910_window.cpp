@@ -531,8 +531,7 @@ static int period_to_midi_note(int ch) {
 // ============ Connection (managed by SPFMManager) ============
 static void SyncConnectionState(void) {
     bool wasConnected = s_connected;
-    s_connected = SPFMManager::IsConnected() &&
-                  SPFMManager::GetActiveChipType() == SPFMManager::CHIP_AY8910;
+    s_connected = SPFMManager::IsConnected();
     if (s_connected && !wasConnected) {
         ResetState();
         InitHardware();
@@ -1386,6 +1385,7 @@ static void PlayPlaylistNext(void) {
     }
     if (LoadVGMFile(nextPath)) {
         VGMSync::AutoAssignSlots(nextPath);
+        VGMSync::NotifyFileOpened(nextPath);
         StartVGMPlayback();
     }
 }
@@ -1397,6 +1397,7 @@ static void PlayPlaylistPrev(void) {
     const char* prevPath = s_playlist[prev].c_str();
     if (LoadVGMFile(prevPath)) {
         VGMSync::AutoAssignSlots(prevPath);
+        VGMSync::NotifyFileOpened(prevPath);
         StartVGMPlayback();
     }
 }
@@ -1530,22 +1531,26 @@ void Shutdown() {
 
 void Update() {
     SyncConnectionState();
-    if (!s_connected) {
-        s_vgmPlaying = false; s_vgmPaused = false;
-    }
     // Check shared VGM file from other windows
     {
         const char* shared = VGMSync::GetSharedFilePath();
         if (shared[0] && strcmp(shared, s_vgmPath) != 0) {
-            LoadVGMFile(shared);
+            DcLog("[AY] SyncLoad: %s (loaded=%d)\n", shared, s_vgmLoaded);
+            bool ok = LoadVGMFile(shared);
+            DcLog("[AY] SyncLoad result: ok=%d loaded=%d\n", ok, s_vgmLoaded);
         }
     }
     // Sync playback state from other windows
-    if (VGMSync::IsPlaying() && s_vgmLoaded && !s_vgmPlaying) {
-        StartVGMPlayback();
-    }
-    if (!VGMSync::IsPlaying() && !VGMSync::IsPaused() && s_vgmPlaying) {
-        StopVGMPlayback();
+    {
+        bool isPlaying = VGMSync::IsPlaying();
+        bool isPaused = VGMSync::IsPaused();
+        if (isPlaying && s_vgmLoaded && !s_vgmPlaying) {
+            DcLog("[AY] SyncPlay: playing=%d loaded=%d vgmPlaying=%d\n", isPlaying, s_vgmLoaded, s_vgmPlaying);
+            StartVGMPlayback();
+        }
+        if (!isPlaying && !isPaused && s_vgmPlaying) {
+            StopVGMPlayback();
+        }
     }
     UpdateChannelLevels();
     if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
@@ -2674,6 +2679,7 @@ static void RenderFileBrowser(void) {
                 }
                 if (LoadVGMFile(entry.fullPath.c_str())) {
                     VGMSync::AutoAssignSlots(entry.fullPath.c_str());
+                    VGMSync::NotifyFileOpened(entry.fullPath.c_str());
                     StartVGMPlayback();
                 }
             }
