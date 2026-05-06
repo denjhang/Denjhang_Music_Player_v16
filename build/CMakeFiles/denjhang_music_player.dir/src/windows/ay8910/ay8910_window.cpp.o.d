@@ -1,7 +1,7 @@
-CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.cpp \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.h \
+CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o: \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ay8910/ay8910_window.cpp \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ay8910/ay8910_window.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/spfm.h \
  D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
  D:/msys64/mingw64/include/stdint.h D:/msys64/mingw64/include/crtdefs.h \
  D:/msys64/mingw64/include/corecrt.h D:/msys64/mingw64/include/_mingw.h \
@@ -12,16 +12,26 @@ CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: \
  D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stddef.h \
  D:/msys64/mingw64/include/stddef.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/stdbool.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/winmm.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/audio_output.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/audio_output.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/fnum_table.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi_player.h \
- D:/msys64/mingw64/include/c++/15.2.0/string \
- D:/msys64/mingw64/include/c++/15.2.0/bits/requires_hosted.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_control.h \
+ D:/msys64/mingw64/include/c++/15.2.0/chrono \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/chrono.h \
+ D:/msys64/mingw64/include/c++/15.2.0/ratio \
+ D:/msys64/mingw64/include/c++/15.2.0/type_traits \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++config.h \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/os_defines.h \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/cpu_defines.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/version.h \
+ D:/msys64/mingw64/include/c++/15.2.0/cstdint \
+ D:/msys64/mingw64/include/c++/15.2.0/limits \
+ D:/msys64/mingw64/include/c++/15.2.0/ctime \
+ D:/msys64/mingw64/include/time.h D:/msys64/mingw64/include/sys/timeb.h \
+ D:/msys64/mingw64/include/sec_api/sys/timeb_s.h \
+ D:/msys64/mingw64/include/_timeval.h \
+ D:/msys64/mingw64/include/pthread_time.h \
+ D:/msys64/mingw64/include/pthread_compat.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/parse_numbers.h \
+ D:/msys64/mingw64/include/c++/15.2.0/string \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/requires_hosted.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stringfwd.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/memoryfwd.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/char_traits.h \
@@ -35,8 +45,6 @@ CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: \
  D:/msys64/mingw64/include/_mingw_stat64.h \
  D:/msys64/mingw64/include/swprintf.inl \
  D:/msys64/mingw64/include/sec_api/wchar_s.h \
- D:/msys64/mingw64/include/c++/15.2.0/type_traits \
- D:/msys64/mingw64/include/c++/15.2.0/bits/version.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/allocator.h \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++allocator.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/new_allocator.h \
@@ -97,31 +105,7 @@ CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: \
  D:/msys64/mingw64/include/c++/15.2.0/bits/functional_hash.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/hash_bytes.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/basic_string.tcc \
- D:/msys64/mingw64/include/c++/15.2.0/vector \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_uninitialized.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_vector.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/vector.tcc \
- D:/msys64/mingw64/include/c++/15.2.0/map \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_tree.h \
- D:/msys64/mingw64/include/c++/15.2.0/ext/aligned_buffer.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_map.h \
- D:/msys64/mingw64/include/c++/15.2.0/tuple \
- D:/msys64/mingw64/include/c++/15.2.0/bits/uses_allocator.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_multimap.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/erase_if.h \
- D:/msys64/mingw64/include/c++/15.2.0/chrono \
- D:/msys64/mingw64/include/c++/15.2.0/bits/chrono.h \
- D:/msys64/mingw64/include/c++/15.2.0/ratio \
- D:/msys64/mingw64/include/c++/15.2.0/cstdint \
- D:/msys64/mingw64/include/c++/15.2.0/limits \
- D:/msys64/mingw64/include/c++/15.2.0/ctime \
- D:/msys64/mingw64/include/time.h D:/msys64/mingw64/include/sys/timeb.h \
- D:/msys64/mingw64/include/sec_api/sys/timeb_s.h \
- D:/msys64/mingw64/include/_timeval.h \
- D:/msys64/mingw64/include/pthread_time.h \
- D:/msys64/mingw64/include/pthread_compat.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/parse_numbers.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/ftdi_driver/ftd2xx.h \
  D:/msys64/mingw64/include/windows.h \
  D:/msys64/mingw64/include/sdkddkver.h D:/msys64/mingw64/include/excpt.h \
  D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdarg.h \
@@ -355,6 +339,22 @@ CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: \
  D:/msys64/mingw64/include/sec_api/stralign_s.h \
  D:/msys64/mingw64/include/winsvc.h D:/msys64/mingw64/include/mcx.h \
  D:/msys64/mingw64/include/imm.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_window_ym2163.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_manager.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi/midi_player.h \
+ D:/msys64/mingw64/include/c++/15.2.0/vector \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_uninitialized.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_vector.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/vector.tcc \
+ D:/msys64/mingw64/include/c++/15.2.0/map \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_tree.h \
+ D:/msys64/mingw64/include/c++/15.2.0/ext/aligned_buffer.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_map.h \
+ D:/msys64/mingw64/include/c++/15.2.0/tuple \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/uses_allocator.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_multimap.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/erase_if.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/include/MidiFile.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/include/MidiEventList.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/include/MidiEvent.h \
@@ -407,16 +407,27 @@ CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/basic_file.h \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++io.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/fstream.tcc \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/vgm_sync.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ModizerConstants.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ModizerVoicesData.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ModizerConstants.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imconfig.h \
  D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/float.h \
  D:/msys64/mingw64/include/float.h D:/msys64/mingw64/include/assert.h \
- D:/msys64/mingw64/include/c++/15.2.0/cstdarg \
+ D:/msys64/mingw64/include/c++/15.2.0/math.h \
+ D:/msys64/mingw64/include/c++/15.2.0/cmath \
+ D:/msys64/mingw64/include/math.h \
+ D:/msys64/mingw64/include/c++/15.2.0/set \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_set.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_multiset.h \
  D:/msys64/mingw64/include/c++/15.2.0/algorithm \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_algo.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_heap.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_tempbuf.h \
- D:/msys64/mingw64/include/c++/15.2.0/cmath \
- D:/msys64/mingw64/include/math.h
+ D:/msys64/mingw64/include/zlib.h D:/msys64/mingw64/include/zconf.h \
+ D:/msys64/mingw64/include/unistd.h D:/msys64/mingw64/include/io.h \
+ D:/msys64/mingw64/include/getopt.h

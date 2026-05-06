@@ -1,6 +1,6 @@
-CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o: \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.c \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.h \
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o: \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_emu.c \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_emu.h \
  D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
  D:/msys64/mingw64/include/stdint.h D:/msys64/mingw64/include/crtdefs.h \
  D:/msys64/mingw64/include/corecrt.h D:/msys64/mingw64/include/_mingw.h \

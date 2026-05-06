@@ -72,164 +72,10 @@ include CMakeFiles/denjhang_music_player.dir/flags.make
 CMakeFiles/denjhang_music_player.dir/codegen:
 .PHONY : CMakeFiles/denjhang_music_player.dir/codegen
 
-CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_control.cpp
-CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_control.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_control.cpp > CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_control.cpp -o CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/config_manager.cpp
-CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/config_manager.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/config_manager.cpp > CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/config_manager.cpp -o CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi_player.cpp
-CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi_player.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi_player.cpp > CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi_player.cpp -o CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gui_renderer.cpp
-CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gui_renderer.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gui_renderer.cpp > CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gui_renderer.cpp -o CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.cpp
-CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.cpp > CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.cpp -o CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.cpp
-CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.cpp > CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.cpp -o CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_window.cpp
-CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_window.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_window.cpp > CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.cpp
-CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.cpp > CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.cpp -o CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.cpp
-CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.cpp > CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/chip_window_ym2163.cpp -o CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_window.cpp
-CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_window.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_window.cpp > CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.s
-
-CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.cpp
-CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.cpp
-
-CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.cpp > CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.i
-
-CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.s
-
 CMakeFiles/denjhang_music_player.dir/src/main.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
 CMakeFiles/denjhang_music_player.dir/src/main.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/main.cpp
 CMakeFiles/denjhang_music_player.dir/src/main.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/main.cpp.o"
 	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/main.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/main.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/main.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/main.cpp
 
 CMakeFiles/denjhang_music_player.dir/src/main.cpp.i: cmake_force
@@ -242,105 +88,339 @@ CMakeFiles/denjhang_music_player.dir/src/main.cpp.s: cmake_force
 
 CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj: CMakeFiles/denjhang_music_player.dir/flags.make
 CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/app_icon.rc
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building RC object CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building RC object CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj"
 	/mingw64/bin/windres.exe -O coff $(RC_DEFINES) $(RC_INCLUDES) $(RC_FLAGS) /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/app_icon.rc CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj
 
-CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.c
-CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o -MF CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o.d -o CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.c
+CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/vgm_sync.cpp
+CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/vgm_sync.cpp
 
-CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.i"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.c > CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.i
+CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/vgm_sync.cpp > CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.i
 
-CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.s"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/gigatron_emu.c -o CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.s
+CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/vgm_sync.cpp -o CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.s
 
-CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/winmm.c
-CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building C object CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o -MF CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o.d -o CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/winmm.c
+CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/config_manager.cpp
+CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/config_manager.cpp
 
-CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.i"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/winmm.c > CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.i
+CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/config_manager.cpp > CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.i
 
-CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.s"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gigatron/winmm.c -o CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.s
+CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/config_manager.cpp -o CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.s
 
-CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.cpp
-CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer.cpp
+CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer.cpp
 
-CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.i"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.cpp > CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.i
+CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer.cpp > CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.i
 
-CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.s"
-	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.s
+CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer.cpp -o CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.s
 
-CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o: CMakeFiles/denjhang_music_player.dir/flags.make
-CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489/spfm_lite.c
-CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o -MF CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o.d -o CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489/spfm_lite.c
+CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.cpp
+CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.cpp
 
-CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.i"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489/spfm_lite.c > CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.i
+CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.cpp > CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.i
 
-CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.s"
-	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/sn76489/spfm_lite.c -o CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.s
+CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.cpp -o CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi/midi_player.cpp
+CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi/midi_player.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi/midi_player.cpp > CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi/midi_player.cpp -o CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_control.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_control.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_control.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_control.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_window_ym2163.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_window_ym2163.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_window_ym2163.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_window_ym2163.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_renderer.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_renderer.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_renderer.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_renderer.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/opl3/opl3_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_parser.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_parser.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_parser.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_parser.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_emu.c
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_emu.c
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.i"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_emu.c > CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.s"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_emu.c -o CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/winmm.c
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building C object CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/winmm.c
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.i"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/winmm.c > CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.s"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/winmm.c -o CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/gigatron/gigatron_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/spfm_lite.c
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/spfm_lite.c
+
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.i"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/spfm_lite.c > CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.s"
+	/mingw64/bin/gcc.exe $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/spfm_lite.c -o CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/sn76489_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/sn76489_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/sn76489_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/sn76489_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2413/ym2413_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2413/ym2413_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2413/ym2413_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2413/ym2413_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ay8910/ay8910_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ay8910/ay8910_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ay8910/ay8910_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ay8910/ay8910_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_manager.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_21) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_manager.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_manager.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_manager.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.s
+
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o: CMakeFiles/denjhang_music_player.dir/flags.make
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_window.cpp
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o: CMakeFiles/denjhang_music_player.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_22) "Building CXX object CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o -MF CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o.d -o CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o -c /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_window.cpp
+
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.i"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_window.cpp > CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.i
+
+CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.s"
+	/mingw64/bin/g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_window.cpp -o CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.s
 
 # Object files for target denjhang_music_player
 denjhang_music_player_OBJECTS = \
-"CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o" \
 "CMakeFiles/denjhang_music_player.dir/src/main.cpp.o" \
 "CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj" \
-"CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o" \
-"CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o" \
-"CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o" \
-"CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o"
+"CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o" \
+"CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o"
 
 # External object files for target denjhang_music_player
 denjhang_music_player_EXTERNAL_OBJECTS =
 
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/main.cpp.o
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o
-/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o
+/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/build.make
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: libimgui_lib.a
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: libmidifile_lib.a
@@ -351,7 +431,7 @@ denjhang_music_player_EXTERNAL_OBJECTS =
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/build/bin/libvgm-emu.a
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/build/bin/libvgm-utils.a
 /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe: CMakeFiles/denjhang_music_player.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking CXX executable /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_23) "Linking CXX executable /d/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/bin/denjhang_music_player.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/denjhang_music_player.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

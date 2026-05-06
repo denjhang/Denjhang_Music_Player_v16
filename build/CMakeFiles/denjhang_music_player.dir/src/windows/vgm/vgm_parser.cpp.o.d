@@ -1,6 +1,6 @@
-CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o: \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.cpp \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/vgm_parser.h \
+CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o: \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_parser.cpp \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/vgm/vgm_parser.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/stdtype.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/utils/DataLoader.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/stdtype.h \

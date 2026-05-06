@@ -1,6 +1,6 @@
-CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o: \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.cpp \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/modizer_viz.h \
+CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o: \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.cpp \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/modizer_viz.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/emu/cores/ModizerConstants.h \
  D:/msys64/mingw64/include/c++/15.2.0/cstdint \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++config.h \

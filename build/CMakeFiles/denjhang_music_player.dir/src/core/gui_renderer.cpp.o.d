@@ -1,7 +1,6 @@
-CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.cpp \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/opl3_renderer.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/gui_renderer.h \
+CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o: \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer.cpp \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer.h \
  D:/msys64/mingw64/include/windows.h D:/msys64/mingw64/include/_mingw.h \
  D:/msys64/mingw64/include/_mingw_mac.h \
  D:/msys64/mingw64/include/_mingw_secapi.h \
@@ -337,12 +336,23 @@ CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: \
  D:/msys64/mingw64/include/c++/15.2.0/bits/functional_hash.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/hash_bytes.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/basic_string.tcc \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi_player.h \
- D:/msys64/mingw64/include/c++/15.2.0/vector \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_uninitialized.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_vector.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/vector.tcc \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/ym2163/chip_control.h \
+ D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
+ D:/msys64/mingw64/include/stdint.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/libvgm-modizer/stdbool.h \
+ D:/msys64/mingw64/include/c++/15.2.0/chrono \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/chrono.h \
+ D:/msys64/mingw64/include/c++/15.2.0/ratio \
+ D:/msys64/mingw64/include/c++/15.2.0/cstdint \
+ D:/msys64/mingw64/include/c++/15.2.0/limits \
+ D:/msys64/mingw64/include/c++/15.2.0/ctime \
+ D:/msys64/mingw64/include/time.h D:/msys64/mingw64/include/sys/timeb.h \
+ D:/msys64/mingw64/include/sec_api/sys/timeb_s.h \
+ D:/msys64/mingw64/include/pthread_time.h \
+ D:/msys64/mingw64/include/pthread_compat.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/parse_numbers.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/ftdi_driver/ftd2xx.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/config_manager.h \
  D:/msys64/mingw64/include/c++/15.2.0/map \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_tree.h \
  D:/msys64/mingw64/include/c++/15.2.0/ext/aligned_buffer.h \
@@ -351,19 +361,12 @@ CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: \
  D:/msys64/mingw64/include/c++/15.2.0/bits/uses_allocator.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_multimap.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/erase_if.h \
- D:/msys64/mingw64/include/c++/15.2.0/chrono \
- D:/msys64/mingw64/include/c++/15.2.0/bits/chrono.h \
- D:/msys64/mingw64/include/c++/15.2.0/ratio \
- D:/msys64/mingw64/include/c++/15.2.0/cstdint \
- D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdint.h \
- D:/msys64/mingw64/include/stdint.h \
- D:/msys64/mingw64/include/c++/15.2.0/limits \
- D:/msys64/mingw64/include/c++/15.2.0/ctime \
- D:/msys64/mingw64/include/time.h D:/msys64/mingw64/include/sys/timeb.h \
- D:/msys64/mingw64/include/sec_api/sys/timeb_s.h \
- D:/msys64/mingw64/include/pthread_time.h \
- D:/msys64/mingw64/include/pthread_compat.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/parse_numbers.h \
+ D:/msys64/mingw64/include/c++/15.2.0/vector \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_uninitialized.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_vector.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_bvector.h \
+ D:/msys64/mingw64/include/c++/15.2.0/bits/vector.tcc \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/midi/midi_player.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/include/MidiFile.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/include/MidiEventList.h \
  D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/midifile/include/MidiEvent.h \
@@ -416,13 +419,21 @@ CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o: \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/basic_file.h \
  D:/msys64/mingw64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++io.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/fstream.tcc \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.h \
- D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imconfig.h \
- D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/float.h \
- D:/msys64/mingw64/include/float.h D:/msys64/mingw64/include/assert.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/sn76489/sn76489_window.h \
+ D:/msys64/mingw64/include/c++/15.2.0/math.h \
+ D:/msys64/mingw64/include/c++/15.2.0/cmath \
+ D:/msys64/mingw64/include/math.h \
  D:/msys64/mingw64/include/c++/15.2.0/algorithm \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_algo.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/algorithmfwd.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/stl_heap.h \
  D:/msys64/mingw64/include/c++/15.2.0/bits/uniform_int_dist.h \
- D:/msys64/mingw64/include/c++/15.2.0/bits/stl_tempbuf.h
+ D:/msys64/mingw64/include/c++/15.2.0/bits/stl_tempbuf.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imconfig.h \
+ D:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/float.h \
+ D:/msys64/mingw64/include/float.h D:/msys64/mingw64/include/assert.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_dx11.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/imgui/imgui_impl_win32.h \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/core/gui_renderer_impl.cpp \
+ D:/working/vscode-projects/YM2163-Midi/Denjhang_Music_Player_v16/src/windows/spfm/spfm_manager.h

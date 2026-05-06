@@ -1064,173 +1064,101 @@ src/app_icon.rc.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/app_icon.rc.obj
 .PHONY : src/app_icon.rc.obj
 
-src/chip_control.o: src/chip_control.cpp.o
-.PHONY : src/chip_control.o
+src/core/config_manager.o: src/core/config_manager.cpp.o
+.PHONY : src/core/config_manager.o
 
 # target to build an object file
-src/chip_control.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.o
-.PHONY : src/chip_control.cpp.o
+src/core/config_manager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.o
+.PHONY : src/core/config_manager.cpp.o
 
-src/chip_control.i: src/chip_control.cpp.i
-.PHONY : src/chip_control.i
+src/core/config_manager.i: src/core/config_manager.cpp.i
+.PHONY : src/core/config_manager.i
 
 # target to preprocess a source file
-src/chip_control.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.i
-.PHONY : src/chip_control.cpp.i
+src/core/config_manager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.i
+.PHONY : src/core/config_manager.cpp.i
 
-src/chip_control.s: src/chip_control.cpp.s
-.PHONY : src/chip_control.s
+src/core/config_manager.s: src/core/config_manager.cpp.s
+.PHONY : src/core/config_manager.s
 
 # target to generate assembly for a file
-src/chip_control.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/chip_control.cpp.s
-.PHONY : src/chip_control.cpp.s
+src/core/config_manager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/config_manager.cpp.s
+.PHONY : src/core/config_manager.cpp.s
 
-src/chip_window_ym2163.o: src/chip_window_ym2163.cpp.o
-.PHONY : src/chip_window_ym2163.o
+src/core/gui_renderer.o: src/core/gui_renderer.cpp.o
+.PHONY : src/core/gui_renderer.o
 
 # target to build an object file
-src/chip_window_ym2163.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.o
-.PHONY : src/chip_window_ym2163.cpp.o
+src/core/gui_renderer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.o
+.PHONY : src/core/gui_renderer.cpp.o
 
-src/chip_window_ym2163.i: src/chip_window_ym2163.cpp.i
-.PHONY : src/chip_window_ym2163.i
+src/core/gui_renderer.i: src/core/gui_renderer.cpp.i
+.PHONY : src/core/gui_renderer.i
 
 # target to preprocess a source file
-src/chip_window_ym2163.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.i
-.PHONY : src/chip_window_ym2163.cpp.i
+src/core/gui_renderer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.i
+.PHONY : src/core/gui_renderer.cpp.i
 
-src/chip_window_ym2163.s: src/chip_window_ym2163.cpp.s
-.PHONY : src/chip_window_ym2163.s
+src/core/gui_renderer.s: src/core/gui_renderer.cpp.s
+.PHONY : src/core/gui_renderer.s
 
 # target to generate assembly for a file
-src/chip_window_ym2163.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/chip_window_ym2163.cpp.s
-.PHONY : src/chip_window_ym2163.cpp.s
+src/core/gui_renderer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/gui_renderer.cpp.s
+.PHONY : src/core/gui_renderer.cpp.s
 
-src/config_manager.o: src/config_manager.cpp.o
-.PHONY : src/config_manager.o
+src/core/modizer_viz.o: src/core/modizer_viz.cpp.o
+.PHONY : src/core/modizer_viz.o
 
 # target to build an object file
-src/config_manager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.o
-.PHONY : src/config_manager.cpp.o
+src/core/modizer_viz.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.o
+.PHONY : src/core/modizer_viz.cpp.o
 
-src/config_manager.i: src/config_manager.cpp.i
-.PHONY : src/config_manager.i
+src/core/modizer_viz.i: src/core/modizer_viz.cpp.i
+.PHONY : src/core/modizer_viz.i
 
 # target to preprocess a source file
-src/config_manager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.i
-.PHONY : src/config_manager.cpp.i
+src/core/modizer_viz.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.i
+.PHONY : src/core/modizer_viz.cpp.i
 
-src/config_manager.s: src/config_manager.cpp.s
-.PHONY : src/config_manager.s
+src/core/modizer_viz.s: src/core/modizer_viz.cpp.s
+.PHONY : src/core/modizer_viz.s
 
 # target to generate assembly for a file
-src/config_manager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/config_manager.cpp.s
-.PHONY : src/config_manager.cpp.s
+src/core/modizer_viz.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/modizer_viz.cpp.s
+.PHONY : src/core/modizer_viz.cpp.s
 
-src/gigatron/gigatron_emu.o: src/gigatron/gigatron_emu.c.o
-.PHONY : src/gigatron/gigatron_emu.o
+src/core/vgm_sync.o: src/core/vgm_sync.cpp.o
+.PHONY : src/core/vgm_sync.o
 
 # target to build an object file
-src/gigatron/gigatron_emu.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.o
-.PHONY : src/gigatron/gigatron_emu.c.o
+src/core/vgm_sync.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.o
+.PHONY : src/core/vgm_sync.cpp.o
 
-src/gigatron/gigatron_emu.i: src/gigatron/gigatron_emu.c.i
-.PHONY : src/gigatron/gigatron_emu.i
-
-# target to preprocess a source file
-src/gigatron/gigatron_emu.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.i
-.PHONY : src/gigatron/gigatron_emu.c.i
-
-src/gigatron/gigatron_emu.s: src/gigatron/gigatron_emu.c.s
-.PHONY : src/gigatron/gigatron_emu.s
-
-# target to generate assembly for a file
-src/gigatron/gigatron_emu.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron/gigatron_emu.c.s
-.PHONY : src/gigatron/gigatron_emu.c.s
-
-src/gigatron/winmm.o: src/gigatron/winmm.c.o
-.PHONY : src/gigatron/winmm.o
-
-# target to build an object file
-src/gigatron/winmm.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.o
-.PHONY : src/gigatron/winmm.c.o
-
-src/gigatron/winmm.i: src/gigatron/winmm.c.i
-.PHONY : src/gigatron/winmm.i
+src/core/vgm_sync.i: src/core/vgm_sync.cpp.i
+.PHONY : src/core/vgm_sync.i
 
 # target to preprocess a source file
-src/gigatron/winmm.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.i
-.PHONY : src/gigatron/winmm.c.i
+src/core/vgm_sync.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.i
+.PHONY : src/core/vgm_sync.cpp.i
 
-src/gigatron/winmm.s: src/gigatron/winmm.c.s
-.PHONY : src/gigatron/winmm.s
-
-# target to generate assembly for a file
-src/gigatron/winmm.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron/winmm.c.s
-.PHONY : src/gigatron/winmm.c.s
-
-src/gigatron_window.o: src/gigatron_window.cpp.o
-.PHONY : src/gigatron_window.o
-
-# target to build an object file
-src/gigatron_window.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.o
-.PHONY : src/gigatron_window.cpp.o
-
-src/gigatron_window.i: src/gigatron_window.cpp.i
-.PHONY : src/gigatron_window.i
-
-# target to preprocess a source file
-src/gigatron_window.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.i
-.PHONY : src/gigatron_window.cpp.i
-
-src/gigatron_window.s: src/gigatron_window.cpp.s
-.PHONY : src/gigatron_window.s
+src/core/vgm_sync.s: src/core/vgm_sync.cpp.s
+.PHONY : src/core/vgm_sync.s
 
 # target to generate assembly for a file
-src/gigatron_window.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gigatron_window.cpp.s
-.PHONY : src/gigatron_window.cpp.s
-
-src/gui_renderer.o: src/gui_renderer.cpp.o
-.PHONY : src/gui_renderer.o
-
-# target to build an object file
-src/gui_renderer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.o
-.PHONY : src/gui_renderer.cpp.o
-
-src/gui_renderer.i: src/gui_renderer.cpp.i
-.PHONY : src/gui_renderer.i
-
-# target to preprocess a source file
-src/gui_renderer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.i
-.PHONY : src/gui_renderer.cpp.i
-
-src/gui_renderer.s: src/gui_renderer.cpp.s
-.PHONY : src/gui_renderer.s
-
-# target to generate assembly for a file
-src/gui_renderer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/gui_renderer.cpp.s
-.PHONY : src/gui_renderer.cpp.s
+src/core/vgm_sync.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/core/vgm_sync.cpp.s
+.PHONY : src/core/vgm_sync.cpp.s
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -1256,197 +1184,389 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
-src/midi_player.o: src/midi_player.cpp.o
-.PHONY : src/midi_player.o
+src/midi/midi_player.o: src/midi/midi_player.cpp.o
+.PHONY : src/midi/midi_player.o
 
 # target to build an object file
-src/midi_player.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.o
-.PHONY : src/midi_player.cpp.o
+src/midi/midi_player.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.o
+.PHONY : src/midi/midi_player.cpp.o
 
-src/midi_player.i: src/midi_player.cpp.i
-.PHONY : src/midi_player.i
+src/midi/midi_player.i: src/midi/midi_player.cpp.i
+.PHONY : src/midi/midi_player.i
 
 # target to preprocess a source file
-src/midi_player.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.i
-.PHONY : src/midi_player.cpp.i
+src/midi/midi_player.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.i
+.PHONY : src/midi/midi_player.cpp.i
 
-src/midi_player.s: src/midi_player.cpp.s
-.PHONY : src/midi_player.s
+src/midi/midi_player.s: src/midi/midi_player.cpp.s
+.PHONY : src/midi/midi_player.s
 
 # target to generate assembly for a file
-src/midi_player.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/midi_player.cpp.s
-.PHONY : src/midi_player.cpp.s
+src/midi/midi_player.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/midi/midi_player.cpp.s
+.PHONY : src/midi/midi_player.cpp.s
 
-src/modizer_viz.o: src/modizer_viz.cpp.o
-.PHONY : src/modizer_viz.o
+src/windows/ay8910/ay8910_window.o: src/windows/ay8910/ay8910_window.cpp.o
+.PHONY : src/windows/ay8910/ay8910_window.o
 
 # target to build an object file
-src/modizer_viz.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.o
-.PHONY : src/modizer_viz.cpp.o
+src/windows/ay8910/ay8910_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.o
+.PHONY : src/windows/ay8910/ay8910_window.cpp.o
 
-src/modizer_viz.i: src/modizer_viz.cpp.i
-.PHONY : src/modizer_viz.i
+src/windows/ay8910/ay8910_window.i: src/windows/ay8910/ay8910_window.cpp.i
+.PHONY : src/windows/ay8910/ay8910_window.i
 
 # target to preprocess a source file
-src/modizer_viz.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.i
-.PHONY : src/modizer_viz.cpp.i
+src/windows/ay8910/ay8910_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.i
+.PHONY : src/windows/ay8910/ay8910_window.cpp.i
 
-src/modizer_viz.s: src/modizer_viz.cpp.s
-.PHONY : src/modizer_viz.s
+src/windows/ay8910/ay8910_window.s: src/windows/ay8910/ay8910_window.cpp.s
+.PHONY : src/windows/ay8910/ay8910_window.s
 
 # target to generate assembly for a file
-src/modizer_viz.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/modizer_viz.cpp.s
-.PHONY : src/modizer_viz.cpp.s
+src/windows/ay8910/ay8910_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ay8910/ay8910_window.cpp.s
+.PHONY : src/windows/ay8910/ay8910_window.cpp.s
 
-src/opl3_renderer.o: src/opl3_renderer.cpp.o
-.PHONY : src/opl3_renderer.o
+src/windows/gigatron/gigatron_emu.o: src/windows/gigatron/gigatron_emu.c.o
+.PHONY : src/windows/gigatron/gigatron_emu.o
 
 # target to build an object file
-src/opl3_renderer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.o
-.PHONY : src/opl3_renderer.cpp.o
+src/windows/gigatron/gigatron_emu.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.o
+.PHONY : src/windows/gigatron/gigatron_emu.c.o
 
-src/opl3_renderer.i: src/opl3_renderer.cpp.i
-.PHONY : src/opl3_renderer.i
+src/windows/gigatron/gigatron_emu.i: src/windows/gigatron/gigatron_emu.c.i
+.PHONY : src/windows/gigatron/gigatron_emu.i
 
 # target to preprocess a source file
-src/opl3_renderer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.i
-.PHONY : src/opl3_renderer.cpp.i
+src/windows/gigatron/gigatron_emu.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.i
+.PHONY : src/windows/gigatron/gigatron_emu.c.i
 
-src/opl3_renderer.s: src/opl3_renderer.cpp.s
-.PHONY : src/opl3_renderer.s
+src/windows/gigatron/gigatron_emu.s: src/windows/gigatron/gigatron_emu.c.s
+.PHONY : src/windows/gigatron/gigatron_emu.s
 
 # target to generate assembly for a file
-src/opl3_renderer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_renderer.cpp.s
-.PHONY : src/opl3_renderer.cpp.s
+src/windows/gigatron/gigatron_emu.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_emu.c.s
+.PHONY : src/windows/gigatron/gigatron_emu.c.s
 
-src/opl3_window.o: src/opl3_window.cpp.o
-.PHONY : src/opl3_window.o
+src/windows/gigatron/gigatron_window.o: src/windows/gigatron/gigatron_window.cpp.o
+.PHONY : src/windows/gigatron/gigatron_window.o
 
 # target to build an object file
-src/opl3_window.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.o
-.PHONY : src/opl3_window.cpp.o
+src/windows/gigatron/gigatron_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.o
+.PHONY : src/windows/gigatron/gigatron_window.cpp.o
 
-src/opl3_window.i: src/opl3_window.cpp.i
-.PHONY : src/opl3_window.i
+src/windows/gigatron/gigatron_window.i: src/windows/gigatron/gigatron_window.cpp.i
+.PHONY : src/windows/gigatron/gigatron_window.i
 
 # target to preprocess a source file
-src/opl3_window.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.i
-.PHONY : src/opl3_window.cpp.i
+src/windows/gigatron/gigatron_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.i
+.PHONY : src/windows/gigatron/gigatron_window.cpp.i
 
-src/opl3_window.s: src/opl3_window.cpp.s
-.PHONY : src/opl3_window.s
+src/windows/gigatron/gigatron_window.s: src/windows/gigatron/gigatron_window.cpp.s
+.PHONY : src/windows/gigatron/gigatron_window.s
 
 # target to generate assembly for a file
-src/opl3_window.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/opl3_window.cpp.s
-.PHONY : src/opl3_window.cpp.s
+src/windows/gigatron/gigatron_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/gigatron_window.cpp.s
+.PHONY : src/windows/gigatron/gigatron_window.cpp.s
 
-src/sn76489/spfm_lite.o: src/sn76489/spfm_lite.c.o
-.PHONY : src/sn76489/spfm_lite.o
+src/windows/gigatron/winmm.o: src/windows/gigatron/winmm.c.o
+.PHONY : src/windows/gigatron/winmm.o
 
 # target to build an object file
-src/sn76489/spfm_lite.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.o
-.PHONY : src/sn76489/spfm_lite.c.o
+src/windows/gigatron/winmm.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.o
+.PHONY : src/windows/gigatron/winmm.c.o
 
-src/sn76489/spfm_lite.i: src/sn76489/spfm_lite.c.i
-.PHONY : src/sn76489/spfm_lite.i
+src/windows/gigatron/winmm.i: src/windows/gigatron/winmm.c.i
+.PHONY : src/windows/gigatron/winmm.i
 
 # target to preprocess a source file
-src/sn76489/spfm_lite.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.i
-.PHONY : src/sn76489/spfm_lite.c.i
+src/windows/gigatron/winmm.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.i
+.PHONY : src/windows/gigatron/winmm.c.i
 
-src/sn76489/spfm_lite.s: src/sn76489/spfm_lite.c.s
-.PHONY : src/sn76489/spfm_lite.s
+src/windows/gigatron/winmm.s: src/windows/gigatron/winmm.c.s
+.PHONY : src/windows/gigatron/winmm.s
 
 # target to generate assembly for a file
-src/sn76489/spfm_lite.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489/spfm_lite.c.s
-.PHONY : src/sn76489/spfm_lite.c.s
+src/windows/gigatron/winmm.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/gigatron/winmm.c.s
+.PHONY : src/windows/gigatron/winmm.c.s
 
-src/sn76489_window.o: src/sn76489_window.cpp.o
-.PHONY : src/sn76489_window.o
+src/windows/opl3/opl3_renderer.o: src/windows/opl3/opl3_renderer.cpp.o
+.PHONY : src/windows/opl3/opl3_renderer.o
 
 # target to build an object file
-src/sn76489_window.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.o
-.PHONY : src/sn76489_window.cpp.o
+src/windows/opl3/opl3_renderer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.o
+.PHONY : src/windows/opl3/opl3_renderer.cpp.o
 
-src/sn76489_window.i: src/sn76489_window.cpp.i
-.PHONY : src/sn76489_window.i
+src/windows/opl3/opl3_renderer.i: src/windows/opl3/opl3_renderer.cpp.i
+.PHONY : src/windows/opl3/opl3_renderer.i
 
 # target to preprocess a source file
-src/sn76489_window.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.i
-.PHONY : src/sn76489_window.cpp.i
+src/windows/opl3/opl3_renderer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.i
+.PHONY : src/windows/opl3/opl3_renderer.cpp.i
 
-src/sn76489_window.s: src/sn76489_window.cpp.s
-.PHONY : src/sn76489_window.s
+src/windows/opl3/opl3_renderer.s: src/windows/opl3/opl3_renderer.cpp.s
+.PHONY : src/windows/opl3/opl3_renderer.s
 
 # target to generate assembly for a file
-src/sn76489_window.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/sn76489_window.cpp.s
-.PHONY : src/sn76489_window.cpp.s
+src/windows/opl3/opl3_renderer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_renderer.cpp.s
+.PHONY : src/windows/opl3/opl3_renderer.cpp.s
 
-src/vgm_parser.o: src/vgm_parser.cpp.o
-.PHONY : src/vgm_parser.o
+src/windows/opl3/opl3_window.o: src/windows/opl3/opl3_window.cpp.o
+.PHONY : src/windows/opl3/opl3_window.o
 
 # target to build an object file
-src/vgm_parser.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.o
-.PHONY : src/vgm_parser.cpp.o
+src/windows/opl3/opl3_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.o
+.PHONY : src/windows/opl3/opl3_window.cpp.o
 
-src/vgm_parser.i: src/vgm_parser.cpp.i
-.PHONY : src/vgm_parser.i
+src/windows/opl3/opl3_window.i: src/windows/opl3/opl3_window.cpp.i
+.PHONY : src/windows/opl3/opl3_window.i
 
 # target to preprocess a source file
-src/vgm_parser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.i
-.PHONY : src/vgm_parser.cpp.i
+src/windows/opl3/opl3_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.i
+.PHONY : src/windows/opl3/opl3_window.cpp.i
 
-src/vgm_parser.s: src/vgm_parser.cpp.s
-.PHONY : src/vgm_parser.s
+src/windows/opl3/opl3_window.s: src/windows/opl3/opl3_window.cpp.s
+.PHONY : src/windows/opl3/opl3_window.s
 
 # target to generate assembly for a file
-src/vgm_parser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/vgm_parser.cpp.s
-.PHONY : src/vgm_parser.cpp.s
+src/windows/opl3/opl3_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/opl3/opl3_window.cpp.s
+.PHONY : src/windows/opl3/opl3_window.cpp.s
 
-src/vgm_window.o: src/vgm_window.cpp.o
-.PHONY : src/vgm_window.o
+src/windows/sn76489/sn76489_window.o: src/windows/sn76489/sn76489_window.cpp.o
+.PHONY : src/windows/sn76489/sn76489_window.o
 
 # target to build an object file
-src/vgm_window.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.o
-.PHONY : src/vgm_window.cpp.o
+src/windows/sn76489/sn76489_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.o
+.PHONY : src/windows/sn76489/sn76489_window.cpp.o
 
-src/vgm_window.i: src/vgm_window.cpp.i
-.PHONY : src/vgm_window.i
+src/windows/sn76489/sn76489_window.i: src/windows/sn76489/sn76489_window.cpp.i
+.PHONY : src/windows/sn76489/sn76489_window.i
 
 # target to preprocess a source file
-src/vgm_window.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.i
-.PHONY : src/vgm_window.cpp.i
+src/windows/sn76489/sn76489_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.i
+.PHONY : src/windows/sn76489/sn76489_window.cpp.i
 
-src/vgm_window.s: src/vgm_window.cpp.s
-.PHONY : src/vgm_window.s
+src/windows/sn76489/sn76489_window.s: src/windows/sn76489/sn76489_window.cpp.s
+.PHONY : src/windows/sn76489/sn76489_window.s
 
 # target to generate assembly for a file
-src/vgm_window.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/vgm_window.cpp.s
-.PHONY : src/vgm_window.cpp.s
+src/windows/sn76489/sn76489_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/sn76489_window.cpp.s
+.PHONY : src/windows/sn76489/sn76489_window.cpp.s
+
+src/windows/sn76489/spfm_lite.o: src/windows/sn76489/spfm_lite.c.o
+.PHONY : src/windows/sn76489/spfm_lite.o
+
+# target to build an object file
+src/windows/sn76489/spfm_lite.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.o
+.PHONY : src/windows/sn76489/spfm_lite.c.o
+
+src/windows/sn76489/spfm_lite.i: src/windows/sn76489/spfm_lite.c.i
+.PHONY : src/windows/sn76489/spfm_lite.i
+
+# target to preprocess a source file
+src/windows/sn76489/spfm_lite.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.i
+.PHONY : src/windows/sn76489/spfm_lite.c.i
+
+src/windows/sn76489/spfm_lite.s: src/windows/sn76489/spfm_lite.c.s
+.PHONY : src/windows/sn76489/spfm_lite.s
+
+# target to generate assembly for a file
+src/windows/sn76489/spfm_lite.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/sn76489/spfm_lite.c.s
+.PHONY : src/windows/sn76489/spfm_lite.c.s
+
+src/windows/spfm/spfm_manager.o: src/windows/spfm/spfm_manager.cpp.o
+.PHONY : src/windows/spfm/spfm_manager.o
+
+# target to build an object file
+src/windows/spfm/spfm_manager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.o
+.PHONY : src/windows/spfm/spfm_manager.cpp.o
+
+src/windows/spfm/spfm_manager.i: src/windows/spfm/spfm_manager.cpp.i
+.PHONY : src/windows/spfm/spfm_manager.i
+
+# target to preprocess a source file
+src/windows/spfm/spfm_manager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.i
+.PHONY : src/windows/spfm/spfm_manager.cpp.i
+
+src/windows/spfm/spfm_manager.s: src/windows/spfm/spfm_manager.cpp.s
+.PHONY : src/windows/spfm/spfm_manager.s
+
+# target to generate assembly for a file
+src/windows/spfm/spfm_manager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_manager.cpp.s
+.PHONY : src/windows/spfm/spfm_manager.cpp.s
+
+src/windows/spfm/spfm_window.o: src/windows/spfm/spfm_window.cpp.o
+.PHONY : src/windows/spfm/spfm_window.o
+
+# target to build an object file
+src/windows/spfm/spfm_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.o
+.PHONY : src/windows/spfm/spfm_window.cpp.o
+
+src/windows/spfm/spfm_window.i: src/windows/spfm/spfm_window.cpp.i
+.PHONY : src/windows/spfm/spfm_window.i
+
+# target to preprocess a source file
+src/windows/spfm/spfm_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.i
+.PHONY : src/windows/spfm/spfm_window.cpp.i
+
+src/windows/spfm/spfm_window.s: src/windows/spfm/spfm_window.cpp.s
+.PHONY : src/windows/spfm/spfm_window.s
+
+# target to generate assembly for a file
+src/windows/spfm/spfm_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/spfm/spfm_window.cpp.s
+.PHONY : src/windows/spfm/spfm_window.cpp.s
+
+src/windows/vgm/vgm_parser.o: src/windows/vgm/vgm_parser.cpp.o
+.PHONY : src/windows/vgm/vgm_parser.o
+
+# target to build an object file
+src/windows/vgm/vgm_parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.o
+.PHONY : src/windows/vgm/vgm_parser.cpp.o
+
+src/windows/vgm/vgm_parser.i: src/windows/vgm/vgm_parser.cpp.i
+.PHONY : src/windows/vgm/vgm_parser.i
+
+# target to preprocess a source file
+src/windows/vgm/vgm_parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.i
+.PHONY : src/windows/vgm/vgm_parser.cpp.i
+
+src/windows/vgm/vgm_parser.s: src/windows/vgm/vgm_parser.cpp.s
+.PHONY : src/windows/vgm/vgm_parser.s
+
+# target to generate assembly for a file
+src/windows/vgm/vgm_parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_parser.cpp.s
+.PHONY : src/windows/vgm/vgm_parser.cpp.s
+
+src/windows/vgm/vgm_window.o: src/windows/vgm/vgm_window.cpp.o
+.PHONY : src/windows/vgm/vgm_window.o
+
+# target to build an object file
+src/windows/vgm/vgm_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.o
+.PHONY : src/windows/vgm/vgm_window.cpp.o
+
+src/windows/vgm/vgm_window.i: src/windows/vgm/vgm_window.cpp.i
+.PHONY : src/windows/vgm/vgm_window.i
+
+# target to preprocess a source file
+src/windows/vgm/vgm_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.i
+.PHONY : src/windows/vgm/vgm_window.cpp.i
+
+src/windows/vgm/vgm_window.s: src/windows/vgm/vgm_window.cpp.s
+.PHONY : src/windows/vgm/vgm_window.s
+
+# target to generate assembly for a file
+src/windows/vgm/vgm_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/vgm/vgm_window.cpp.s
+.PHONY : src/windows/vgm/vgm_window.cpp.s
+
+src/windows/ym2163/chip_control.o: src/windows/ym2163/chip_control.cpp.o
+.PHONY : src/windows/ym2163/chip_control.o
+
+# target to build an object file
+src/windows/ym2163/chip_control.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.o
+.PHONY : src/windows/ym2163/chip_control.cpp.o
+
+src/windows/ym2163/chip_control.i: src/windows/ym2163/chip_control.cpp.i
+.PHONY : src/windows/ym2163/chip_control.i
+
+# target to preprocess a source file
+src/windows/ym2163/chip_control.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.i
+.PHONY : src/windows/ym2163/chip_control.cpp.i
+
+src/windows/ym2163/chip_control.s: src/windows/ym2163/chip_control.cpp.s
+.PHONY : src/windows/ym2163/chip_control.s
+
+# target to generate assembly for a file
+src/windows/ym2163/chip_control.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_control.cpp.s
+.PHONY : src/windows/ym2163/chip_control.cpp.s
+
+src/windows/ym2163/chip_window_ym2163.o: src/windows/ym2163/chip_window_ym2163.cpp.o
+.PHONY : src/windows/ym2163/chip_window_ym2163.o
+
+# target to build an object file
+src/windows/ym2163/chip_window_ym2163.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.o
+.PHONY : src/windows/ym2163/chip_window_ym2163.cpp.o
+
+src/windows/ym2163/chip_window_ym2163.i: src/windows/ym2163/chip_window_ym2163.cpp.i
+.PHONY : src/windows/ym2163/chip_window_ym2163.i
+
+# target to preprocess a source file
+src/windows/ym2163/chip_window_ym2163.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.i
+.PHONY : src/windows/ym2163/chip_window_ym2163.cpp.i
+
+src/windows/ym2163/chip_window_ym2163.s: src/windows/ym2163/chip_window_ym2163.cpp.s
+.PHONY : src/windows/ym2163/chip_window_ym2163.s
+
+# target to generate assembly for a file
+src/windows/ym2163/chip_window_ym2163.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2163/chip_window_ym2163.cpp.s
+.PHONY : src/windows/ym2163/chip_window_ym2163.cpp.s
+
+src/windows/ym2413/ym2413_window.o: src/windows/ym2413/ym2413_window.cpp.o
+.PHONY : src/windows/ym2413/ym2413_window.o
+
+# target to build an object file
+src/windows/ym2413/ym2413_window.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.o
+.PHONY : src/windows/ym2413/ym2413_window.cpp.o
+
+src/windows/ym2413/ym2413_window.i: src/windows/ym2413/ym2413_window.cpp.i
+.PHONY : src/windows/ym2413/ym2413_window.i
+
+# target to preprocess a source file
+src/windows/ym2413/ym2413_window.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.i
+.PHONY : src/windows/ym2413/ym2413_window.cpp.i
+
+src/windows/ym2413/ym2413_window.s: src/windows/ym2413/ym2413_window.cpp.s
+.PHONY : src/windows/ym2413/ym2413_window.s
+
+# target to generate assembly for a file
+src/windows/ym2413/ym2413_window.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/denjhang_music_player.dir/build.make CMakeFiles/denjhang_music_player.dir/src/windows/ym2413/ym2413_window.cpp.s
+.PHONY : src/windows/ym2413/ym2413_window.cpp.s
 
 # Help Target
 help:
@@ -1572,54 +1692,69 @@ help:
 	@echo "... midifile/src/Options.i"
 	@echo "... midifile/src/Options.s"
 	@echo "... src/app_icon.obj"
-	@echo "... src/chip_control.o"
-	@echo "... src/chip_control.i"
-	@echo "... src/chip_control.s"
-	@echo "... src/chip_window_ym2163.o"
-	@echo "... src/chip_window_ym2163.i"
-	@echo "... src/chip_window_ym2163.s"
-	@echo "... src/config_manager.o"
-	@echo "... src/config_manager.i"
-	@echo "... src/config_manager.s"
-	@echo "... src/gigatron/gigatron_emu.o"
-	@echo "... src/gigatron/gigatron_emu.i"
-	@echo "... src/gigatron/gigatron_emu.s"
-	@echo "... src/gigatron/winmm.o"
-	@echo "... src/gigatron/winmm.i"
-	@echo "... src/gigatron/winmm.s"
-	@echo "... src/gigatron_window.o"
-	@echo "... src/gigatron_window.i"
-	@echo "... src/gigatron_window.s"
-	@echo "... src/gui_renderer.o"
-	@echo "... src/gui_renderer.i"
-	@echo "... src/gui_renderer.s"
+	@echo "... src/core/config_manager.o"
+	@echo "... src/core/config_manager.i"
+	@echo "... src/core/config_manager.s"
+	@echo "... src/core/gui_renderer.o"
+	@echo "... src/core/gui_renderer.i"
+	@echo "... src/core/gui_renderer.s"
+	@echo "... src/core/modizer_viz.o"
+	@echo "... src/core/modizer_viz.i"
+	@echo "... src/core/modizer_viz.s"
+	@echo "... src/core/vgm_sync.o"
+	@echo "... src/core/vgm_sync.i"
+	@echo "... src/core/vgm_sync.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
-	@echo "... src/midi_player.o"
-	@echo "... src/midi_player.i"
-	@echo "... src/midi_player.s"
-	@echo "... src/modizer_viz.o"
-	@echo "... src/modizer_viz.i"
-	@echo "... src/modizer_viz.s"
-	@echo "... src/opl3_renderer.o"
-	@echo "... src/opl3_renderer.i"
-	@echo "... src/opl3_renderer.s"
-	@echo "... src/opl3_window.o"
-	@echo "... src/opl3_window.i"
-	@echo "... src/opl3_window.s"
-	@echo "... src/sn76489/spfm_lite.o"
-	@echo "... src/sn76489/spfm_lite.i"
-	@echo "... src/sn76489/spfm_lite.s"
-	@echo "... src/sn76489_window.o"
-	@echo "... src/sn76489_window.i"
-	@echo "... src/sn76489_window.s"
-	@echo "... src/vgm_parser.o"
-	@echo "... src/vgm_parser.i"
-	@echo "... src/vgm_parser.s"
-	@echo "... src/vgm_window.o"
-	@echo "... src/vgm_window.i"
-	@echo "... src/vgm_window.s"
+	@echo "... src/midi/midi_player.o"
+	@echo "... src/midi/midi_player.i"
+	@echo "... src/midi/midi_player.s"
+	@echo "... src/windows/ay8910/ay8910_window.o"
+	@echo "... src/windows/ay8910/ay8910_window.i"
+	@echo "... src/windows/ay8910/ay8910_window.s"
+	@echo "... src/windows/gigatron/gigatron_emu.o"
+	@echo "... src/windows/gigatron/gigatron_emu.i"
+	@echo "... src/windows/gigatron/gigatron_emu.s"
+	@echo "... src/windows/gigatron/gigatron_window.o"
+	@echo "... src/windows/gigatron/gigatron_window.i"
+	@echo "... src/windows/gigatron/gigatron_window.s"
+	@echo "... src/windows/gigatron/winmm.o"
+	@echo "... src/windows/gigatron/winmm.i"
+	@echo "... src/windows/gigatron/winmm.s"
+	@echo "... src/windows/opl3/opl3_renderer.o"
+	@echo "... src/windows/opl3/opl3_renderer.i"
+	@echo "... src/windows/opl3/opl3_renderer.s"
+	@echo "... src/windows/opl3/opl3_window.o"
+	@echo "... src/windows/opl3/opl3_window.i"
+	@echo "... src/windows/opl3/opl3_window.s"
+	@echo "... src/windows/sn76489/sn76489_window.o"
+	@echo "... src/windows/sn76489/sn76489_window.i"
+	@echo "... src/windows/sn76489/sn76489_window.s"
+	@echo "... src/windows/sn76489/spfm_lite.o"
+	@echo "... src/windows/sn76489/spfm_lite.i"
+	@echo "... src/windows/sn76489/spfm_lite.s"
+	@echo "... src/windows/spfm/spfm_manager.o"
+	@echo "... src/windows/spfm/spfm_manager.i"
+	@echo "... src/windows/spfm/spfm_manager.s"
+	@echo "... src/windows/spfm/spfm_window.o"
+	@echo "... src/windows/spfm/spfm_window.i"
+	@echo "... src/windows/spfm/spfm_window.s"
+	@echo "... src/windows/vgm/vgm_parser.o"
+	@echo "... src/windows/vgm/vgm_parser.i"
+	@echo "... src/windows/vgm/vgm_parser.s"
+	@echo "... src/windows/vgm/vgm_window.o"
+	@echo "... src/windows/vgm/vgm_window.i"
+	@echo "... src/windows/vgm/vgm_window.s"
+	@echo "... src/windows/ym2163/chip_control.o"
+	@echo "... src/windows/ym2163/chip_control.i"
+	@echo "... src/windows/ym2163/chip_control.s"
+	@echo "... src/windows/ym2163/chip_window_ym2163.o"
+	@echo "... src/windows/ym2163/chip_window_ym2163.i"
+	@echo "... src/windows/ym2163/chip_window_ym2163.s"
+	@echo "... src/windows/ym2413/ym2413_window.o"
+	@echo "... src/windows/ym2413/ym2413_window.i"
+	@echo "... src/windows/ym2413/ym2413_window.s"
 .PHONY : help
 
 
