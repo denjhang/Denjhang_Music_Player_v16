@@ -1,10 +1,10 @@
 # Denjhang's Music Player v16 Release Notes
 
 ## Release Date
-April 28, 2026 (Updated May 4, 2026)
+April 28, 2026 (Updated May 6, 2026)
 
 ## Version
-v16.0 (Build 2026-05-04)
+v16.0 (Build 2026-05-06)
 
 ## Major Improvements
 
@@ -77,6 +77,31 @@ v16.0 (Build 2026-05-04)
 - 曲目切换静音：key-off → rhythm off → TL=0x0F → rhythm silence
 - 示波器波形显示、寄存器表格、GD3 标签
 
+### AY8910 (PSG) Hardware Window (NEW)
+- SPFM Light 接口驱动 AY8910 芯片，VGM 文件实时硬件播放
+- AY8910 寄存器影子跟踪（R0-R13），Key-on/key-off 音量边沿检测
+- 钢琴键盘：3 旋律通道（Tone A/B/C）+ 噪音通道，blendKey 着色
+- 噪音通道频率计算与音符映射，Portamento 滑音可视化
+- 4 通道独立颜色（Tone A/B/C + Noise），自定义颜色持久化
+- 双芯片音量条、寄存器表格、示波器波形显示
+- GD3 标签、循环播放、快进模式、循环淡出、无循环自动切曲
+- AY8910 必须用 `spfm_write_reg` 单次写入（非双写地址锁存模式）
+
+### SPFM Light Hardware Manager (NEW)
+- 统一 SPFM Light 硬件连接/断开管理窗口
+- 4 Slot 芯片类型配置（YM2413/AY8910/SN76489/None）
+- Slot 预设持久化：按芯片组合自动保存/恢复到 `bin/slot_presets.ini`
+- 双芯片 VGM 自动检测（header clock bit30）并分配 Slot
+- 多窗口连接状态同步：共享 `s_connected`，一个窗口操作影响所有窗口
+
+### Unified VGM Playback Engine (NEW)
+- **单线程解析 + 多芯片分发**：只有一个统一播放线程，消除多窗口节奏不同步
+- 回调注册机制：每个窗口在 Init() 时注册寄存器写入/硬件写入/flush 回调
+- 支持 YM2413 (0x51)、AY8910 (0xA0)、SN76489 (0x50/0x30) 芯片分发
+- QPC+Sleep(1) 高精度定时，每帧最大 1 秒安全上限
+- 共享进度：所有窗口 UI 读取 `VGMSync::GetCurrentSamples()` 同一值
+- SN76489 特殊处理：`SnCmdHandler` 封装完整 T6W28/latch/mute/PeriodicNoiseFix 逻辑
+
 ## Bug Fixes
 - Fixed MIDI resume progress bar jump (lastPerfCounter not reset)
 - Fixed piano key residual after track switch (ResetPianoKeyStates was empty)
@@ -96,6 +121,10 @@ v16.0 (Build 2026-05-04)
 - Fixed YM2413 rhythm channel key-on detection and volume extraction (wrong nibble)
 - Fixed YM2413 fast-forward losing instrument info (mute clearing shadow state)
 - Fixed YM2413 song transition click sound (TL 0xF0 modifying patch, wrong silence sequence)
+- Fixed unified playback thread `last` QPC counter uninitialized, causing instant file dump on first iteration
+- Fixed `NotifyFileOpened` missing from 9 trigger points (double-click/Next/Prev in 3 windows)
+- Fixed `s_connected` mutual exclusion: `SyncConnectionState` checked `GetActiveChipType()` making only one window "connected" at a time
+- Fixed `!s_connected` resetting `s_vgmPlaying` every frame, killing playback on hardware disconnect
 
 ## Project Reorganization (April 29, 2026)
 - 程序正式改名为 **Denjhang's Music Player** v16

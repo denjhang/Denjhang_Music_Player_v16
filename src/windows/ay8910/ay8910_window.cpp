@@ -248,7 +248,7 @@ static char s_configPath[MAX_PATH] = "";
 
 // ============ Forward Declarations ============
 static void ay8910_mute_all(void);
-static void ay8910_write_reg(uint8_t reg, uint8_t data);
+void ay8910_write_reg(uint8_t reg, uint8_t data);
 static void InitHardware(void);
 static void ResetState(void);
 static void StopTest(void);
@@ -334,7 +334,7 @@ static FILE* ym_fopen(const char* path, const char* mode) {
     return _wfopen(wPath.c_str(), wMode.c_str());
 }
 
-static void ay8910_write_reg(uint8_t reg, uint8_t data) {
+void ay8910_write_reg(uint8_t reg, uint8_t data) {
     int slot = VGMSync::FindChipSlot(VGMSync::CHIP_AY8910);
     if (slot < 0) return;
     ::spfm_write_reg(slot, 0, reg, data);
@@ -343,13 +343,13 @@ static void ay8910_write_reg(uint8_t reg, uint8_t data) {
     }
 }
 
-static void safe_flush(void) {
+void safe_flush(void) {
     ::spfm_flush();
 }
 
 // Update AY8910 shadow state and UI state for a register write
 // Returns the (possibly modified) data byte after fadeout/mute interception
-static UINT8 UpdateAY8910State(UINT8 reg, UINT8 data) {
+UINT8 UpdateAY8910State(UINT8 reg, UINT8 data) {
     if (reg < 0x10) s_regShadow[reg] = data;
 
     if (reg <= 0x05) {
@@ -1294,51 +1294,26 @@ static DWORD WINAPI VGMPlaybackThread(LPVOID) {
 
 static void StartVGMPlayback(void) {
     if (!s_vgmLoaded) return;
-    DcLog("[VGM] StartPlayback: loaded=%d connected=%d dataOff=0x%X\n", s_vgmLoaded, s_connected, s_vgmDataOffset);
     StopTest();
-    s_vgmPlaying = false;
-    s_vgmThreadRunning = false;
-    if (s_vgmThread) {
-        WaitForSingleObject(s_vgmThread, 2000);
-        CloseHandle(s_vgmThread);
-        s_vgmThread = nullptr;
-    }
-    if (s_memData.empty()) {
-        if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = ym_fopen(s_vgmPath, "rb"); }
-        if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
-        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
-    } else {
-        s_memPos = s_vgmDataOffset;
-    }
     if (s_connected) InitHardware();
-    s_vgmPlaying = true; s_vgmPaused = false; s_vgmTrackEnded = false;
-    s_vgmCmdCount = 0;
-    s_vgmCurrentSamples = 0;
-    s_vgmLoopCount = 0;
-    s_vgmThreadRunning = true;
-    s_vgmThread = CreateThread(NULL, 0, VGMPlaybackThread, NULL, 0, NULL);
-    VGMSync::NotifyPlay();
-    DcLog("[VGM] Playing\n");
+    VGMSync::SetTimerMode(s_timerMode);
+    VGMSync::SetFadeout(s_fadeoutDuration);
+    VGMSync::SetMaxLoops(s_vgmMaxLoops);
+    VGMSync::SetTotalSamples(s_vgmTotalSamples);
+    VGMSync::StartUnifiedPlayback(s_vgmPath, s_timerMode);
+    s_vgmPlaying = true;
+    s_vgmPaused = false;
 }
 
 static void StopVGMPlayback(void) {
+    VGMSync::StopUnifiedPlayback();
     s_vgmPlaying = false; s_vgmPaused = false;
-    s_vgmThreadRunning = false;
-    s_fadeoutActive = false; s_fadeoutLevel = 1.0f;
-    if (s_vgmThread) {
-        WaitForSingleObject(s_vgmThread, 2000);
-        CloseHandle(s_vgmThread);
-        s_vgmThread = nullptr;
-    }
     if (s_connected) InitHardware();
-    VGMSync::NotifyStop();
-    DcLog("[VGM] Stopped at %.1fs\n", (double)s_vgmCurrentSamples / 44100.0);
 }
 
 static void PauseVGMPlayback(void) {
-    if (!s_vgmPlaying) return;
-    s_vgmPaused = !s_vgmPaused;
-    VGMSync::NotifyPause();
+    VGMSync::PauseUnifiedPlayback();
+    s_vgmPaused = VGMSync::IsUnifiedPaused();
 }
 
 static void OpenVGMFileDialog(void) {
@@ -1509,6 +1484,13 @@ void Init() {
     QueryPerformanceFrequency(&s_perfFreq);
     s_scope.Init();
     LoadConfig();
+
+    // Register unified playback callbacks
+    VGMSync::RegisterChipWriter(VGMSync::CHIP_AY8910,
+        (VGMSync::ChipStateUpdateFn)UpdateAY8910State,
+        (VGMSync::ChipHwWriteFn)ay8910_write_reg,
+        (VGMSync::ChipFlushFn)safe_flush);
+
     if (s_currentPath[0] != '\0') {
         RefreshFileList();
     } else {
@@ -1519,12 +1501,6 @@ void Init() {
 
 void Shutdown() {
     s_vgmPlaying = false;
-    s_vgmThreadRunning = false;
-    if (s_vgmThread) {
-        WaitForSingleObject(s_vgmThread, 2000);
-        CloseHandle(s_vgmThread);
-        s_vgmThread = nullptr;
-    }
     SaveConfig();
     s_connected = false;
 }
@@ -1540,20 +1516,22 @@ void Update() {
             DcLog("[AY] SyncLoad result: ok=%d loaded=%d\n", ok, s_vgmLoaded);
         }
     }
-    // Sync playback state from other windows
-    {
-        bool isPlaying = VGMSync::IsPlaying();
-        bool isPaused = VGMSync::IsPaused();
-        if (isPlaying && s_vgmLoaded && !s_vgmPlaying) {
-            DcLog("[AY] SyncPlay: playing=%d loaded=%d vgmPlaying=%d\n", isPlaying, s_vgmLoaded, s_vgmPlaying);
-            StartVGMPlayback();
-        }
-        if (!isPlaying && !isPaused && s_vgmPlaying) {
-            StopVGMPlayback();
-        }
+    // Sync playback state from unified playback
+    if (VGMSync::IsUnifiedPlaying() && !s_vgmPlaying) {
+        s_vgmPlaying = true;
+        s_vgmPaused = false;
+        s_vgmTrackEnded = false;
+    }
+    if (!VGMSync::IsUnifiedPlaying() && s_vgmPlaying) {
+        s_vgmPlaying = false;
+        s_vgmPaused = false;
+    }
+    // Sync current progress from unified playback
+    if (s_vgmPlaying) {
+        s_vgmCurrentSamples = VGMSync::GetCurrentSamples();
     }
     UpdateChannelLevels();
-    if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
+    if (s_vgmTrackEnded && !s_vgmPlaying) {
         s_vgmTrackEnded = false;
         if (s_autoPlayNext && !s_playlist.empty()) PlayPlaylistNext();
     }
@@ -1992,6 +1970,7 @@ static void RenderSidebar(void) {
             ImGui::Text("Slot %d:", s); ImGui::SameLine();
             if (ImGui::Combo(("##slot_ay_"+std::to_string(s)).c_str(), &cur, chipLabels, 4)) {
                 VGMSync::SetSlotChip(s, cur);
+                VGMSync::SaveSlotPreset(VGMSync::GetLastComboKey());
             }
         }
     }

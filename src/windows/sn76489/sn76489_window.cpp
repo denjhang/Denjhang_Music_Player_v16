@@ -319,20 +319,184 @@ static FILE* sn_fopen(const char* path, const char* mode) {
     return _wfopen(wPath.c_str(), wMode.c_str());
 }
 
-static void sn76489_write(uint8_t data) {
+void sn76489_write(uint8_t data) {
     int slot = VGMSync::FindChipSlot(VGMSync::CHIP_SN76489);
     if (slot < 0) return;
     ::spfm_write_data(slot, data);
     ::spfm_hw_wait(3);
 }
 
-static void sn76489_write2(uint8_t data) {
+void sn76489_write2(uint8_t data) {
     ::spfm_write_data(1, data);
     ::spfm_hw_wait(3);
 }
 
-static void safe_flush(void) {
+void safe_flush(void) {
     ::spfm_flush();
+}
+
+static bool ApplyPeriodicNoiseFix(void);  // forward declaration
+
+// Callback for unified VGM playback thread — handles SN76489 commands (0x50, 0x30)
+void SnCmdHandler(uint8_t cmd, uint8_t data) {
+    if (cmd == 0x30) {
+        // 2nd SN76489 write (T6W28 noise chip)
+        if (!s_isT6W28) return;
+        // Update shadow state
+        if (data & 0x80) {
+            int reg = (data >> 4) & 7;
+            s_t6w28LastLatchReg = reg;
+            int ch = reg >> 1;
+            if (ch == 3) {
+                if (data & 0x10) {
+                    s2_vol[3] = data & 0x0F;
+                } else {
+                    s2_noiseType = (data >> 2) & 1;
+                    uint8_t sf = data & 0x03;
+                    if (sf == 3) s2_noiseUseCh2 = true;
+                    else { s2_noiseUseCh2 = false; s2_noiseFreq = sf; }
+                }
+            } else if (ch == 2) {
+                if (data & 0x10) {
+                    s2_vol[2] = data & 0x0F;
+                } else {
+                    s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x3F0) | (data & 0x0F);
+                    s2_fullPeriod[2] = (s2_fullPeriod[2] & 0x3F0) | (data & 0x0F);
+                    s2_lastToneLatchCh = 2;
+                }
+            } else if (ch < 2) {
+                if (data & 0x10) {
+                    s2_vol[ch] = data & 0x0F;
+                } else {
+                    s2_fullPeriod[ch] = (s2_fullPeriod[ch] & 0x3F0) | (data & 0x0F);
+                    s2_lastToneLatchCh = ch;
+                }
+            }
+        } else {
+            // Data byte
+            if (s_t6w28LastLatchReg == 4) {
+                s_t6w28NoiseCh2Period = (s_t6w28NoiseCh2Period & 0x00F) | ((data & 0x3F) << 4);
+                s2_fullPeriod[2] = (s2_fullPeriod[2] & 0x00F) | ((data & 0x3F) << 4);
+            } else if (s2_lastToneLatchCh >= 0 && s2_lastToneLatchCh < 3) {
+                s2_fullPeriod[s2_lastToneLatchCh] = (s2_fullPeriod[s2_lastToneLatchCh] & 0x00F) | ((data & 0x3F) << 4);
+            }
+        }
+        // Mute masked channels (slot1 offset +4)
+        if ((data & 0x80) && (data & 0x10)) {
+            int ch = (data >> 5) & 3;
+            if (s_chMuted[4 + ch]) {
+                data = (data & 0xF0) | 0x0F;
+            }
+        }
+        if (!s_connected) return;
+        if (s_t6w28Mode == 0) {
+            sn76489_write(data); safe_flush();
+        } else if (s_t6w28Mode == 2) {
+            if (s_connected2) {
+                if ((data & 0x80)) {
+                    int ch = (data >> 5) & 3;
+                    bool isVol = (data & 0x10) != 0;
+                    if (ch == 0 || ch == 1) {
+                        // ch0/1 tone: always skip
+                    } else if (ch == 2) {
+                        if (isVol) {
+                            // ch2 tone vol: skip
+                        } else if (s2_noiseUseCh2) {
+                            sn76489_write2(data); safe_flush();
+                        }
+                    } else {
+                        sn76489_write2(data); safe_flush();
+                    }
+                } else {
+                    if (s_t6w28LastLatchReg == 4 && s2_noiseUseCh2) {
+                        sn76489_write2(data); safe_flush();
+                    } else if (s_t6w28LastLatchReg >= 6) {
+                        sn76489_write2(data); safe_flush();
+                    }
+                }
+            }
+        } else {
+            // Force SF2 (mode 1)
+            if ((data & 0x80)) {
+                int ch = (data >> 5) & 3;
+                if (ch == 3) {
+                    if (s2_noiseUseCh2) {
+                        uint8_t sf = 1;
+                        if (s_t6w28NoiseCh2Period > 0) {
+                            if (s_t6w28NoiseCh2Period < 24) sf = 0;
+                            else if (s_t6w28NoiseCh2Period < 48) sf = 1;
+                            else sf = 2;
+                        }
+                        s_noiseFreq = sf;
+                        uint8_t nctrl = 0xE0 | (s2_noiseType << 2) | sf;
+                        sn76489_write(nctrl); safe_flush();
+                    } else {
+                        sn76489_write(data); safe_flush();
+                    }
+                }
+            }
+        }
+    } else if (cmd == 0x50) {
+        // SN76489 write
+        bool tone2Updated = false;
+        bool noiseCtrlUpdated = false;
+        bool tone2VolUpdated = false;
+        if (data & 0x80) {
+            int ch = (data >> 5) & 3;
+            if (data & 0x10) {
+                if (ch < 4) {
+                    if (!(s_t6w28Mode == 2 && s_isT6W28 && ch == 3)) {
+                        s_vol[ch] = data & 0x0F;
+                        if (ch == 2) tone2VolUpdated = true;
+                    }
+                }
+            } else if (ch == 3) {
+                if (!(s_t6w28Mode == 2 && s_isT6W28)) {
+                    s_noiseType = (data >> 2) & 1;
+                    uint8_t sf = data & 0x03;
+                    if (sf == 3) { s_noiseUseCh2 = true; }
+                    else { s_noiseUseCh2 = false; s_noiseFreq = sf; }
+                    noiseCtrlUpdated = true;
+                }
+            } else {
+                if (ch < 3) {
+                    s_fullPeriod[ch] = (s_fullPeriod[ch] & 0x3F0) | (data & 0x0F);
+                    s_lastToneLatchCh = ch;
+                    if (ch == 2) tone2Updated = true;
+                }
+            }
+        } else {
+            if (s_lastToneLatchCh < 3) {
+                s_fullPeriod[s_lastToneLatchCh] = (s_fullPeriod[s_lastToneLatchCh] & 0x0F) | ((data & 0x3F) << 4);
+                if (s_lastToneLatchCh == 2) tone2Updated = true;
+            }
+        }
+        // Hardware write
+        if (s_connected) {
+            if ((data & 0x80) && (data & 0x10)) {
+                int ch = (data >> 5) & 3;
+                if (s_chMuted[ch]) {
+                    data = (data & 0xF0) | 0x0F;
+                }
+            }
+            if (s_t6w28Mode == 2 && s_isT6W28) {
+                if (data & 0x80) {
+                    int ch = (data >> 5) & 3;
+                    if (ch != 3) {
+                        sn76489_write(data); safe_flush();
+                    }
+                } else {
+                    sn76489_write(data); safe_flush();
+                }
+            } else if (tone2Updated && ApplyPeriodicNoiseFix()) {
+                // Fix already wrote corrected Tone2 freq
+            } else {
+                sn76489_write(data);
+                safe_flush();
+                if ((noiseCtrlUpdated || tone2VolUpdated) && ApplyPeriodicNoiseFix()) {}
+            }
+        }
+    }
 }
 
 static void sn76489_set_tone(uint8_t ch, uint16_t period) {
@@ -1328,52 +1492,29 @@ static DWORD WINAPI VGMPlaybackThread(LPVOID) {
 
 static void StartVGMPlayback(void) {
     if (!s_vgmLoaded) return;
-    DcLog("[VGM] StartPlayback: loaded=%d connected=%d dataOff=0x%X\n", s_vgmLoaded, s_connected, s_vgmDataOffset);
     StopTest();
-    // Ensure any previous playback thread is fully stopped before starting a new one
-    s_vgmPlaying = false;
-    s_vgmThreadRunning = false;
-    if (s_vgmThread) {
-        WaitForSingleObject(s_vgmThread, 2000);
-        CloseHandle(s_vgmThread);
-        s_vgmThread = nullptr;
-    }
-    if (s_memData.empty()) {
-        if (s_vgmFile) { fclose(s_vgmFile); s_vgmFile = sn_fopen(s_vgmPath, "rb"); }
-        if (!s_vgmFile) { DcLog("[VGM] Reopen failed in StartPlayback\n"); return; }
-        vgmfseek(s_vgmFile, s_vgmDataOffset, SEEK_SET);
-    } else {
-        s_memPos = s_vgmDataOffset;
-    }
     if (s_connected) InitHardware();
-    s_vgmPlaying = true; s_vgmPaused = false; s_vgmTrackEnded = false;
-    s_vgmCmdCount = 0;
-    s_vgmCurrentSamples = 0;
-    s_vgmLoopCount = 0;
-    s_vgmThreadRunning = true;
-    s_vgmThread = CreateThread(NULL, 0, VGMPlaybackThread, NULL, 0, NULL);
-    DcLog("[VGM] Playing\n");
-    VGMSync::NotifyPlay();
+    VGMSync::SetTimerMode(0);  // SN76489 uses QPC+Sleep mode
+    VGMSync::SetFadeout(s_fadeoutDuration);
+    VGMSync::SetMaxLoops(s_vgmMaxLoops);
+    VGMSync::SetTotalSamples(s_vgmTotalSamples);
+    VGMSync::StartUnifiedPlayback(s_vgmPath, 0);
+    s_vgmPlaying = true;
+    s_vgmPaused = false;
+    s_vgmTrackEnded = false;
 }
 
 static void StopVGMPlayback(void) {
+    VGMSync::StopUnifiedPlayback();
     s_vgmPlaying = false; s_vgmPaused = false;
-    s_vgmThreadRunning = false;
     s_fadeoutActive = false; s_fadeoutLevel = 1.0f;
-    if (s_vgmThread) {
-        WaitForSingleObject(s_vgmThread, 2000);
-        CloseHandle(s_vgmThread);
-        s_vgmThread = nullptr;
-    }
     if (s_connected) InitHardware();
-    DcLog("[VGM] Stopped at %.1fs\n", (double)s_vgmCurrentSamples / 44100.0);
-    VGMSync::NotifyStop();
 }
 
 static void PauseVGMPlayback(void) {
     if (!s_vgmPlaying) return;
-    s_vgmPaused = !s_vgmPaused;
-    VGMSync::NotifyPause();
+    VGMSync::PauseUnifiedPlayback();
+    s_vgmPaused = VGMSync::IsUnifiedPaused();
 }
 
 static void OpenVGMFileDialog(void) {
@@ -1524,6 +1665,7 @@ static void StartTest(int type) {
 // ============ Public API ============
 void Init() {
     VGMSync::Init();
+    VGMSync::RegisterSnHandler(SnCmdHandler);
     QueryPerformanceFrequency(&s_perfFreq);
     s_scope.Init();
     LoadConfig();
@@ -1537,12 +1679,6 @@ void Init() {
 
 void Shutdown() {
     s_vgmPlaying = false;
-    s_vgmThreadRunning = false;
-    if (s_vgmThread) {
-        WaitForSingleObject(s_vgmThread, 2000);
-        CloseHandle(s_vgmThread);
-        s_vgmThread = nullptr;
-    }
     SaveConfig();
     s_connected = false;
 }
@@ -1558,16 +1694,23 @@ void Update() {
             LoadVGMFile(shared);
         }
     }
-    // Sync playback state from other windows
-    if (VGMSync::IsPlaying() && s_vgmLoaded && !s_vgmPlaying) {
-        StartVGMPlayback();
+    // Sync playback state from unified playback
+    if (VGMSync::IsUnifiedPlaying() && !s_vgmPlaying) {
+        s_vgmPlaying = true;
+        s_vgmPaused = false;
+        s_vgmTrackEnded = false;
     }
-    if (!VGMSync::IsPlaying() && !VGMSync::IsPaused() && s_vgmPlaying) {
-        StopVGMPlayback();
+    if (!VGMSync::IsUnifiedPlaying() && s_vgmPlaying) {
+        s_vgmPlaying = false;
+        s_vgmPaused = false;
+    }
+    // Sync current progress from unified playback
+    if (s_vgmPlaying) {
+        s_vgmCurrentSamples = VGMSync::GetCurrentSamples();
     }
 
     UpdateChannelLevels();
-    if (s_vgmTrackEnded && !s_vgmThreadRunning && !s_vgmPlaying) {
+    if (s_vgmTrackEnded && !s_vgmPlaying) {
         s_vgmTrackEnded = false;
         if (s_autoPlayNext && !s_playlist.empty()) PlayPlaylistNext();
     }
@@ -2068,6 +2211,7 @@ static void RenderSidebar(void) {
             ImGui::Text("Slot %d:", s); ImGui::SameLine();
             if (ImGui::Combo(("##slot_sn_"+std::to_string(s)).c_str(), &cur, chipLabels, 4)) {
                 VGMSync::SetSlotChip(s, cur);
+                VGMSync::SaveSlotPreset(VGMSync::GetLastComboKey());
             }
         }
     }

@@ -6,7 +6,7 @@
 
 ---
 
-## v16.0 (2026-04-28 ~ 2026-04-29)
+## v16.0 (2026-04-28 ~ 2026-05-06)
 
 ### 架构重构
 
@@ -260,6 +260,100 @@
 |------|------|
 | `src/ym2413_window.cpp/h` | 新建 - YM2413 OPLL VGM 播放器窗口 |
 | `src/main.cpp` | 修改 - 添加 YM2413 初始化/更新/渲染/清理 |
+
+### AY8910 (PSG) VGM 播放器模块（2026-05-05）
+
+#### VGM 硬件播放
+- ✨ AY8910 寄存器影子跟踪（R0-R13）
+- ✨ Key-on/key-off 检测（音量从 0→非0 = key-on）
+- ✨ GD3 标签显示（曲名、游戏、系统、作者）
+- ✨ 循环播放 + 可配置最大循环次数
+- ✨ 快进模式 + 循环淡出 + 无循环自动切曲
+
+#### 钢琴键盘
+- ✨ 3 旋律通道（Tone A/B/C）+ 噪音通道钢琴显示
+- ✨ VGM blendKey 着色（音量→颜色渐变）
+- ✨ 噪音通道频率计算与音符映射
+- ✨ Portamento 滑音可视化
+
+#### 颜色与可视化
+- ✨ 4 通道独立颜色（Tone A/B/C + Noise），自定义颜色持久化
+- ✨ 双芯片音量条、寄存器表格、示波器波形显示
+
+#### 参考源码
+- 📄 AY8910 必须用 `spfm_write_reg` 单次写入（双写地址锁存模式是错误的）
+
+#### 修改文件清单
+| 文件 | 操作 |
+|------|------|
+| `src/windows/ay8910/ay8910_window.cpp/h` | 新建 - AY8910 PSG VGM 播放器窗口 |
+| `src/main.cpp` | 修改 - 添加 AY8910 初始化/更新/渲染/清理 |
+
+### SPFM Light 硬件管理模块（2026-05-04 ~ 2026-05-05）
+
+#### SPFM Manager 窗口
+- ✨ 统一 SPFM Light 硬件连接/断开管理
+- ✨ 芯片 Slot 配置：4 个 Slot 独立设置芯片类型（YM2413/AY8910/SN76489/None）
+- ✨ 自动连接/断开按钮，FTDI 设备检测
+- ✨ 当前芯片类型和 Slot 状态显示
+
+#### Slot 预设持久化
+- ✨ 根据芯片组合自动生成 combo key（排序去重，如 [AY8910+YM2413]）
+- ✨ 预设保存到 `bin/slot_presets.ini`，下次打开相同组合自动恢复
+- ✨ 支持双芯片 VGM 自动检测（header clock bit30）并分配 Slot
+
+#### 多窗口连接状态同步
+- ✨ `s_connected` 状态共享：任何窗口检测到硬件连接即视为已连接
+- ✨ 连接/断开广播：一个窗口操作影响所有窗口
+- ✨ 芯片类型自动切换：`SwitchToChipType` 静音+复位+切换
+
+#### 修改文件清单
+| 文件 | 操作 |
+|------|------|
+| `src/windows/spfm/spfm_manager.cpp/h` | 新建 - SPFM Light 硬件管理窗口 |
+| `src/core/vgm_sync.cpp/h` | 修改 - 添加 Slot 预设、双芯片检测、AutoAssignSlots |
+| `src/main.cpp` | 修改 - 添加 SPFM Manager 初始化/更新/渲染 |
+
+### 统一 VGM 播放引擎（2026-05-05 ~ 2026-05-06）
+
+#### 架构
+- ✨ **单线程解析 + 多芯片分发**：只有一个统一的播放线程运行，解析所有 VGM opcode
+- ✨ 三个窗口（YM2413/AY8910/SN76489）不再各自运行独立播放线程
+- ✨ 消除多窗口节奏不同步问题
+
+#### 回调注册机制
+- ✨ `RegisterChipWriter(chipType, stateUpdateFn, hwWriteFn, flushFn)` — YM2413/AY8910 注册
+- ✨ `RegisterSnHandler(cmdFn)` — SN76489 注册（单 byte 命令，0x50/0x30）
+- ✨ 每个窗口在 `Init()` 时注册自己的回调函数
+
+#### 统一播放线程
+- ✨ VGM 文件加载（支持 VGZ gzip 解压）
+- ✨ 完整 VGM header 解析（版本、GD3 偏移、循环偏移、数据偏移）
+- ✨ Opcode 分发：0x51→YM2413, 0xA0→AY8910, 0x50/0x30→SN76489, 控制指令统一处理
+- ✨ QPC+Sleep(1) 高精度定时，每帧最大 1 秒 samples 安全上限
+- ✨ 共享进度：`SetCurrentSamples`/`GetCurrentSamples` 所有窗口 UI 读取同一值
+
+#### 窗口改造
+- ✨ YM2413/AY8910：`UpdateYM2413State`/`UpdateAY8913State` + `ym2413_write_reg`/`ay8910_write_reg` 从 static 改为 namespace 函数
+- ✨ SN76489：新建 `SnCmdHandler(cmd, data)` 封装完整 0x50/0x30 处理逻辑（含 T6W28、latch、mute、PeriodicNoiseFix）
+- ✨ 三个窗口的 `Start/Stop/PauseVGMPlayback` 委托给 `VGMSync::Start/Stop/PauseUnifiedPlayback`
+- ✨ 三个窗口 `Update()` 同步逻辑改为仅同步本地 UI 状态，不再启动自己的线程
+- ✨ 三个窗口 `Shutdown()` 移除本地线程等待代码
+
+#### Bug 修复
+- 🐛 修复统一线程 `last` QPC 计数器未初始化，导致首次迭代瞬间处理全部文件
+- 🐛 修复 `NotifyFileOpened` 缺失 9 个触发点（双击/Next/Prev 在 3 个窗口）
+- 🐛 修复 `s_connected` 互斥：`SyncConnectionState` 检查 `GetActiveChipType()` 导致同时只有一个窗口"已连接"
+- 🐛 修复 `!s_connected` 每帧重置 `s_vgmPlaying`，导致播放中拔掉硬件停止播放
+
+#### 修改文件清单
+| 文件 | 操作 |
+|------|------|
+| `src/core/vgm_sync.h` | 修改 - 添加回调类型、统一播放 API、共享进度 |
+| `src/core/vgm_sync.cpp` | 修改 - 新建统一播放线程 + VGM 解析 + 回调分发 |
+| `src/windows/ym2413/ym2413_window.cpp` | 修改 - 注册回调、委托统一播放、UI 读共享进度 |
+| `src/windows/ay8910/ay8910_window.cpp` | 修改 - 同上 |
+| `src/windows/sn76489/sn76489_window.cpp` | 修改 - SnCmdHandler 回调、委托统一播放、UI 读共享进度 |
 
 ---
 
@@ -560,5 +654,5 @@
 
 **Project Start**: January 17, 2026
 **Current Version**: v16.0
-**Last Updated**: May 4, 2026
+**Last Updated**: May 6, 2026
 **Status**: Active Development
